@@ -36,16 +36,19 @@ package gabywald.tests.javaswing.splashscreen;
  */
 import java.awt.*;
 import java.awt.event.*;
+import java.nio.file.Paths;
 
 
 /**
- * Lancer avec Argument VM '-splash:resources/images/splash.gif'
- * ligne de commande : "java -splash:resources/images/splash.gif SplashDemo"
+ * Lancer avec Argument VM '-splash:src/main/resources/images/splash.gif'
+ * ligne de commande : "java -splash:src/main/resources/images/splash.gif SplashDemo"
  * 
  *@author Gabriel Chandesris (2020)
  */
 public class SplashDemo extends Frame implements ActionListener {
 	
+	private static final long serialVersionUID = 3776889168346713911L;
+
 	static void renderSplashFrame(Graphics2D g, int frame) {
 		final String[] comps = {"foo", "bar", "baz"};
 		g.setComposite(AlphaComposite.Clear);
@@ -104,6 +107,11 @@ public class SplashDemo extends Frame implements ActionListener {
 	};
 
 	public static void main (String args[]) {
+		
+        System.out.println(System.getProperty("user.dir"));
+        // Java 7
+        System.out.println(Paths.get("").toAbsolutePath().toString());
+		
 		SplashDemo test = new SplashDemo();
 	}
 }
