@@ -47,11 +47,6 @@
 
 		<dependency>
 			<groupId>gabywald</groupId>
-			<artifactId>global</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>gabywald</groupId>
 			<artifactId>utilities</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
