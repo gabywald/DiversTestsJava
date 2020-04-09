@@ -1,7 +1,5 @@
 package gabywald.socket.model;
 
-// import gabywald.socket.view.FrameDaemon;
-
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
 
@@ -13,9 +11,12 @@ import java.net.SocketAddress;
 
 /**
  * 
- * @author Gabriel Chandesris (2013, 2015)
+ * @author Gabriel Chandesris (2013, 2015-2016)
  */
 public class Daemon implements Runnable {
+	
+	private boolean running;
+	
 	private DaemonClientThread[] tabClient;
 	protected int port;
 	protected String out;
@@ -23,8 +24,9 @@ public class Daemon implements Runnable {
 	protected ServerSocket server;
 	
 	public Daemon(int atta) {
-		this.port	= atta;
-		this.out	= new String("");
+		this.running	= true;
+		this.port		= atta;
+		this.out		= new String("");
 		
 		try {
 			this.server				= new ServerSocket();
@@ -32,10 +34,14 @@ public class Daemon implements Runnable {
 			this.server.bind(sockAddr);
 			this.out = "Serveur opérationnel sur le port: "+this.port;
 			this.tabClient = new DaemonClientThread[0];
+			Logger.printlnLog(LoggerLevel.LL_DEBUG, this.out);
 		} catch (IOException e) {
-			/** e.printStackTrace(); */
+			// e.printStackTrace();
 			this.out = new String("Transmission error (daemon:constructor) !");
+			Logger.printlnLog(LoggerLevel.LL_WARNING, this.out);
 		}
+		
+		Logger.printlnLog(LoggerLevel.LL_DEBUG, "Création Daemon [" + "" + ":" + this.port + "]");
 	}
 	
 	public void start() {
@@ -50,10 +56,11 @@ public class Daemon implements Runnable {
 				DaemonClientThread newDaemonClient	= new DaemonClientThread(client, this);
 				this.addClient(newDaemonClient);
 				newDaemonClient.start(); // this.getLastClient().start();
-			} while(true);
+			} while(this.running);
 		} catch (IOException e) {
 			/** e.printStackTrace(); */
 			this.out = new String("Transmission error (daemon:run) !");
+			this.running = false;
 		}
 	}
 	
@@ -64,7 +71,7 @@ public class Daemon implements Runnable {
 		nextTabClient[this.tabClient.length] = client;
 		this.tabClient = nextTabClient;
 	
-		Logger.printlnLog(LoggerLevel.LL_INFO, "Connection from [" + client.getHost() + ":" + client.getPort() + "]");
+		Logger.printlnLog(LoggerLevel.LL_DEBUG, "Connection from [" + client.getHost() + ":" + client.getPort() + "]");
 		
 	}
 	
@@ -79,7 +86,7 @@ public class Daemon implements Runnable {
 			{ nextTabClient[i] = this.tabClient[i]; }
 		this.tabClient = nextTabClient;
 		
-		Logger.printlnLog(LoggerLevel.LL_INFO, "Close connection [" + client.getHost() + ":" + client.getPort() + "]");
+		Logger.printlnLog(LoggerLevel.LL_DEBUG, "Close connection [" + client.getHost() + ":" + client.getPort() + "]");
 	}
 	
 //	private DaemonClientThread getLastClient() {

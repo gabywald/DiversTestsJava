@@ -22,6 +22,9 @@
 			</repository> -->
 	</repositories>
 
+	<!-- <exclusions> <exclusion> <groupId>com.sun.java</groupId> <artifactId>tools</artifactId> 
+		</exclusion> </exclusions> -->
+
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 		<dependency>
@@ -37,13 +40,8 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.sun/tools -->
-		<dependency>
-			<groupId>com.sun</groupId>
-			<artifactId>tools</artifactId>
-			<version>1.7.0</version>
-			<scope>system</scope>
-			<systemPath>C:\Program Files\Java\jdk1.8.0_172\lib\tools.jar</systemPath>
-		</dependency>
+		<!-- <dependency> <groupId>com.sun</groupId> <artifactId>tools</artifactId> 
+			<version>1.7.0</version> </dependency> -->
 
 		<dependency>
 			<groupId>gabywald</groupId>
