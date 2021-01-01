@@ -56,11 +56,9 @@ public class MySQLConnector {
 			}
 			rs.close();
 			
-			
 //			Connection connection = DriverManager.getConnection(url, username, password);
 //			System.out.println("Database connected! {" + connection + "}");
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			// throw new IllegalStateException("Cannot connect the database!", e);
 		}
