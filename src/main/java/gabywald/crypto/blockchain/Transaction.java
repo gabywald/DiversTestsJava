@@ -38,7 +38,10 @@ public class Transaction {
 		this.inputs = inputs;
 	}
 
-	// This Calculates the transaction hash (which will be used as its Id)
+	/** 
+	 *  This Calculates the transaction hash (which will be used as its Id)
+	 * @return
+	 */
 	private String calulateHash() {
 		// Increase the sequence to avoid 2 identical transactions having the same hash
 		Transaction.sequence++;
@@ -49,7 +52,12 @@ public class Transaction {
 				);
 	}
 
-	// Applies ECDSA Signature and returns the result ( as bytes ).
+	/** 
+	 * Applies ECDSA Signature and returns the result ( as bytes ). 
+	 * @param privateKey
+	 * @param input
+	 * @return
+	 */
 	public static byte[] applyECDSASig(PrivateKey privateKey, String input) {
 		Signature dsa;
 		byte[] output = new byte[0];
@@ -67,7 +75,13 @@ public class Transaction {
 		return output;
 	}
 
-	// Verifies a String signature 
+	/** 
+	 * Verifies a String signature. 
+	 * @param publicKey
+	 * @param data
+	 * @param signature
+	 * @return
+	 */
 	public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
 			Signature ecdsaVerify = // Signature.getInstance(StringUtil.ECDSA, StringUtil.BC);
@@ -84,7 +98,10 @@ public class Transaction {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
 
-	// Signs all the data we don't wish to be tampered with.
+	/** 
+	 * Signs all the data we don't wish to be tampered with.
+	 * @param privateKey
+	 */
 	public void generateSignature(PrivateKey privateKey) {
 		String data = StringUtils.getStringFromKey(this.sender) 
 				+ StringUtils.getStringFromKey(this.reciepient) 
@@ -92,7 +109,10 @@ public class Transaction {
 		this.signature = StringUtils.applyECDSASig(privateKey,data);		
 	}
 
-	// Verifies the data we signed hasn't been tampered with
+	/**
+	 * Verifies the data we signed hasn't been tampered with. 
+	 * @return
+	 */
 	public boolean verifiySignature() {
 		String data = StringUtils.getStringFromKey(this.sender) 
 				+ StringUtils.getStringFromKey(this.reciepient) 
@@ -100,59 +120,73 @@ public class Transaction {
 		return StringUtils.verifyECDSASig(this.sender, data, this.signature);
 	}
 
-	// Returns true if new transaction could be created.	
+	/** 
+	 * Returns true if new transaction could be created.	
+	 * @return
+	 */
 	public boolean processTransaction() {
 
-		if(verifiySignature() == false) {
+		if (verifiySignature() == false) {
 			System.out.println("#Transaction Signature failed to verify");
 			return false;
 		}
 
-		// gather transaction inputs (Make sure they are unspent):
-		for(TransactionInput i : inputs) {
+		// Gather transaction inputs (Make sure they are unspent):
+		for (TransactionInput i : inputs) {
 			i.UTXO = NoobChain.UTXOs.get(i.transactionOutputId);
 		}
 
-		// check if transaction is valid:
+		// Check if transaction is valid:
 		if (getInputsValue() < NoobChain.minimumTransaction) {
 			System.out.println("#Transaction Inputs to small: " + getInputsValue());
 			return false;
 		}
 
-		// generate transaction outputs:
-		float leftOver = getInputsValue() - value; // get value of inputs then the left over change:
+		// Generate transaction outputs:
+		float leftOver = getInputsValue() - value; // 
+		// - Get value of inputs then the left over change:
 		transactionId = calulateHash();
-		outputs.add(new TransactionOutput( this.reciepient, value, transactionId)); // send value to recipient
-		outputs.add(new TransactionOutput( this.sender, leftOver ,transactionId)); // send the left over 'change' back to sender		
+		// - Send value to recipient
+		outputs.add(new TransactionOutput( this.reciepient, value, transactionId));
+		// - Send the left over 'change' back to sender
+		outputs.add(new TransactionOutput( this.sender, leftOver ,transactionId));	
 
-		// add outputs to Unspent list
-		for(TransactionOutput o : outputs) {
+		// Add outputs to Unspent list
+		for (TransactionOutput o : outputs) {
 			NoobChain.UTXOs.put(o.id , o);
 		}
 
-		//remove transaction inputs from UTXO lists as spent:
+		// Remove transaction inputs from UTXO lists as spent:
 		for(TransactionInput i : inputs) {
-			if(i.UTXO == null) continue; //if Transaction can't be found skip it 
+			// If Transaction can't be found skip it
+			if ( i.UTXO == null)  { continue; } 
 			NoobChain.UTXOs.remove(i.UTXO.id);
 		}
 
 		return true;
 	}
 
-	//returns sum of inputs(UTXOs) values
+	/**
+	 * Returns sum of inputs(UTXOs) values. 
+	 * @return
+	 */
 	public float getInputsValue() {
 		float total = 0;
-		for(TransactionInput i : inputs) {
-			if(i.UTXO == null) continue; //if Transaction can't be found skip it 
+		for (TransactionInput i : inputs) {
+			// If Transaction can't be found skip it
+			if ( i.UTXO == null)  { continue; } 
 			total += i.UTXO.value;
 		}
 		return total;
 	}
 
-	//returns sum of outputs:
+	/**
+	 * Returns sum of outputs:
+	 * @return
+	 */
 	public float getOutputsValue() {
 		float total = 0;
-		for(TransactionOutput o : outputs) {
+		for (TransactionOutput o : outputs) {
 			total += o.value;
 		}
 		return total;

@@ -10,19 +10,32 @@ import java.security.PublicKey;
  */
 public class TransactionOutput {
 	public String id;
-	public PublicKey reciepient; // Also known as the new owner of these coins.
-	public float value; // The amount of coins they own
-	public String parentTransactionId; // The id of the transaction this output was created in
+	/** Also known as the new owner of these coins. */
+	public PublicKey reciepient;
+	/** The amount of coins they own */
+	public float value;
+	/** The id of the transaction this output was created in */
+	public String parentTransactionId;
 	
-	//Constructor
+	/**
+	 * Constructor
+	 * @param reciepient
+	 * @param value
+	 * @param parentTransactionId
+	 */
 	public TransactionOutput(PublicKey reciepient, float value, String parentTransactionId) {
 		this.reciepient = reciepient;
 		this.value = value;
 		this.parentTransactionId = parentTransactionId;
-		this.id = StringUtils.applySha256(StringUtils.getStringFromKey(reciepient)+Float.toString(value)+parentTransactionId);
+		this.id = StringUtils.applySha256(StringUtils.getStringFromKey(reciepient) 
+				+ Float.toString(value)+parentTransactionId);
 	}
 	
-	//Check if coin belongs to you
+	/**
+	 * Check if coin belongs to you. 
+	 * @param publicKey
+	 * @return
+	 */
 	public boolean isMine(PublicKey publicKey) {
 		return (publicKey == reciepient);
 	}

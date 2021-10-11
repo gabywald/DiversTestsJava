@@ -16,7 +16,11 @@ public class Block {
 	private long timeStamp; //as number of milliseconds since 1/1/1970.
 	private int nonce;
 
-	// Block Constructor.  
+	/**
+	 * Block Constructor. 
+	 * @param data
+	 * @param previousHash
+	 */
 	public Block(String data,String previousHash ) {
 		this.data = data;
 		this.previousHash = previousHash;

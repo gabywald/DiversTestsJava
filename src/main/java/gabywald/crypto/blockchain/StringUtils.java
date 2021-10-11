@@ -18,16 +18,22 @@ import java.util.Base64;
  */
 public class StringUtils {
 
-	//Applies Sha256 to a string and returns the result. 
+	/** 
+	 * Applies Sha256 to a string and returns the result. 
+	 * @param input
+	 * @return
+	 */
 	public static String applySha256(String input){		
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");	        
 			// Applies sha256 to our input, 
 			byte[] hash = digest.digest(input.getBytes("UTF-8"));	        
 			StringBuffer hexString = new StringBuffer(); // This will contain hash as hexidecimal
-			for (int i = 0; i < hash.length; i++) {
+			for (int i = 0 ; i < hash.length ; i++) {
 				String hex = Integer.toHexString(0xff & hash[i]);
-				if(hex.length() == 1) hexString.append('0');
+				if (hex.length() == 1) {
+					hexString.append('0');
+				}
 				hexString.append(hex);
 			}
 			return hexString.toString();
@@ -46,7 +52,12 @@ public class StringUtils {
 	// XXX NOTE see https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html
 	// TODO learning how security works here ! 
 
-	// Applies ECDSA Signature and returns the result ( as bytes ).
+	/**
+	 * Applies ECDSA Signature and returns the result ( as bytes ). 
+	 * @param privateKey
+	 * @param input
+	 * @return
+	 */
 	public static byte[] applyECDSASig(PrivateKey privateKey, String input) {
 		Signature dsa;
 		byte[] output = new byte[0];
@@ -64,7 +75,13 @@ public class StringUtils {
 		return output;
 	}
 
-	// Verifies a String signature 
+	/**
+	 * Verifies a String signature. 
+	 * @param publicKey
+	 * @param data
+	 * @param signature
+	 * @return
+	 */
 	public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
 			Signature ecdsaVerify = // Signature.getInstance(StringUtil.ECDSA, StringUtil.BC);
@@ -81,7 +98,11 @@ public class StringUtils {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
 
-	// Tacks in array of transactions and returns a merkle root.
+	/** 
+	 * Tacks in array of transactions and returns a merkle root.
+	 * @param transactions
+	 * @return
+	 */
 	public static String getMerkleRoot(ArrayList<Transaction> transactions) {
 		int count = transactions.size();
 		ArrayList<String> previousTreeLayer = new ArrayList<String>();
@@ -89,9 +110,9 @@ public class StringUtils {
 			previousTreeLayer.add(transaction.transactionId);
 		}
 		ArrayList<String> treeLayer = previousTreeLayer;
-		while(count > 1) {
+		while (count > 1) {
 			treeLayer = new ArrayList<String>();
-			for(int i=1; i < previousTreeLayer.size(); i++) {
+			for (int i = 1 ; i < previousTreeLayer.size() ; i++) {
 				treeLayer.add(applySha256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i)));
 			}
 			count = treeLayer.size();

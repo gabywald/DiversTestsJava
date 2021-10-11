@@ -35,7 +35,7 @@ public class Wallet {
 			// Set the public and private keys from the keyPair
 			privateKey = keyPair.getPrivate();
 			publicKey = keyPair.getPublic();
-		} catch(Exception e) { 
+		} catch (Exception e) { 
 			throw new RuntimeException(e);
 		}
 	}

@@ -7,8 +7,10 @@ package gabywald.crypto.blockchain;
  * @author Gabriel Chandesris (2021)
  */
 public class TransactionInput {
-	public String transactionOutputId; //Reference to TransactionOutputs -> transactionId
-	public TransactionOutput UTXO; //Contains the Unspent transaction output
+	/** Reference to TransactionOutputs -> transactionId */
+	public String transactionOutputId;
+	/** Contains the Unspent transaction output */
+	public TransactionOutput UTXO;
 	
 	public TransactionInput(String transactionOutputId) {
 		this.transactionOutputId = transactionOutputId;
