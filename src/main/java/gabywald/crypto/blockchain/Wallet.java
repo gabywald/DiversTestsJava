@@ -24,6 +24,7 @@ public class Wallet {
 
 	public void generateKeyPair() {
 		try {
+			// TODO learning how security works here !
 			KeyPairGenerator keyGen = // KeyPairGenerator.getInstance(StringUtil.ECDSA, StringUtil.BC);
 					KeyPairGenerator.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
 			SecureRandom random = SecureRandom.getInstance("SHA1PRNG");

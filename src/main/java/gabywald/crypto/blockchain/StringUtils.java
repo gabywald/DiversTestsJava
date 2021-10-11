@@ -44,6 +44,7 @@ public class StringUtils {
 	public static final String CipherProvider = "SunJCE"; // "SUN";
 
 	// XXX NOTE see https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html
+	// TODO learning how security works here ! 
 
 	// Applies ECDSA Signature and returns the result ( as bytes ).
 	public static byte[] applyECDSASig(PrivateKey privateKey, String input) {
