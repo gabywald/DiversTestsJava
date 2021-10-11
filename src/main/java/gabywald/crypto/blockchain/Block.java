@@ -5,6 +5,7 @@ import java.util.Date;
 /**
  * Block of BlockChain. 
  * <br/><a href="https://medium.com/programmers-blockchain/create-simple-blockchain-java-tutorial-from-scratch-6eeed3cb03fa">https://medium.com/programmers-blockchain/create-simple-blockchain-java-tutorial-from-scratch-6eeed3cb03fa</a>
+ * <br/><a href="https://github.com/CryptoKass/NoobChain-Tutorial-Part-1">https://github.com/CryptoKass/NoobChain-Tutorial-Part-1</a>
  * @author Gabriel Chandesris (2021)
  */
 public class Block {
@@ -27,11 +28,11 @@ public class Block {
 
 	// Calculate new hash based on blocks contents
 	public String calculateHash() {
-		String calculatedhash = StringUtil.applySha256( 
-				previousHash +
-				Long.toString(timeStamp) +
-				Integer.toString(nonce) + 
-				data 
+		String calculatedhash = StringUtils.applySha256( 
+				this.previousHash +
+				Long.toString(this.timeStamp) +
+				Integer.toString(this.nonce) + 
+				this.data 
 				);
 		return calculatedhash;
 	}
@@ -39,10 +40,10 @@ public class Block {
 	public void mineBlock(int difficulty) {
 		// Create a string with difficulty * "0"
 		String target = new String(new char[difficulty]).replace('\0', '0'); 
-		while(!hash.substring( 0, difficulty).equals(target)) {
-			nonce ++;
-			hash = calculateHash();
+		while ( ! this.hash.substring( 0, difficulty).equals(target)) {
+			this.nonce++;
+			this.hash = this.calculateHash();
 		}
-		System.out.println("Block Mined!!! : " + hash);
+		System.out.println("Block Mined!!! : " + this.hash);
 	}
 }
