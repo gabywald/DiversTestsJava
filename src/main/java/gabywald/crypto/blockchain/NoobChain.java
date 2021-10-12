@@ -1,6 +1,7 @@
 package gabywald.crypto.blockchain;
 
 import java.security.Security;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -11,15 +12,15 @@ import com.google.gson.GsonBuilder;
  * NoobChain Test and Main Class of BlockChain. 
  * <br/><a href="https://medium.com/programmers-blockchain/create-simple-blockchain-java-tutorial-from-scratch-6eeed3cb03fa">https://medium.com/programmers-blockchain/create-simple-blockchain-java-tutorial-from-scratch-6eeed3cb03fa</a>
  * <br/><a href="https://github.com/CryptoKass/NoobChain-Tutorial-Part-1">https://github.com/CryptoKass/NoobChain-Tutorial-Part-1</a>
-<br/><a href="https://medium.com/programmers-blockchain/creating-your-first-blockchain-with-java-part-2-transactions-2cdac335e0ce">https://medium.com/programmers-blockchain/creating-your-first-blockchain-with-java-part-2-transactions-2cdac335e0ce</a>
+ * <br/><a href="https://medium.com/programmers-blockchain/creating-your-first-blockchain-with-java-part-2-transactions-2cdac335e0ce">https://medium.com/programmers-blockchain/creating-your-first-blockchain-with-java-part-2-transactions-2cdac335e0ce</a>
  * <br/><a href="https://github.com/CryptoKass/NoobChain-Tutorial-Part-2/tree/master/src/noobchain">https://github.com/CryptoKass/NoobChain-Tutorial-Part-2/tree/master/src/noobchain</a>
  * @author Gabriel Chandesris (2021)
  */
 public class NoobChain {
 
-	public static ArrayList<Block> blockchain = new ArrayList<Block>(); 
-	public static ArrayList<Block> blockchain2 = new ArrayList<Block>();
-	public static ArrayList<Block> blockchain3 = new ArrayList<Block>();
+	public static List<Block> blockchain = new ArrayList<Block>(); 
+	public static List<Block> blockchain2 = new ArrayList<Block>();
+	public static List<Block> blockchain3 = new ArrayList<Block>();
 
 	public static int difficulty = 3;
 	
@@ -34,47 +35,46 @@ public class NoobChain {
 
 	public static void main(String[] args) {
 
-//		Block genesisBlock = new Block("Hi im the first block", "0");
-//		System.out.println("Hash for block 1 : " + genesisBlock.hash);
-//
-//		Block secondBlock = new Block("Yo im the second block",genesisBlock.hash);
-//		System.out.println("Hash for block 2 : " + secondBlock.hash);
-//
-//		Block thirdBlock = new Block("Hey im the third block",secondBlock.hash);
-//		System.out.println("Hash for block 3 : " + thirdBlock.hash);
-//
-//
-//		// Add our blocks to the blockchain ArrayList:
-//		NoobChain.blockchain.add(new Block("Hi im the first block", "0"));		
-//		NoobChain.blockchain.add(new Block("Yo im the second block", NoobChain.blockchain.get(NoobChain.blockchain.size()-1).hash)); 
-//		NoobChain.blockchain.add(new Block("Hey im the third block",  NoobChain.blockchain.get(NoobChain.blockchain.size()-1).hash));
-//		String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChain.blockchain);		
-//		System.out.println(blockchainJson);
-//
-//
-//		// Add our blocks to the blockchain ArrayList:
-//		NoobChain.blockchain2.add(new Block("Hi im the first block", "0"));
-//		System.out.println("Trying to Mine block 1... ");
-//		NoobChain.blockchain2.get(0).mineBlock(NoobChain.difficulty);
-//
-//		NoobChain.blockchain2.add(new Block("Yo im the second block", NoobChain.blockchain2.get(NoobChain.blockchain2.size()-1).hash));
-//		System.out.println("Trying to Mine block 2... ");
-//		NoobChain.blockchain2.get(1).mineBlock(NoobChain.difficulty);
-//
-//		NoobChain.blockchain2.add(new Block("Hey im the third block", NoobChain.blockchain2.get(NoobChain.blockchain2.size()-1).hash));
-//		System.out.println("Trying to Mine block 3... ");
-//		NoobChain.blockchain2.get(2).mineBlock(NoobChain.difficulty);	
-//
-//		System.out.println("\nBlockchain is Valid: " + isChainValid());
-//
-//		String blockchain2Json = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChain.blockchain2);
-//		System.out.println("\nThe block chain: ");
-//		System.out.println(blockchain2Json);
+		// ***** Part I
+		Block genesisBlock = new Block("Hi im the first block", "0");
+		System.out.println("Hash for block 1 : " + genesisBlock.hash);
+		Block secondBlock = new Block("Yo im the second block",genesisBlock.hash);
+		System.out.println("Hash for block 2 : " + secondBlock.hash);
+		Block thirdBlock = new Block("Hey im the third block",secondBlock.hash);
+		System.out.println("Hash for block 3 : " + thirdBlock.hash);
 
 
+		// ***** Part II
+		// Add our blocks to the blockchain List:
+		NoobChain.blockchain.add(new Block("Hi im the first block", "0"));		
+		NoobChain.blockchain.add(new Block("Yo im the second block", NoobChain.blockchain.get(NoobChain.blockchain.size()-1).hash)); 
+		NoobChain.blockchain.add(new Block("Hey im the third block",  NoobChain.blockchain.get(NoobChain.blockchain.size()-1).hash));
+		String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChain.blockchain);		
+		System.out.println(blockchainJson);
 
+		// ***** Part III
+		// Add our blocks to the blockchain List:
+		NoobChain.blockchain2.add(new Block("Hi im the first block", "0"));
+		System.out.println("Trying to Mine block 1... ");
+		NoobChain.blockchain2.get(0).mineBlock(NoobChain.difficulty);
+
+		NoobChain.blockchain2.add(new Block("Yo im the second block", NoobChain.blockchain2.get(NoobChain.blockchain2.size()-1).hash));
+		System.out.println("Trying to Mine block 2... ");
+		NoobChain.blockchain2.get(1).mineBlock(NoobChain.difficulty);
+
+		NoobChain.blockchain2.add(new Block("Hey im the third block", NoobChain.blockchain2.get(NoobChain.blockchain2.size()-1).hash));
+		System.out.println("Trying to Mine block 3... ");
+		NoobChain.blockchain2.get(2).mineBlock(NoobChain.difficulty);	
+
+		System.out.println("\nBlockchain is Valid: " + isChainValid());
+
+		String blockchain2Json = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChain.blockchain2);
+		System.out.println("\nThe block chain: ");
+		System.out.println(blockchain2Json);
+
+		// ***** Part IV
 		// Setup Bouncey castle as a Security Provider
-		// Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); 
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); 
 		// Security.addProvider(new sun.security.provider.Sun());
 		// XXX NOTE see https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html
 		//Create the new wallets
@@ -90,6 +90,9 @@ public class NoobChain {
 		//Verify the signature works and verify it from the public key
 		System.out.println("Is signature verified");
 		System.out.println(transaction.verifiySignature());
+		
+		// ***** Part V
+		// TODO next step of tutorials !!
 	}
 
 	public static Boolean isChainValid() {

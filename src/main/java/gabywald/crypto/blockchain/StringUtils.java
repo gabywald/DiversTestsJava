@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -43,11 +44,11 @@ public class StringUtils {
 		}
 	}
 
-	public static final String ECDSA = "ECDSA";
-	public static final String BC = "BC";
+	public static final String ECDSA = "ECDSA"; // CipherAlgorithm
+	public static final String BC = "BC"; // CipherProvider
 
-	public static final String CipherAlgorithm = "DiffieHellman"; // "SHA1withDSA";
-	public static final String CipherProvider = "SunJCE"; // "SUN";
+//	public static final String CipherAlgorithm = "DiffieHellman"; // "SHA1withDSA";
+//	public static final String CipherProvider = "SunJCE"; // "SUN";
 
 	// XXX NOTE see https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html
 	// TODO learning how security works here ! 
@@ -62,8 +63,8 @@ public class StringUtils {
 		Signature dsa;
 		byte[] output = new byte[0];
 		try {
-			dsa = // Signature.getInstance(StringUtil.ECDSA, StringUtil.BC);
-					Signature.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
+			dsa = Signature.getInstance(StringUtils.ECDSA, StringUtils.BC);
+			// Signature.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
 			dsa.initSign(privateKey);
 			byte[] strByte = input.getBytes();
 			dsa.update(strByte);
@@ -85,7 +86,7 @@ public class StringUtils {
 	public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
 			Signature ecdsaVerify = // Signature.getInstance(StringUtil.ECDSA, StringUtil.BC);
-					Signature.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
+					Signature.getInstance(StringUtils.ECDSA, StringUtils.BC);
 			ecdsaVerify.initVerify(publicKey);
 			ecdsaVerify.update(data.getBytes());
 			return ecdsaVerify.verify(signature);
@@ -103,13 +104,13 @@ public class StringUtils {
 	 * @param transactions
 	 * @return
 	 */
-	public static String getMerkleRoot(ArrayList<Transaction> transactions) {
+	public static String getMerkleRoot(List<Transaction> transactions) {
 		int count = transactions.size();
-		ArrayList<String> previousTreeLayer = new ArrayList<String>();
+		List<String> previousTreeLayer = new ArrayList<String>();
 		for(Transaction transaction : transactions) {
 			previousTreeLayer.add(transaction.transactionId);
 		}
-		ArrayList<String> treeLayer = previousTreeLayer;
+		List<String> treeLayer = previousTreeLayer;
 		while (count > 1) {
 			treeLayer = new ArrayList<String>();
 			for (int i = 1 ; i < previousTreeLayer.size() ; i++) {

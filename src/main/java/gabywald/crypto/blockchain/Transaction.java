@@ -5,6 +5,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -25,13 +26,13 @@ public class Transaction {
 	/** This is to prevent anybody else from spending funds in our wallet. */
 	public byte[] signature;
 
-	public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
-	public ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
+	public List<TransactionInput> inputs = new ArrayList<TransactionInput>();
+	public List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 
 	private static int sequence = 0; // a rough count of how many transactions have been generated. 
 
 	// Constructor: 
-	public Transaction(PublicKey from, PublicKey to, float value,  ArrayList<TransactionInput> inputs) {
+	public Transaction(PublicKey from, PublicKey to, float value,  List<TransactionInput> inputs) {
 		this.sender = from;
 		this.reciepient = to;
 		this.value = value;
@@ -62,8 +63,8 @@ public class Transaction {
 		Signature dsa;
 		byte[] output = new byte[0];
 		try {
-			dsa = // Signature.getInstance(StringUtil.ECDSA, StringUtil.BC);
-					Signature.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
+			dsa = Signature.getInstance(StringUtils.ECDSA, StringUtils.BC);
+			// Signature.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
 			dsa.initSign(privateKey);
 			byte[] strByte = input.getBytes();
 			dsa.update(strByte);
@@ -84,8 +85,8 @@ public class Transaction {
 	 */
 	public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
-			Signature ecdsaVerify = // Signature.getInstance(StringUtil.ECDSA, StringUtil.BC);
-					Signature.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
+			Signature ecdsaVerify = Signature.getInstance(StringUtils.ECDSA, StringUtils.BC);
+			// Signature.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
 			ecdsaVerify.initVerify(publicKey);
 			ecdsaVerify.update(data.getBytes());
 			return ecdsaVerify.verify(signature);
