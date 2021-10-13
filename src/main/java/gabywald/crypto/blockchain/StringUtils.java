@@ -37,7 +37,7 @@ public class StringUtils {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");	        
 			// Applies sha256 to our input, 
 			byte[] hash = digest.digest(input.getBytes("UTF-8"));
-			 // This will contain hash as hexidecimal
+			// This will contain hash as hexidecimal
 			StringBuffer hexString = new StringBuffer();
 			for (int i = 0 ; i < hash.length ; i++) {
 				String hex = Integer.toHexString(0xff & hash[i]);
@@ -47,18 +47,17 @@ public class StringUtils {
 				hexString.append(hex);
 			}
 			return hexString.toString();
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new BlockchainException("StringUtils: NoSuchAlgorithmException: " + nsae.getMessage());
-		} catch (UnsupportedEncodingException uee) {
-			throw new BlockchainException("StringUtils: UnsupportedEncodingException: " + uee.getMessage());
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+			System.out.println( "StringUtils: " + e.getClass().getName() + ": " + e.getMessage() );
+			throw new BlockchainException("StringUtils: " + e.getClass().getName() +": " + e.getMessage());
 		}
 	}
 
 	public static final String ECDSA = "ECDSA"; // CipherAlgorithm
 	public static final String BC = "BC"; // CipherProvider
 
-//	public static final String CipherAlgorithm = "DiffieHellman"; // "SHA1withDSA";
-//	public static final String CipherProvider = "SunJCE"; // "SUN";
+	//	public static final String CipherAlgorithm = "DiffieHellman"; // "SHA1withDSA";
+	//	public static final String CipherProvider = "SunJCE"; // "SUN";
 
 	// XXX NOTE see https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html
 	// TODO learning how security works here ! 
@@ -85,14 +84,9 @@ public class StringUtils {
 			dsa.update(strByte);
 			byte[] realSig = dsa.sign();
 			output = realSig;
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new BlockchainException("StringUtils: NoSuchAlgorithmException: " + nsae.getMessage());
-		} catch (NoSuchProviderException nspe) {
-			throw new BlockchainException("StringUtils: NoSuchProviderException: " + nspe.getMessage());
-		} catch (InvalidKeyException ike) {
-			throw new BlockchainException("StringUtils: InvalidKeyException: " + ike.getMessage());
-		} catch (SignatureException se) {
-			throw new BlockchainException("StringUtils: SignatureException: " + se.getMessage());
+		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException  | SignatureException e) {
+			System.out.println( "StringUtils: " + e.getClass().getName() + ": " + e.getMessage() );
+			throw new BlockchainException("StringUtils: " + e.getClass().getName() + ": " + e.getMessage());
 		}
 		return output;
 	}
@@ -111,13 +105,24 @@ public class StringUtils {
 			ecdsaVerify.initVerify(publicKey);
 			ecdsaVerify.update(data.getBytes());
 			return ecdsaVerify.verify(signature);
-		} catch(Exception e) {
-			throw new RuntimeException(e);
+		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException  | SignatureException e) {
+			// throw new BlockchainException("StringUtils: " + e.getClass().getName() + ": " + e.getMessage());
+			System.out.println( "StringUtils: " + e.getClass().getName() + ": " + e.getMessage() );
 		}
+		return false; // if any Exception is throwed !
 	}
 
 	public static String getStringFromKey(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
+	}
+	
+	/**
+	 * Returns difficulty string target, to compare to hash. eg difficulty of 5 will return "00000"  
+	 * @param difficulty
+	 * @return
+	 */
+	public static String getDificultyString(int difficulty) {
+		return new String(new char[difficulty]).replace('\0', '0');
 	}
 
 	/** 
@@ -138,7 +143,6 @@ public class StringUtils {
 				try {
 					treeLayer.add(StringUtils.applySha256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i)));
 				} catch (BlockchainException e) {
-					// e.printStackTrace();
 					System.out.println( e.getMessage() );
 				}
 			}

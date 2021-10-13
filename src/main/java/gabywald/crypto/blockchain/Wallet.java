@@ -1,11 +1,17 @@
 package gabywald.crypto.blockchain;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.ECGenParameterSpec;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Wallet of BlockChain. 
@@ -15,13 +21,16 @@ import java.security.spec.ECGenParameterSpec;
  */
 public class Wallet {
 
-	public PrivateKey privateKey;
-	public PublicKey publicKey;
+	public PrivateKey privateKey = null;
+	public PublicKey publicKey = null;
 
 	public Wallet() {
 		this.generateKeyPair();	
 	}
 
+	/**
+	 * Generate some KeyPair (Public and Private). 
+	 */
 	public void generateKeyPair() {
 		try {
 			// TODO learning how security works here !
@@ -33,11 +42,68 @@ public class Wallet {
 			keyGen.initialize(ecSpec, random);
 			KeyPair keyPair = keyGen.generateKeyPair();
 			// Set the public and private keys from the keyPair
-			privateKey = keyPair.getPrivate();
-			publicKey = keyPair.getPublic();
-		} catch (Exception e) { 
-			throw new RuntimeException(e);
+			this.privateKey = keyPair.getPrivate();
+			this.publicKey = keyPair.getPublic();
+		} catch (NoSuchAlgorithmException nsae) {
+			// throw new BlockchainException("StringUtils: NoSuchAlgorithmException: " + nsae.getMessage());
+			System.out.println( "StringUtils: NoSuchAlgorithmException: " + nsae.getMessage() );
+		} catch (NoSuchProviderException nspe) {
+			// throw new BlockchainException("StringUtils: NoSuchProviderException: " + nspe.getMessage());
+			System.out.println( "StringUtils: NoSuchProviderException: " + nspe.getMessage() );
+		} catch (InvalidAlgorithmParameterException iape) {
+			// throw new BlockchainException("StringUtils: InvalidAlgorithmParameterException: " + iape.getMessage());
+			System.out.println( "StringUtils: InvalidAlgorithmParameterException: " + iape.getMessage() );
+		} 
+	}
+
+	/**
+	 * Returns balance and stores the UTXO's owned by this wallet in this.UTXOs
+	 * @return
+	 */
+	public float getBalance() {
+		float total = 0;	
+		for (Map.Entry<String, TransactionOutput> item: NoobChainFinale.UTXOs.entrySet()){
+			TransactionOutput UTXO = item.getValue();
+			if (UTXO.isMine(publicKey)) {
+				// If output belongs to me ( if coins belong to me )
+				// Add it to our list of unspent transactions.
+				NoobChainFinale.UTXOs.put(UTXO.id,UTXO);
+				total += UTXO.value ; 
+			}
+		}  
+		return total;
+	}
+
+	/** 
+	 * Generates and returns a new transaction from this wallet.
+	 * @param recipient
+	 * @param value
+	 * @return
+	 */
+	public Transaction sendFunds(PublicKey recipient, float value) {
+		// Gather balance and check funds.
+		if (this.getBalance() < value) {
+			System.out.println("#Not Enough funds to send transaction. Transaction Discarded.");
+			return null;
 		}
+		// Create array list of inputs
+		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
+
+		float total = 0;
+		for (Map.Entry<String, TransactionOutput> item: NoobChainFinale.UTXOs.entrySet()){
+			TransactionOutput UTXO = item.getValue();
+			total += UTXO.value;
+			inputs.add(new TransactionInput(UTXO.id));
+			if (total > value)  { break; }
+		}
+
+		Transaction newTransaction = new Transaction(this.publicKey, recipient , value, inputs);
+		newTransaction.generateSignature(this.privateKey);
+
+		for (TransactionInput input: inputs) {
+			NoobChainFinale.UTXOs.remove(input.transactionOutputId);
+		}
+		return newTransaction;
 	}
 
 }
