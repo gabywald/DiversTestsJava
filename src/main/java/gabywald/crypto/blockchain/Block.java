@@ -12,8 +12,10 @@ public class Block {
 
 	public String hash;
 	public String previousHash; 
-	private String data; //our data will be a simple message.
-	private long timeStamp; //as number of milliseconds since 1/1/1970.
+	/** our data will be a simple message. */
+	private String data;
+	/** as number of milliseconds since 1/1/1970. */
+	private long timeStamp;
 	private int nonce;
 
 	/**
@@ -25,28 +27,39 @@ public class Block {
 		this.data = data;
 		this.previousHash = previousHash;
 		this.timeStamp = new Date().getTime();
-
 		// Making sure we do this after we set the other values.
-		this.hash = calculateHash(); 
+		this.hash = this.calculateHash();
 	}
 
-	// Calculate new hash based on blocks contents
+	/**
+	 * Calculate new hash based on blocks contents
+	 * @return (null if exception apply internally). 
+	 * @see StringUtils#applySha256(String)
+	 */
 	public String calculateHash() {
-		String calculatedhash = StringUtils.applySha256( 
-				this.previousHash +
-				Long.toString(this.timeStamp) +
-				Integer.toString(this.nonce) + 
-				this.data 
-				);
+		String calculatedhash = null;
+		try {
+			calculatedhash = StringUtils.applySha256( 
+					this.previousHash +
+					Long.toString(this.timeStamp) +
+					Integer.toString(this.nonce) + 
+					this.data 
+					);
+		} catch (BlockchainException e) {
+			// e.printStackTrace();
+			System.out.println( e.getMessage() );
+			calculatedhash = null;
+		}
 		return calculatedhash;
 	}
 
 	public void mineBlock(int difficulty) {
 		// Create a string with difficulty * "0"
 		String target = new String(new char[difficulty]).replace('\0', '0'); 
-		while ( ! this.hash.substring( 0, difficulty).equals(target)) {
+		while ( (this.hash == null) || ( ! this.hash.substring( 0, difficulty ).equals(target)) ) {
 			this.nonce++;
 			this.hash = this.calculateHash();
+			// XXX NOTE if excpetion inside calculateHash : hash will be null !
 		}
 		System.out.println("Block Mined!!! : " + this.hash);
 	}

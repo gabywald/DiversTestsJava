@@ -19,14 +19,14 @@ public class Wallet {
 	public PublicKey publicKey;
 
 	public Wallet() {
-		generateKeyPair();	
+		this.generateKeyPair();	
 	}
 
 	public void generateKeyPair() {
 		try {
 			// TODO learning how security works here !
 			KeyPairGenerator keyGen = KeyPairGenerator.getInstance(StringUtils.ECDSA, StringUtils.BC);
-			// KeyPairGenerator.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
+			// KeyPairGenerator keyGen = KeyPairGenerator.getInstance(StringUtils.CipherAlgorithm, StringUtils.CipherProvider);
 			SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
 			ECGenParameterSpec ecSpec = new ECGenParameterSpec("prime192v1");
 			// Initialize the key generator and generate a KeyPair : 256 bytes provides an acceptable security level

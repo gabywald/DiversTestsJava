@@ -64,9 +64,9 @@ public class NoobChain {
 
 		NoobChain.blockchain2.add(new Block("Hey im the third block", NoobChain.blockchain2.get(NoobChain.blockchain2.size()-1).hash));
 		System.out.println("Trying to Mine block 3... ");
-		NoobChain.blockchain2.get(2).mineBlock(NoobChain.difficulty);	
+		NoobChain.blockchain2.get(2).mineBlock(NoobChain.difficulty);
 
-		System.out.println("\nBlockchain is Valid: " + isChainValid());
+		System.out.println("\nBlockchain is Valid: " + NoobChain.isChainValid());
 
 		String blockchain2Json = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChain.blockchain2);
 		System.out.println("\nThe block chain: ");
@@ -100,9 +100,9 @@ public class NoobChain {
 		Block previousBlock;
 
 		// Loop through blockchain to check hashes:
-		for (int i = 1 ; i < NoobChain.blockchain.size() ; i++) {
-			currentBlock = NoobChain.blockchain.get(i);
-			previousBlock = NoobChain.blockchain.get(i-1);
+		for (int i = 1 ; i < NoobChain.blockchain2.size() ; i++) {
+			currentBlock = NoobChain.blockchain2.get(i);
+			previousBlock = NoobChain.blockchain2.get(i-1);
 			// Compare registered hash and calculated hash:
 			if ( ! currentBlock.hash.equals(currentBlock.calculateHash()) ) {
 				System.out.println("Current Hashes not equal");			

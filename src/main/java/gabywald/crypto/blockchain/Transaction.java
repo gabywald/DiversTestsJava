@@ -40,17 +40,23 @@ public class Transaction {
 	}
 
 	/** 
-	 *  This Calculates the transaction hash (which will be used as its Id)
+	 * This Calculates the transaction hash (which will be used as its Id)
 	 * @return
 	 */
-	private String calulateHash() {
+	private String calculateHash() {
 		// Increase the sequence to avoid 2 identical transactions having the same hash
 		Transaction.sequence++;
-		return StringUtils.applySha256(
-				StringUtils.getStringFromKey(this.sender) +
-				StringUtils.getStringFromKey(this.reciepient) +
-				Float.toString(value) + Transaction.sequence
-				);
+		try {
+			return StringUtils.applySha256(
+					StringUtils.getStringFromKey(this.sender) +
+					StringUtils.getStringFromKey(this.reciepient) +
+					Float.toString(value) + Transaction.sequence
+					);
+		} catch (BlockchainException e) {
+			// e.printStackTrace();
+			System.out.println( e.getMessage() );
+			return null;
+		}
 	}
 
 	/** 
@@ -107,7 +113,13 @@ public class Transaction {
 		String data = StringUtils.getStringFromKey(this.sender) 
 				+ StringUtils.getStringFromKey(this.reciepient) 
 				+ Float.toString(this.value);
-		this.signature = StringUtils.applyECDSASig(privateKey,data);		
+		try {
+			this.signature = StringUtils.applyECDSASig(privateKey,data);
+		} catch (BlockchainException e) {
+			// e.printStackTrace();
+			System.out.println( e.getMessage() );
+			this.signature = null;
+		}		
 	}
 
 	/**
@@ -133,36 +145,32 @@ public class Transaction {
 		}
 
 		// Gather transaction inputs (Make sure they are unspent):
-		for (TransactionInput i : inputs) {
-			i.UTXO = NoobChain.UTXOs.get(i.transactionOutputId);
-		}
+		inputs.stream().forEach(ti -> ti.UTXO = NoobChain.UTXOs.get(ti.transactionOutputId) );
 
 		// Check if transaction is valid:
-		if (getInputsValue() < NoobChain.minimumTransaction) {
+		if (this.getInputsValue() < NoobChain.minimumTransaction) {
 			System.out.println("#Transaction Inputs to small: " + getInputsValue());
 			return false;
 		}
 
 		// Generate transaction outputs:
-		float leftOver = getInputsValue() - value; // 
+		float leftOver = this.getInputsValue() - value; // 
 		// - Get value of inputs then the left over change:
-		transactionId = calulateHash();
+		this.transactionId = this.calculateHash();
 		// - Send value to recipient
-		outputs.add(new TransactionOutput( this.reciepient, value, transactionId));
+		this.outputs.add(new TransactionOutput( this.reciepient, this.value, this.transactionId));
 		// - Send the left over 'change' back to sender
-		outputs.add(new TransactionOutput( this.sender, leftOver ,transactionId));	
+		this.outputs.add(new TransactionOutput( this.sender, leftOver, this.transactionId));	
 
 		// Add outputs to Unspent list
-		for (TransactionOutput o : outputs) {
-			NoobChain.UTXOs.put(o.id , o);
-		}
+		this.outputs.stream().forEach(to -> NoobChain.UTXOs.put(to.id , to) );
 
 		// Remove transaction inputs from UTXO lists as spent:
-		for(TransactionInput i : inputs) {
+		this.inputs.stream().forEach(ti -> {
 			// If Transaction can't be found skip it
-			if ( i.UTXO == null)  { continue; } 
-			NoobChain.UTXOs.remove(i.UTXO.id);
-		}
+			if ( ti.UTXO != null) 
+				{ NoobChain.UTXOs.remove(ti.UTXO.id); }
+		} );
 
 		return true;
 	}
@@ -173,10 +181,10 @@ public class Transaction {
 	 */
 	public float getInputsValue() {
 		float total = 0;
-		for (TransactionInput i : inputs) {
+		for (TransactionInput ti : inputs) {
 			// If Transaction can't be found skip it
-			if ( i.UTXO == null)  { continue; } 
-			total += i.UTXO.value;
+			if ( ti.UTXO == null)  { continue; } 
+			total += ti.UTXO.value;
 		}
 		return total;
 	}
@@ -187,8 +195,8 @@ public class Transaction {
 	 */
 	public float getOutputsValue() {
 		float total = 0;
-		for (TransactionOutput o : outputs) {
-			total += o.value;
+		for (TransactionOutput to : outputs) {
+			total += to.value;
 		}
 		return total;
 	}

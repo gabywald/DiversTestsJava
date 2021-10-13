@@ -27,8 +27,15 @@ public class TransactionOutput {
 		this.reciepient = reciepient;
 		this.value = value;
 		this.parentTransactionId = parentTransactionId;
-		this.id = StringUtils.applySha256(StringUtils.getStringFromKey(reciepient) 
-				+ Float.toString(value)+parentTransactionId);
+		try {
+			this.id = StringUtils.applySha256(StringUtils.getStringFromKey(reciepient) 
+					+ Float.toString(value) + parentTransactionId);
+			// TODO check alternatives for here when exception occurs !! (builder ?) : see StringUtils.applySha256 comment !
+		} catch (BlockchainException e) {
+			// e.printStackTrace();
+			System.out.println(e.getMessage());
+			this.id = null;
+		}
 	}
 	
 	/**
@@ -37,7 +44,8 @@ public class TransactionOutput {
 	 * @return
 	 */
 	public boolean isMine(PublicKey publicKey) {
-		return (publicKey == reciepient);
+		return this.reciepient.equals(publicKey);
+		// return (publicKey == this.reciepient);
 	}
 	
 }
