@@ -3,7 +3,6 @@ package gabywald.crypto.blockchain;
 import java.security.Security;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 // TODO replace GsonBuilder !! (build json from objet !)
 import com.google.gson.GsonBuilder;
@@ -18,29 +17,22 @@ import com.google.gson.GsonBuilder;
  */
 public class NoobChain {
 
-	public static List<Block> blockchain = new ArrayList<Block>(); 
-	public static List<Block> blockchain2 = new ArrayList<Block>();
-	public static List<Block> blockchain3 = new ArrayList<Block>();
+	private static List<Block> blockchain = new ArrayList<Block>(); 
+	private static List<Block> blockchain2 = new ArrayList<Block>();
 
-	public static int difficulty = 3;
+	private static int difficulty = 3;
 	
-	public static Wallet walletA;
-	public static Wallet walletB;
+	private static Wallet walletA;
+	private static Wallet walletB;
 	
-	// List of all unspent transactions.
-	public static HashMap<String, TransactionOutput> UTXOs = new HashMap<String, TransactionOutput>(); 
-	
-	public static float minimumTransaction = 0.1f;
-	public static Transaction genesisTransaction;
-
 	public static void main(String[] args) {
 
 		// ***** Part I
 		Block genesisBlock = new Block("Hi im the first block", "0");
 		System.out.println("Hash for block 1 : " + genesisBlock.hash);
-		Block secondBlock = new Block("Yo im the second block",genesisBlock.hash);
+		Block secondBlock = new Block("Yo im the second block", genesisBlock.hash);
 		System.out.println("Hash for block 2 : " + secondBlock.hash);
-		Block thirdBlock = new Block("Hey im the third block",secondBlock.hash);
+		Block thirdBlock = new Block("Hey im the third block", secondBlock.hash);
 		System.out.println("Hash for block 3 : " + thirdBlock.hash);
 
 
@@ -66,7 +58,7 @@ public class NoobChain {
 		System.out.println("Trying to Mine block 3... ");
 		NoobChain.blockchain2.get(2).mineBlock(NoobChain.difficulty);
 
-		System.out.println("\nBlockchain is Valid: " + NoobChain.isChainValid());
+		System.out.println("\nBlockchain is Valid: " + BlockChain.isChainValidV1( NoobChain.blockchain2 ));
 
 		String blockchain2Json = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChain.blockchain2);
 		System.out.println("\nThe block chain: ");
@@ -77,44 +69,22 @@ public class NoobChain {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); 
 		// Security.addProvider(new sun.security.provider.Sun());
 		// XXX NOTE see https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html
-		//Create the new wallets
-		walletA = new Wallet();
-		walletB = new Wallet();
-		//Test public and private keys
+		// Create the new wallets
+		NoobChain.walletA = new Wallet();
+		NoobChain.walletB = new Wallet();
+		// Test public and private keys
 		System.out.println("Private and public keys:");
-		System.out.println(StringUtils.getStringFromKey(walletA.privateKey));
-		System.out.println(StringUtils.getStringFromKey(walletA.publicKey));
-		//Create a test transaction from WalletA to walletB 
+		System.out.println(StringUtils.getStringFromKey(NoobChain.walletA.privateKey));
+		System.out.println(StringUtils.getStringFromKey(NoobChain.walletA.publicKey));
+		// Create a test transaction from WalletA to walletB 
 		Transaction transaction = new Transaction(NoobChain.walletA.publicKey, NoobChain.walletB.publicKey, 5, null);
 		transaction.generateSignature(NoobChain.walletA.privateKey);
-		//Verify the signature works and verify it from the public key
+		// Verify the signature works and verify it from the public key
 		System.out.println("Is signature verified");
-		System.out.println(transaction.verifiySignature());
+		System.out.println(transaction.verifySignature());
 		
 		// ***** Part V
 		// TODO next step of tutorials !!
-	}
-
-	public static Boolean isChainValid() {
-		Block currentBlock; 
-		Block previousBlock;
-
-		// Loop through blockchain to check hashes:
-		for (int i = 1 ; i < NoobChain.blockchain2.size() ; i++) {
-			currentBlock = NoobChain.blockchain2.get(i);
-			previousBlock = NoobChain.blockchain2.get(i-1);
-			// Compare registered hash and calculated hash:
-			if ( ! currentBlock.hash.equals(currentBlock.calculateHash()) ) {
-				System.out.println("Current Hashes not equal");			
-				return false;
-			}
-			// Compare previous hash and registered previous hash
-			if ( ! previousBlock.hash.equals(currentBlock.previousHash) ) {
-				System.out.println("Previous Hashes not equal");
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/*

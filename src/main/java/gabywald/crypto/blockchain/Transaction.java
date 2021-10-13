@@ -6,6 +6,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -17,24 +18,25 @@ import java.util.Base64;
  */
 public class Transaction {
 	/** This is also the hash of the transaction. */
-	public String transactionId;
+	private String transactionId;
 	/** senders address/public key. */
-	public PublicKey sender;
+	private PublicKey sender;
 	/** Recipients address/public key. */
-	public PublicKey reciepient;
-	public float value;
+	private PublicKey recipient;
+	private float value;
 	/** This is to prevent anybody else from spending funds in our wallet. */
-	public byte[] signature;
+	private byte[] signature;
 
-	public List<TransactionInput> inputs = new ArrayList<TransactionInput>();
-	public List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
+	private List<TransactionInput> inputs = new ArrayList<TransactionInput>();
+	private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 
-	private static int sequence = 0; // a rough count of how many transactions have been generated. 
+	/** A rough count of how many transactions have been generated. */
+	private static int sequence = 0;
 
 	// Constructor: 
 	public Transaction(PublicKey from, PublicKey to, float value,  List<TransactionInput> inputs) {
 		this.sender = from;
-		this.reciepient = to;
+		this.recipient = to;
 		this.value = value;
 		this.inputs = inputs;
 	}
@@ -49,7 +51,7 @@ public class Transaction {
 		try {
 			return StringUtils.applySha256(
 					StringUtils.getStringFromKey(this.sender) +
-					StringUtils.getStringFromKey(this.reciepient) +
+					StringUtils.getStringFromKey(this.recipient) +
 					Float.toString(value) + Transaction.sequence
 					);
 		} catch (BlockchainException e) {
@@ -111,7 +113,7 @@ public class Transaction {
 	 */
 	public void generateSignature(PrivateKey privateKey) {
 		String data = StringUtils.getStringFromKey(this.sender) 
-				+ StringUtils.getStringFromKey(this.reciepient) 
+				+ StringUtils.getStringFromKey(this.recipient) 
 				+ Float.toString(this.value);
 		try {
 			this.signature = StringUtils.applyECDSASig(privateKey,data);
@@ -126,30 +128,33 @@ public class Transaction {
 	 * Verifies the data we signed hasn't been tampered with. 
 	 * @return
 	 */
-	public boolean verifiySignature() {
+	public boolean verifySignature() {
 		String data = StringUtils.getStringFromKey(this.sender) 
-				+ StringUtils.getStringFromKey(this.reciepient) 
+				+ StringUtils.getStringFromKey(this.recipient) 
 				+ Float.toString(this.value);
 		return StringUtils.verifyECDSASig(this.sender, data, this.signature);
 	}
 
 	/** 
-	 * Returns true if new transaction could be created.	
+	 * Returns true if new transaction could be created.
+	 * @param UTXOs
+	 * @param minimumTransaction
 	 * @return
 	 */
-	public boolean processTransaction() {
+	public boolean processTransaction(	final Map<String, TransactionOutput> UTXOs, 
+										final float minimumTransaction) {
 
-		if (verifiySignature() == false) {
+		if (this.verifySignature() == false) {
 			System.out.println("#Transaction Signature failed to verify");
 			return false;
 		}
 
 		// Gather transaction inputs (Make sure they are unspent):
-		inputs.stream().forEach(ti -> ti.UTXO = NoobChain.UTXOs.get(ti.transactionOutputId) );
+		this.inputs.stream().forEach(ti -> ti.UTXO = UTXOs.get(ti.transactionOutputId) );
 
 		// Check if transaction is valid:
-		if (this.getInputsValue() < NoobChain.minimumTransaction) {
-			System.out.println("#Transaction Inputs to small: " + getInputsValue());
+		if (this.getInputsValue() < minimumTransaction) {
+			System.out.println("#Transaction Inputs to small: " + this.getInputsValue());
 			return false;
 		}
 
@@ -158,18 +163,18 @@ public class Transaction {
 		// - Get value of inputs then the left over change:
 		this.transactionId = this.calculateHash();
 		// - Send value to recipient
-		this.outputs.add(new TransactionOutput( this.reciepient, this.value, this.transactionId));
+		this.outputs.add(new TransactionOutput( this.recipient, this.value, this.transactionId));
 		// - Send the left over 'change' back to sender
 		this.outputs.add(new TransactionOutput( this.sender, leftOver, this.transactionId));	
 
 		// Add outputs to Unspent list
-		this.outputs.stream().forEach(to -> NoobChain.UTXOs.put(to.id , to) );
+		this.outputs.stream().forEach(to -> UTXOs.put(to.id , to) );
 
 		// Remove transaction inputs from UTXO lists as spent:
 		this.inputs.stream().forEach(ti -> {
 			// If Transaction can't be found skip it
 			if ( ti.UTXO != null) 
-				{ NoobChain.UTXOs.remove(ti.UTXO.id); }
+				{ UTXOs.remove(ti.UTXO.id); }
 		} );
 
 		return true;
@@ -200,5 +205,28 @@ public class Transaction {
 		}
 		return total;
 	}
+	
+	
 
+	public void setTransactionId(String transactionId) 
+		{ this.transactionId = transactionId; }
+
+	public String getTransactionId() 
+		{ return this.transactionId; }
+
+	public PublicKey getSender() 
+		{ return this.sender; }
+
+	public PublicKey getRecipient() 
+		{ return this.recipient; }
+
+	public float getValue() 
+		{ return this.value; }
+
+	public List<TransactionOutput> getOutputs() 
+		{ return this.outputs; }
+
+	public List<TransactionInput> getInputs() 
+		{ return this.inputs; }
+	
 }

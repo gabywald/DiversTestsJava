@@ -60,14 +60,14 @@ public class Wallet {
 	 * Returns balance and stores the UTXO's owned by this wallet in this.UTXOs
 	 * @return
 	 */
-	public float getBalance() {
+	public float getBalance(final Map<String, TransactionOutput> mapUTXOs) {
 		float total = 0;	
-		for (Map.Entry<String, TransactionOutput> item: NoobChainFinale.UTXOs.entrySet()){
+		for (Map.Entry<String, TransactionOutput> item : mapUTXOs.entrySet()) {
 			TransactionOutput UTXO = item.getValue();
-			if (UTXO.isMine(publicKey)) {
+			if (UTXO.isMine(this.publicKey)) {
 				// If output belongs to me ( if coins belong to me )
 				// Add it to our list of unspent transactions.
-				NoobChainFinale.UTXOs.put(UTXO.id,UTXO);
+				mapUTXOs.put(UTXO.id, UTXO);
 				total += UTXO.value ; 
 			}
 		}  
@@ -75,14 +75,15 @@ public class Wallet {
 	}
 
 	/** 
-	 * Generates and returns a new transaction from this wallet.
+	 * Generates and returns a new transaction from this wallet. 
 	 * @param recipient
 	 * @param value
+	 * @param mapUTXOs
 	 * @return
 	 */
-	public Transaction sendFunds(PublicKey recipient, float value) {
+	public Transaction sendFunds(PublicKey recipient, float value, final Map<String, TransactionOutput> mapUTXOs) {
 		// Gather balance and check funds.
-		if (this.getBalance() < value) {
+		if (this.getBalance( mapUTXOs ) < value) {
 			System.out.println("#Not Enough funds to send transaction. Transaction Discarded.");
 			return null;
 		}
@@ -90,19 +91,20 @@ public class Wallet {
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 
 		float total = 0;
-		for (Map.Entry<String, TransactionOutput> item: NoobChainFinale.UTXOs.entrySet()){
+		for (Map.Entry<String, TransactionOutput> item : mapUTXOs.entrySet()) {
 			TransactionOutput UTXO = item.getValue();
 			total += UTXO.value;
 			inputs.add(new TransactionInput(UTXO.id));
-			if (total > value)  { break; }
+			if (total > value) { break; }
 		}
 
 		Transaction newTransaction = new Transaction(this.publicKey, recipient , value, inputs);
 		newTransaction.generateSignature(this.privateKey);
 
 		for (TransactionInput input: inputs) {
-			NoobChainFinale.UTXOs.remove(input.transactionOutputId);
+			mapUTXOs.remove(input.transactionOutputId);
 		}
+		
 		return newTransaction;
 	}
 

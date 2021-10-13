@@ -134,7 +134,7 @@ public class StringUtils {
 		int count = transactions.size();
 		List<String> previousTreeLayer = new ArrayList<String>();
 		for (Transaction transaction : transactions) {
-			previousTreeLayer.add(transaction.transactionId);
+			previousTreeLayer.add(transaction.getTransactionId());
 		}
 		List<String> treeLayer = previousTreeLayer;
 		while (count > 1) {
