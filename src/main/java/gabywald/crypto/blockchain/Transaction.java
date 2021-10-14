@@ -137,12 +137,12 @@ public class Transaction {
 
 	/** 
 	 * Returns true if new transaction could be created.
-	 * @param UTXOs
+	 * @param mapUTXOs
 	 * @param minimumTransaction
 	 * @return
 	 */
-	public boolean processTransaction(	final Map<String, TransactionOutput> UTXOs, 
-										final float minimumTransaction) {
+	public boolean processTransaction(	final Map<String, TransactionOutput> mapUTXOs, 
+			final float minimumTransaction) {
 
 		if (this.verifySignature() == false) {
 			System.out.println("#Transaction Signature failed to verify");
@@ -150,7 +150,10 @@ public class Transaction {
 		}
 
 		// Gather transaction inputs (Make sure they are unspent):
-		this.inputs.stream().forEach(ti -> ti.UTXO = UTXOs.get(ti.transactionOutputId) );
+		// this.inputs.stream().forEach(ti -> ti.UTXO = UTXOs.get(ti.transactionOutputId) );
+		for (TransactionInput it : inputs) {
+			it.UTXO = mapUTXOs.get(it.transactionOutputId);
+		}
 
 		// Check if transaction is valid:
 		if (this.getInputsValue() < minimumTransaction) {
@@ -168,13 +171,16 @@ public class Transaction {
 		this.outputs.add(new TransactionOutput( this.sender, leftOver, this.transactionId));	
 
 		// Add outputs to Unspent list
-		this.outputs.stream().forEach(to -> UTXOs.put(to.id , to) );
+		// this.outputs.stream().forEach(to -> mapUTXOs.put(to.id , to) );
+		for (TransactionOutput o : outputs) {
+			mapUTXOs.put(o.id , o);
+		}
 
 		// Remove transaction inputs from UTXO lists as spent:
 		this.inputs.stream().forEach(ti -> {
 			// If Transaction can't be found skip it
 			if ( ti.UTXO != null) 
-				{ UTXOs.remove(ti.UTXO.id); }
+				{ mapUTXOs.remove(ti.UTXO.id); }
 		} );
 
 		return true;
@@ -205,28 +211,28 @@ public class Transaction {
 		}
 		return total;
 	}
-	
-	
+
+
 
 	public void setTransactionId(String transactionId) 
-		{ this.transactionId = transactionId; }
+	{ this.transactionId = transactionId; }
 
 	public String getTransactionId() 
-		{ return this.transactionId; }
+	{ return this.transactionId; }
 
 	public PublicKey getSender() 
-		{ return this.sender; }
+	{ return this.sender; }
 
 	public PublicKey getRecipient() 
-		{ return this.recipient; }
+	{ return this.recipient; }
 
 	public float getValue() 
-		{ return this.value; }
+	{ return this.value; }
 
 	public List<TransactionOutput> getOutputs() 
-		{ return this.outputs; }
+	{ return this.outputs; }
 
 	public List<TransactionInput> getInputs() 
-		{ return this.inputs; }
-	
+	{ return this.inputs; }
+
 }

@@ -79,7 +79,7 @@ public class Wallet {
 	 * @param recipient
 	 * @param value
 	 * @param mapUTXOs
-	 * @return
+	 * @return (Transaction)
 	 */
 	public Transaction sendFunds(PublicKey recipient, float value, final Map<String, TransactionOutput> mapUTXOs) {
 		// Gather balance and check funds.
@@ -101,9 +101,8 @@ public class Wallet {
 		Transaction newTransaction = new Transaction(this.publicKey, recipient , value, inputs);
 		newTransaction.generateSignature(this.privateKey);
 
-		for (TransactionInput input: inputs) {
-			mapUTXOs.remove(input.transactionOutputId);
-		}
+		// for (TransactionInput input : inputs) 
+		// 	{ mapUTXOs.remove(input.transactionOutputId); }
 		
 		return newTransaction;
 	}

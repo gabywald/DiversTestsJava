@@ -22,12 +22,12 @@ import java.util.Base64;
  * <br/><a href="https://github.com/CryptoKass/NoobChain-Tutorial-Part-2">https://github.com/CryptoKass/NoobChain-Tutorial-Part-2</a>
  * @author Gabriel Chandesris (2021)
  */
-public class StringUtils {
+public abstract class StringUtils {
 
 	/** 
 	 * Applies Sha256 to a string and returns the result. 
 	 * @param input
-	 * @return
+	 * @return (String)
 	 * @throws BlockchainException 
 	 * TODO upgrade / improve this method (applySha256) to return null value if any exception inside !
 	 */
@@ -66,7 +66,7 @@ public class StringUtils {
 	 * Applies ECDSA Signature and returns the result ( as bytes ). 
 	 * @param privateKey
 	 * @param input
-	 * @return
+	 * @return (byte[])
 	 * @throws NoSuchProviderException 
 	 * @throws NoSuchAlgorithmException 
 	 * @throws InvalidKeyException 
@@ -96,7 +96,7 @@ public class StringUtils {
 	 * @param publicKey
 	 * @param data
 	 * @param signature
-	 * @return
+	 * @return (boolean)
 	 */
 	public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
@@ -119,16 +119,16 @@ public class StringUtils {
 	/**
 	 * Returns difficulty string target, to compare to hash. eg difficulty of 5 will return "00000"  
 	 * @param difficulty
-	 * @return
+	 * @return (String)
 	 */
-	public static String getDificultyString(int difficulty) {
+	public static String getDifficultyString(int difficulty) {
 		return new String(new char[difficulty]).replace('\0', '0');
 	}
 
 	/** 
 	 * Tacks in array of transactions and returns a merkle root.
 	 * @param transactions
-	 * @return
+	 * @return (String)
 	 */
 	public static String getMerkleRoot(List<Transaction> transactions) {
 		int count = transactions.size();

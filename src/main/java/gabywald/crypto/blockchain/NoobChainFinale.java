@@ -80,5 +80,34 @@ public class NoobChainFinale {
 
 		BlockChain.isChainValidV2( NoobChainFinale.blockchain, NoobChainFinale.genesisTransaction, NoobChainFinale.difficulty );
 	}
+	
+	/*
+Creating and Mining Genesis block... 
+Transaction Successfully added to Block
+Block Mined!!! : 0000141c6c378745ae6ae56f9defa305d6bb2783e0dbba55c74764a0a8c78baa
+
+WalletA's balance is: 100.0
+
+WalletA is Attempting to send funds (40) to WalletB...
+Transaction Successfully added to Block
+Block Mined!!! : 000483240ccb2fc341fb704805ab0fe1b26b3e01d2eb2cc530ada22688dc4336
+
+WalletA's balance is: 60.0
+WalletB's balance is: 40.0
+
+WalletA Attempting to send more funds (1000) than it has...
+#Not Enough funds to send transaction. Transaction Discarded.
+Block Mined!!! : 000099416026dec23bf3f9c9d3fc368c518b3bd09e02387f71c2a654885de07b
+
+WalletA's balance is: 60.0
+WalletB's balance is: 40.0
+
+WalletB is Attempting to send funds (20) to WalletA...
+Transaction Successfully added to Block
+
+WalletA's balance is: 20.0
+WalletB's balance is: 80.0
+Blockchain is valid
+	 */
 
 }

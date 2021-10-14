@@ -10,13 +10,22 @@ import java.util.List;
  */
 public abstract class BlockChain {
 	
+	/**
+	 * Build a list of Blocks. 
+	 * @return
+	 */
 	public static List<Block> build() {
 		return new ArrayList<Block>();
 	}
 
-	public static Boolean isChainValidV1(List<Block> blockchain) {
-		Block currentBlock; 
-		Block previousBlock;
+	/**
+	 * 
+	 * @param blockchain
+	 * @return (boolean)
+	 */
+	public static boolean isChainValidV1(List<Block> blockchain) {
+		Block currentBlock = null; 
+		Block previousBlock = null;
 
 		// Loop through blockchain to check hashes:
 		for (int i = 1 ; i < blockchain.size() ; i++) {
@@ -36,10 +45,17 @@ public abstract class BlockChain {
 		return true;
 	}
 	
+	/**
+	 * 
+	 * @param blockchain
+	 * @param genesisTransaction
+	 * @param difficulty
+	 * @return (boolean)
+	 */
 	public static boolean isChainValidV2(List<Block> blockchain, Transaction genesisTransaction, int difficulty) {
 		Block currentBlock = null; 
 		Block previousBlock = null;
-		String hashTarget = new String(new char[difficulty]).replace('\0', '0');
+		String hashTarget = StringUtils.getDifficultyString(difficulty);
 		
 		// A temporary working list of unspent transactions at a given block state.
 		HashMap<String,TransactionOutput> tempUTXOs = new HashMap<String,TransactionOutput>();
@@ -108,6 +124,7 @@ public abstract class BlockChain {
 					System.out.println("#Transaction(" + t + ") output reciepient is not who it should be");
 					return false;
 				}
+				
 				if (currentTransaction.getOutputs().get(1).reciepient != currentTransaction.getSender()) {
 					System.out.println("#Transaction(" + t + ") output 'change' is not sender.");
 					return false;

@@ -68,10 +68,14 @@ public class Block {
 		return calculatedhash;
 	}
 
+	/**
+	 * Mining block
+	 * @param difficulty
+	 */
 	public void mineBlock(int difficulty) {
 		this.merkleRoot = StringUtils.getMerkleRoot(this.transactions);
 		// Create a string with difficulty * "0"
-		String target = StringUtils.getDificultyString(difficulty);
+		String target = StringUtils.getDifficultyString(difficulty);
 		while ( (this.hash == null) || ( ! this.hash.substring( 0, difficulty ).equals(target)) ) {
 			this.nonce++;
 			this.hash = this.calculateHash();
@@ -85,7 +89,7 @@ public class Block {
 	 * @param transaction
 	 * @param UTXOs
 	 * @param minimumTransaction
-	 * @return
+	 * @return (boolean)
 	 */
 	public boolean addTransaction(	final Transaction transaction, 
 									final Map<String, TransactionOutput> UTXOs, 
