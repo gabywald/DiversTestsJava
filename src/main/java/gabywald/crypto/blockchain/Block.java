@@ -13,17 +13,17 @@ import java.util.Map;
  */
 public class Block {
 
-	public String hash;
-	public String previousHash; 
+	private String hash;
+	private String previousHash; 
 	/** Our data will be a simple message. */
 	// private String data;
 	/** As number of milliseconds since 1/1/1970. */
 	private long timeStamp;
 	private int nonce;
 
-	public String merkleRoot;
-	/** Our data will be a simple message. */
-	public List<Transaction> transactions = new ArrayList<Transaction>(); 
+	private String merkleRoot;
+
+	private List<Transaction> transactions = new ArrayList<Transaction>(); 
 
 	/**
 	 * Block Constructor. 
@@ -106,4 +106,18 @@ public class Block {
 		System.out.println("Transaction Successfully added to Block");
 		return true;
 	}
+
+	public String getHash() 
+		{ return this.hash; }
+
+	public String getPreviousHash() 
+		{ return this.previousHash; }
+
+	public String getMerkleRoot() 
+		{ return this.merkleRoot; }
+
+	public List<Transaction> getTransactions() 
+		{ return this.transactions; }
+	
+	
 }

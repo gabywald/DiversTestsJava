@@ -9,13 +9,13 @@ import java.security.PublicKey;
  * @author Gabriel Chandesris (2021)
  */
 public class TransactionOutput {
-	public String id;
+	private String id;
 	/** Also known as the new owner of these coins. */
-	public PublicKey reciepient;
+	private PublicKey recipient;
 	/** The amount of coins they own */
-	public float value;
+	private float value;
 	/** The id of the transaction this output was created in */
-	public String parentTransactionId;
+	private String parentTransactionId;
 	
 	/**
 	 * Constructor
@@ -24,7 +24,7 @@ public class TransactionOutput {
 	 * @param parentTransactionId
 	 */
 	public TransactionOutput(PublicKey reciepient, float value, String parentTransactionId) {
-		this.reciepient = reciepient;
+		this.recipient = reciepient;
 		this.value = value;
 		this.parentTransactionId = parentTransactionId;
 		try {
@@ -44,8 +44,22 @@ public class TransactionOutput {
 	 * @return
 	 */
 	public boolean isMine(PublicKey publicKey) {
-		return this.reciepient.equals(publicKey);
+		return this.recipient.equals(publicKey);
 		// return (publicKey == this.reciepient);
 	}
+
+	public String getId() 
+		{ return this.id; }
+
+	public PublicKey getRecipient() 
+		{ return this.recipient; }
+
+	public float getValue() 
+		{ return this.value; }
+
+	public String getParentTransactionId() 
+		{ return this.parentTransactionId; }
+	
+	
 	
 }

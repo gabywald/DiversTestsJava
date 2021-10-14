@@ -8,4 +8,4 @@ Quelques tests de programmation en Java, des notes diverses,
   * Challenge CybserSec (quelques notes)
   * Java Swing : Full Screen, SpalshScreen (à revoir / préciser)
   * Java reflect / réflexivité / introspection
-  * "blockchain"
+  * "blockchain" (to be reviewed and externalized)

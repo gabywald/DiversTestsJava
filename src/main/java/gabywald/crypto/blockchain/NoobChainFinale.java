@@ -46,7 +46,8 @@ public class NoobChainFinale {
 																					NoobChainFinale.genesisTransaction.getTransactionId()));
 		
 		// Its important to store our first transaction in the UTXOs list.
-		NoobChainFinale.mapUTXOs.put(NoobChainFinale.genesisTransaction.getOutputs().get(0).id, NoobChainFinale.genesisTransaction.getOutputs().get(0));
+		NoobChainFinale.mapUTXOs.put(	NoobChainFinale.genesisTransaction.getOutputs().get(0).getId(), 
+										NoobChainFinale.genesisTransaction.getOutputs().get(0));
 
 		System.out.println("Creating and Mining Genesis block... ");
 		Block genesis = new Block("0");
@@ -54,7 +55,7 @@ public class NoobChainFinale {
 		BlockChain.addBlock(NoobChainFinale.blockchain, genesis, NoobChainFinale.difficulty);
 
 		// Testing
-		Block block1 = new Block(genesis.hash);
+		Block block1 = new Block(genesis.getHash() );
 		System.out.println("\nWalletA's balance is: " + NoobChainFinale.walletA.getBalance( NoobChainFinale.mapUTXOs ));
 		System.out.println("\nWalletA is Attempting to send funds (40) to WalletB...");
 		block1.addTransaction(	NoobChainFinale.walletA.sendFunds(NoobChainFinale.walletB.publicKey, 40f, NoobChainFinale.mapUTXOs), 
@@ -63,7 +64,7 @@ public class NoobChainFinale {
 		System.out.println("\nWalletA's balance is: " + NoobChainFinale.walletA.getBalance( NoobChainFinale.mapUTXOs ));
 		System.out.println("WalletB's balance is: " + NoobChainFinale.walletB.getBalance( NoobChainFinale.mapUTXOs ));
 
-		Block block2 = new Block(block1.hash);
+		Block block2 = new Block(block1.getHash() );
 		System.out.println("\nWalletA Attempting to send more funds (1000) than it has...");
 		block2.addTransaction(	NoobChainFinale.walletA.sendFunds(NoobChainFinale.walletB.publicKey, 1000f, NoobChainFinale.mapUTXOs), 
 								NoobChainFinale.mapUTXOs, NoobChainFinale.minimumTransaction);
@@ -71,7 +72,7 @@ public class NoobChainFinale {
 		System.out.println("\nWalletA's balance is: " + NoobChainFinale.walletA.getBalance( NoobChainFinale.mapUTXOs ));
 		System.out.println("WalletB's balance is: " + NoobChainFinale.walletB.getBalance( NoobChainFinale.mapUTXOs ));
 
-		Block block3 = new Block(block2.hash);
+		Block block3 = new Block(block2.getHash() );
 		System.out.println("\nWalletB is Attempting to send funds (20) to WalletA...");
 		block3.addTransaction(	NoobChainFinale.walletB.sendFunds( NoobChainFinale.walletA.publicKey, 20, NoobChainFinale.mapUTXOs), 
 								NoobChainFinale.mapUTXOs, NoobChainFinale.minimumTransaction);
