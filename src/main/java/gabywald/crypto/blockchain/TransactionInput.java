@@ -8,11 +8,20 @@ package gabywald.crypto.blockchain;
  */
 public class TransactionInput {
 	/** Reference to TransactionOutputs -> transactionId */
-	public String transactionOutputId;
+	private String transactionOutputId = null;
 	/** Contains the Unspent transaction output */
-	public TransactionOutput UTXO;
+	private TransactionOutput to = null;
 	
 	public TransactionInput(String transactionOutputId) {
 		this.transactionOutputId = transactionOutputId;
 	}
+
+	public String getTransactionOutputId() 
+		{ return this.transactionOutputId; }
+
+	public TransactionOutput getTransactionOutput() 
+		{ return this.to; }
+	
+	void setTransactionOutput(TransactionOutput to) 
+		{ this.to = to; }
 }

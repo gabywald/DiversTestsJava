@@ -28,18 +28,18 @@ class NoobChainTests {
 	void testPart01() {
 		Block genesisBlock = new Block("Hi im the first block", "0");
 		Assertions.assertNotNull( genesisBlock );
-		System.out.println("Hash for block 1 : " + genesisBlock.hash);
-		Assertions.assertNotNull( genesisBlock.hash );
+		System.out.println("Hash for block 1 : " + genesisBlock.getHash() );
+		Assertions.assertNotNull( genesisBlock.getHash() );
 		
-		Block secondBlock = new Block("Yo im the second block", genesisBlock.hash);
+		Block secondBlock = new Block("Yo im the second block", genesisBlock.getHash() );
 		Assertions.assertNotNull( secondBlock );
-		System.out.println("Hash for block 2 : " + secondBlock.hash);
-		Assertions.assertNotNull( secondBlock.hash );
+		System.out.println("Hash for block 2 : " + secondBlock.getHash() );
+		Assertions.assertNotNull( secondBlock.getHash() );
 		
-		Block thirdBlock = new Block("Hey im the third block", secondBlock.hash);
+		Block thirdBlock = new Block("Hey im the third block", secondBlock.getHash() );
 		Assertions.assertNotNull( thirdBlock );
-		System.out.println("Hash for block 3 : " + thirdBlock.hash);
-		Assertions.assertNotNull( thirdBlock.hash );
+		System.out.println("Hash for block 3 : " + thirdBlock.getHash() );
+		Assertions.assertNotNull( thirdBlock.getHash() );
 	}
 	
 	/**
@@ -50,8 +50,8 @@ class NoobChainTests {
 		List<Block> blockchain = new ArrayList<Block>(); 
 		// Add our blocks to the blockchain List:
 		blockchain.add(new Block("Hi im the first block", "0"));		
-		blockchain.add(new Block("Yo im the second block", blockchain.get(blockchain.size()-1).hash)); 
-		blockchain.add(new Block("Hey im the third block",  blockchain.get(blockchain.size()-1).hash));
+		blockchain.add(new Block("Yo im the second block", blockchain.get(blockchain.size()-1).getHash() )); 
+		blockchain.add(new Block("Hey im the third block",  blockchain.get(blockchain.size()-1).getHash() ));
 		Assertions.assertEquals(3,  blockchain.size());
 		String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
 		Assertions.assertNotNull( blockchainJson );
@@ -67,11 +67,11 @@ class NoobChainTests {
 		System.out.println("Trying to Mine block 1... ");
 		blockchain.get(0).mineBlock(difficulty);
 
-		blockchain.add(new Block("Yo im the second block", blockchain.get(blockchain.size()-1).hash));
+		blockchain.add(new Block("Yo im the second block", blockchain.get(blockchain.size()-1).getHash() ));
 		System.out.println("Trying to Mine block 2... ");
 		blockchain.get(1).mineBlock(difficulty);
 
-		blockchain.add(new Block("Hey im the third block", blockchain.get(blockchain.size()-1).hash));
+		blockchain.add(new Block("Hey im the third block", blockchain.get(blockchain.size()-1).getHash() ));
 		System.out.println("Trying to Mine block 3... ");
 		blockchain.get(2).mineBlock(difficulty);
 		

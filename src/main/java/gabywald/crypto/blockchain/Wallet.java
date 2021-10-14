@@ -63,12 +63,12 @@ public class Wallet {
 	public float getBalance(final Map<String, TransactionOutput> mapUTXOs) {
 		float total = 0;	
 		for (Map.Entry<String, TransactionOutput> item : mapUTXOs.entrySet()) {
-			TransactionOutput UTXO = item.getValue();
-			if (UTXO.isMine(this.publicKey)) {
+			TransactionOutput to = item.getValue();
+			if (to.isMine(this.publicKey)) {
 				// If output belongs to me ( if coins belong to me )
 				// Add it to our list of unspent transactions.
-				mapUTXOs.put(UTXO.id, UTXO);
-				total += UTXO.value ; 
+				mapUTXOs.put(to.getId(), to);
+				total += to.getValue() ; 
 			}
 		}  
 		return total;
@@ -92,9 +92,9 @@ public class Wallet {
 
 		float total = 0;
 		for (Map.Entry<String, TransactionOutput> item : mapUTXOs.entrySet()) {
-			TransactionOutput UTXO = item.getValue();
-			total += UTXO.value;
-			inputs.add(new TransactionInput(UTXO.id));
+			TransactionOutput to = item.getValue();
+			total += to.getValue();
+			inputs.add(new TransactionInput(to.getId()));
 			if (total > value) { break; }
 		}
 
@@ -102,7 +102,7 @@ public class Wallet {
 		newTransaction.generateSignature(this.privateKey);
 
 		// for (TransactionInput input : inputs) 
-		// 	{ mapUTXOs.remove(input.transactionOutputId); }
+		// 	{ mapUTXOs.remove(input.getTransactionOutputId()); }
 		
 		return newTransaction;
 	}

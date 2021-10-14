@@ -15,7 +15,7 @@ import com.google.gson.GsonBuilder;
  * <br/><a href="https://github.com/CryptoKass/NoobChain-Tutorial-Part-2">https://github.com/CryptoKass/NoobChain-Tutorial-Part-2</a>
  * @author Gabriel Chandesris (2021)
  */
-public class NoobChain {
+public class NoobChainIntegration {
 
 	private static List<Block> blockchain = new ArrayList<Block>(); 
 	private static List<Block> blockchain2 = new ArrayList<Block>();
@@ -29,38 +29,38 @@ public class NoobChain {
 
 		// ***** Part I
 		Block genesisBlock = new Block("Hi im the first block", "0");
-		System.out.println("Hash for block 1 : " + genesisBlock.hash);
-		Block secondBlock = new Block("Yo im the second block", genesisBlock.hash);
-		System.out.println("Hash for block 2 : " + secondBlock.hash);
-		Block thirdBlock = new Block("Hey im the third block", secondBlock.hash);
-		System.out.println("Hash for block 3 : " + thirdBlock.hash);
+		System.out.println("Hash for block 1 : " + genesisBlock.getHash());
+		Block secondBlock = new Block("Yo im the second block", genesisBlock.getHash());
+		System.out.println("Hash for block 2 : " + secondBlock.getHash());
+		Block thirdBlock = new Block("Hey im the third block", secondBlock.getHash());
+		System.out.println("Hash for block 3 : " + thirdBlock.getHash());
 
 
 		// ***** Part II
 		// Add our blocks to the blockchain List:
-		NoobChain.blockchain.add(new Block("Hi im the first block", "0"));		
-		NoobChain.blockchain.add(new Block("Yo im the second block", NoobChain.blockchain.get(NoobChain.blockchain.size()-1).hash)); 
-		NoobChain.blockchain.add(new Block("Hey im the third block",  NoobChain.blockchain.get(NoobChain.blockchain.size()-1).hash));
-		String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChain.blockchain);		
+		NoobChainIntegration.blockchain.add(new Block("Hi im the first block", "0"));		
+		NoobChainIntegration.blockchain.add(new Block("Yo im the second block", NoobChainIntegration.blockchain.get(NoobChainIntegration.blockchain.size()-1).getHash() )); 
+		NoobChainIntegration.blockchain.add(new Block("Hey im the third block",  NoobChainIntegration.blockchain.get(NoobChainIntegration.blockchain.size()-1).getHash() ));
+		String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChainIntegration.blockchain);		
 		System.out.println(blockchainJson);
 
 		// ***** Part III
 		// Add our blocks to the blockchain List:
-		NoobChain.blockchain2.add(new Block("Hi im the first block", "0"));
+		NoobChainIntegration.blockchain2.add(new Block("Hi im the first block", "0"));
 		System.out.println("Trying to Mine block 1... ");
-		NoobChain.blockchain2.get(0).mineBlock(NoobChain.difficulty);
+		NoobChainIntegration.blockchain2.get(0).mineBlock(NoobChainIntegration.difficulty);
 
-		NoobChain.blockchain2.add(new Block("Yo im the second block", NoobChain.blockchain2.get(NoobChain.blockchain2.size()-1).hash));
+		NoobChainIntegration.blockchain2.add(new Block("Yo im the second block", NoobChainIntegration.blockchain2.get(NoobChainIntegration.blockchain2.size()-1).getHash() ));
 		System.out.println("Trying to Mine block 2... ");
-		NoobChain.blockchain2.get(1).mineBlock(NoobChain.difficulty);
+		NoobChainIntegration.blockchain2.get(1).mineBlock(NoobChainIntegration.difficulty);
 
-		NoobChain.blockchain2.add(new Block("Hey im the third block", NoobChain.blockchain2.get(NoobChain.blockchain2.size()-1).hash));
+		NoobChainIntegration.blockchain2.add(new Block("Hey im the third block", NoobChainIntegration.blockchain2.get(NoobChainIntegration.blockchain2.size()-1).getHash() ));
 		System.out.println("Trying to Mine block 3... ");
-		NoobChain.blockchain2.get(2).mineBlock(NoobChain.difficulty);
+		NoobChainIntegration.blockchain2.get(2).mineBlock(NoobChainIntegration.difficulty);
 
-		System.out.println("\nBlockchain is Valid: " + BlockChain.isChainValidV1( NoobChain.blockchain2 ));
+		System.out.println("\nBlockchain is Valid: " + BlockChain.isChainValidV1( NoobChainIntegration.blockchain2 ));
 
-		String blockchain2Json = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChain.blockchain2);
+		String blockchain2Json = new GsonBuilder().setPrettyPrinting().create().toJson(NoobChainIntegration.blockchain2);
 		System.out.println("\nThe block chain: ");
 		System.out.println(blockchain2Json);
 
@@ -70,21 +70,21 @@ public class NoobChain {
 		// Security.addProvider(new sun.security.provider.Sun());
 		// XXX NOTE see https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html
 		// Create the new wallets
-		NoobChain.walletA = new Wallet();
-		NoobChain.walletB = new Wallet();
+		NoobChainIntegration.walletA = new Wallet();
+		NoobChainIntegration.walletB = new Wallet();
 		// Test public and private keys
 		System.out.println("Private and public keys:");
-		System.out.println(StringUtils.getStringFromKey(NoobChain.walletA.privateKey));
-		System.out.println(StringUtils.getStringFromKey(NoobChain.walletA.publicKey));
+		System.out.println(StringUtils.getStringFromKey(NoobChainIntegration.walletA.privateKey));
+		System.out.println(StringUtils.getStringFromKey(NoobChainIntegration.walletA.publicKey));
 		// Create a test transaction from WalletA to walletB 
-		Transaction transaction = new Transaction(NoobChain.walletA.publicKey, NoobChain.walletB.publicKey, 5, null);
-		transaction.generateSignature(NoobChain.walletA.privateKey);
+		Transaction transaction = new Transaction(NoobChainIntegration.walletA.publicKey, NoobChainIntegration.walletB.publicKey, 5, null);
+		transaction.generateSignature(NoobChainIntegration.walletA.privateKey);
 		// Verify the signature works and verify it from the public key
 		System.out.println("Is signature verified");
 		System.out.println(transaction.verifySignature());
 		
 		// ***** Part V
-		// TODO next step of tutorials !!
+		// XXX NOTE see NoobChainFinale and NoobChainTests !!
 	}
 
 	/*
