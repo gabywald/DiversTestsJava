@@ -28,13 +28,10 @@ public abstract class StringUtils {
 	 * Applies Sha256 to a string and returns the result. 
 	 * @param input
 	 * @return (String)
-	 * @throws BlockchainException 
-	 * TODO upgrade / improve this method (applySha256) to return null value if any exception inside !
 	 */
-	public static String applySha256(String input) 
-			throws BlockchainException {		
+	public static String applySha256(String input)  {		
 		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");	        
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			// Applies sha256 to our input, 
 			byte[] hash = digest.digest(input.getBytes("UTF-8"));
 			// This will contain hash as hexidecimal
@@ -49,7 +46,8 @@ public abstract class StringUtils {
 			return hexString.toString();
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			System.out.println( "StringUtils: " + e.getClass().getName() + ": " + e.getMessage() );
-			throw new BlockchainException("StringUtils: " + e.getClass().getName() +": " + e.getMessage());
+			// throw new BlockchainException("StringUtils: " + e.getClass().getName() +": " + e.getMessage());
+			return null;
 		}
 	}
 
@@ -140,11 +138,9 @@ public abstract class StringUtils {
 		while (count > 1) {
 			treeLayer = new ArrayList<String>();
 			for (int i = 1 ; i < previousTreeLayer.size() ; i++) {
-				try {
-					treeLayer.add(StringUtils.applySha256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i)));
-				} catch (BlockchainException e) {
-					System.out.println( e.getMessage() );
-				}
+				String calculedHash = StringUtils.applySha256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i));
+				if (calculedHash != null) 
+					{ treeLayer.add( calculedHash ); }
 			}
 			count = treeLayer.size();
 			previousTreeLayer = treeLayer;
