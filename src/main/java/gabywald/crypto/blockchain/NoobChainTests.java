@@ -97,17 +97,17 @@ class NoobChainTests {
 		Assertions.assertNotNull( walletB );
 		// Test public and private keys
 		System.out.println("Private and public keys:");
-		System.out.println(StringUtils.getStringFromKey(walletA.privateKey));
-		System.out.println(StringUtils.getStringFromKey(walletA.publicKey));
-		Assertions.assertNotNull( walletA.privateKey );
-		Assertions.assertNotNull( walletA.publicKey );
-		Assertions.assertNotNull( walletB.privateKey );
-		Assertions.assertNotNull( walletB.publicKey );
+		System.out.println(StringUtils.getStringFromKey(walletA.getPrivateKey()));
+		System.out.println(StringUtils.getStringFromKey(walletA.getPublicKey()));
+		Assertions.assertNotNull( walletA.getPrivateKey() );
+		Assertions.assertNotNull( walletA.getPublicKey() );
+		Assertions.assertNotNull( walletB.getPrivateKey() );
+		Assertions.assertNotNull( walletB.getPublicKey() );
 		//Create a test transaction from WalletA to walletB 
-		Transaction transaction = new Transaction(walletA.publicKey, walletB.publicKey, 5, null);
+		Transaction transaction = new Transaction(walletA.getPublicKey(), walletB.getPublicKey(), 5, null);
 		Assertions.assertNotNull( transaction );
-		transaction.generateSignature(walletA.privateKey);
-		Assertions.assertNotNull( walletA.privateKey );
+		transaction.generateSignature(walletA.getPrivateKey());
+		Assertions.assertNotNull( walletA.getPrivateKey() );
 		//Verify the signature works and verify it from the public key
 		System.out.println("Is signature verified");
 		System.out.println(transaction.verifySignature());
@@ -133,10 +133,10 @@ class NoobChainTests {
 		Wallet coinbase = new Wallet();
 
 		// Create genesis transaction, which sends 100 NoobCoin to walletA: 
-		Transaction genesisTransaction = new Transaction(coinbase.publicKey, walletA.publicKey, 100f, null);
+		Transaction genesisTransaction = new Transaction(coinbase.getPublicKey(), walletA.getPublicKey(), 100f, null);
 		Assertions.assertNotNull( genesisTransaction );
 		// Manually sign the genesis transaction
-		genesisTransaction.generateSignature(coinbase.privateKey);
+		genesisTransaction.generateSignature(coinbase.getPrivateKey());
 		// Manually set the transaction id
 		genesisTransaction.setTransactionId( "0" );
 		// Manually add the Transactions Output
@@ -158,7 +158,7 @@ class NoobChainTests {
 		Assertions.assertEquals(100, walletA.getBalance( mapUTXOs ));
 		
 		System.out.println("\nWalletA is Attempting to send funds (40) to WalletB...");
-		boolean bBlock1AddTransactionResult = block1.addTransaction(	walletA.sendFunds(walletB.publicKey, 40f, mapUTXOs), 
+		boolean bBlock1AddTransactionResult = block1.addTransaction(	walletA.sendFunds(walletB.getPublicKey(), 40f, mapUTXOs), 
 																		mapUTXOs, minimumTransaction) ;
 		Assertions.assertTrue( bBlock1AddTransactionResult );
 		Assertions.assertTrue( BlockChain.addBlock(blockchain, block1, difficulty) );
@@ -173,7 +173,7 @@ class NoobChainTests {
 
 		Block block2 = new Block(block1.getHash() );
 		System.out.println("\nWalletA Attempting to send more funds (1000) than it has...");
-		boolean bBlock2AddTransactionResult = block2.addTransaction(	walletA.sendFunds(walletB.publicKey, 1000f, mapUTXOs), 
+		boolean bBlock2AddTransactionResult = block2.addTransaction(	walletA.sendFunds(walletB.getPublicKey(), 1000f, mapUTXOs), 
 																		mapUTXOs, minimumTransaction);
 		Assertions.assertFalse( bBlock2AddTransactionResult);
 		Assertions.assertTrue( BlockChain.addBlock(blockchain, block2, difficulty) );
@@ -188,7 +188,7 @@ class NoobChainTests {
 
 		Block block3 = new Block(block2.getHash() );
 		System.out.println("\nWalletB is Attempting to send funds (20) to WalletA...");
-		boolean bBlock3AddTransactionResult = block3.addTransaction(	walletB.sendFunds( walletA.publicKey, 20, mapUTXOs), 
+		boolean bBlock3AddTransactionResult = block3.addTransaction(	walletB.sendFunds( walletA.getPublicKey(), 20, mapUTXOs), 
 																		mapUTXOs, minimumTransaction);
 		Assertions.assertTrue( bBlock3AddTransactionResult );
 		System.out.println("\nWalletA's balance is: " + walletA.getBalance( mapUTXOs ));

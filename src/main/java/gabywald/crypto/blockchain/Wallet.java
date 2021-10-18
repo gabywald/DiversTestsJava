@@ -21,12 +21,18 @@ import java.util.Map;
  */
 public class Wallet {
 
-	public PrivateKey privateKey = null;
-	public PublicKey publicKey = null;
+	private PrivateKey privateKey = null;
+	private PublicKey publicKey = null;
 
 	public Wallet() {
 		this.generateKeyPair();	
 	}
+	
+	public PrivateKey getPrivateKey() 
+		{ return this.privateKey; }
+
+	public PublicKey getPublicKey() 
+		{ return this.publicKey; }
 
 	/**
 	 * Generate some KeyPair (Public and Private). 
