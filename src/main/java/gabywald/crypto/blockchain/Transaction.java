@@ -48,17 +48,11 @@ public class Transaction {
 	private String calculateHash() {
 		// Increase the sequence to avoid 2 identical transactions having the same hash
 		Transaction.sequence++;
-		try {
-			return StringUtils.applySha256(
-					StringUtils.getStringFromKey(this.sender) +
-					StringUtils.getStringFromKey(this.recipient) +
-					Float.toString(value) + Transaction.sequence
-					);
-		} catch (BlockchainException e) {
-			// e.printStackTrace();
-			System.out.println( e.getMessage() );
-			return null;
-		}
+		return StringUtils.applySha256(
+				StringUtils.getStringFromKey(this.sender) +
+				StringUtils.getStringFromKey(this.recipient) +
+				Float.toString(value) + Transaction.sequence
+				);
 	}
 
 	/** 

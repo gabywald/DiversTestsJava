@@ -27,15 +27,9 @@ public class TransactionOutput {
 		this.recipient = reciepient;
 		this.value = value;
 		this.parentTransactionId = parentTransactionId;
-		try {
-			this.id = StringUtils.applySha256(StringUtils.getStringFromKey(reciepient) 
-					+ Float.toString(value) + parentTransactionId);
-			// TODO check alternatives for here when exception occurs !! (builder ?) : see StringUtils.applySha256 comment !
-		} catch (BlockchainException e) {
-			// e.printStackTrace();
-			System.out.println(e.getMessage());
-			this.id = null;
-		}
+		
+		this.id = StringUtils.applySha256(StringUtils.getStringFromKey(reciepient) 
+				+ Float.toString(value) + parentTransactionId);
 	}
 	
 	/**

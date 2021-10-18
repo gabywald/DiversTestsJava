@@ -52,19 +52,12 @@ public class Block {
 	 * @see StringUtils#applySha256(String)
 	 */
 	public String calculateHash() {
-		String calculatedhash = null;
-		try {
-			calculatedhash = StringUtils.applySha256( 
+		String calculatedhash = StringUtils.applySha256( 
 					previousHash +
 					Long.toString(timeStamp) +
 					Integer.toString(nonce) + 
 					merkleRoot
 					);
-		} catch (BlockchainException e) {
-			// e.printStackTrace();
-			System.out.println( e.getMessage() );
-			calculatedhash = null;
-		}
 		return calculatedhash;
 	}
 
