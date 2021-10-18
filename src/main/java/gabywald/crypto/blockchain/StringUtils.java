@@ -31,7 +31,7 @@ public abstract class StringUtils {
 	 */
 	public static String applySha256(String input)  {		
 		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");	        
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			// Applies sha256 to our input, 
 			byte[] hash = digest.digest(input.getBytes("UTF-8"));
 			// This will contain hash as hexidecimal

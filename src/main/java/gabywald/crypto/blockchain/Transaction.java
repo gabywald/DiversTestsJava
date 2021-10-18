@@ -7,6 +7,11 @@ import java.security.Signature;
 
 import java.util.List;
 import java.util.Map;
+
+import gabywald.global.json.JSONException;
+import gabywald.global.json.JSONValue;
+import gabywald.global.json.JSONifiable;
+
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -16,7 +21,7 @@ import java.util.Base64;
  * <br/><a href="https://github.com/CryptoKass/NoobChain-Tutorial-Part-2">https://github.com/CryptoKass/NoobChain-Tutorial-Part-2</a>
  * @author Gabriel Chandesris (2021)
  */
-public class Transaction {
+public class Transaction extends JSONifiable {
 	/** This is also the hash of the transaction. */
 	private String transactionId;
 	/** senders address/public key. */
@@ -206,8 +211,6 @@ public class Transaction {
 		return total;
 	}
 
-
-
 	public void setTransactionId(String transactionId) 
 		{ this.transactionId = transactionId; }
 
@@ -228,5 +231,31 @@ public class Transaction {
 
 	public List<TransactionInput> getInputs() 
 		{ return this.inputs; }
+
+	@Override
+	protected void setKeyValues() {
+		this.put("transactionId", JSONValue.instanciate( this.transactionId.toString() ) );
+		this.put("sender", JSONValue.instanciate( this.sender.toString() ) );
+		this.put("recipient", JSONValue.instanciate( this.recipient.toString() ) );
+		this.put("value", JSONValue.instanciate( this.value ) );
+		// this.put("signature", JSONValue.instanciate( this.signature ) );
+		// this.put("sequence", JSONValue.instanciate( this.sequence ) );
+	}
+
+	@Override
+	protected <T extends JSONifiable> T reloadFrom(String json) 
+			throws JSONException {
+		return null;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sbToReturn = new StringBuilder();
+		sbToReturn.append("transactionId").append(": ").append( this.transactionId.toString() ).append("\n");
+		sbToReturn.append("sender").append(": ").append( this.sender.toString() ).append("\n");
+		sbToReturn.append("recipient").append(": ").append( this.recipient ).append("\n");
+		sbToReturn.append("value").append(": ").append( this.value ).append("\n");
+		return sbToReturn.toString();
+	}
 
 }

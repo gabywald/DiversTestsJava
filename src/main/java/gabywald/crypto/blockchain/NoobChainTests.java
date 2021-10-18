@@ -8,7 +8,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.google.gson.GsonBuilder;
+// import com.google.gson.GsonBuilder;
+
+import gabywald.global.json.JSONifiable;
 
 /**
  * Tests about BlockChain / NoobChain. 
@@ -48,9 +50,13 @@ class NoobChainTests {
 		blockchain.add(new Block("Yo im the second block", blockchain.get(blockchain.size()-1).getHash() )); 
 		blockchain.add(new Block("Hey im the third block",  blockchain.get(blockchain.size()-1).getHash() ));
 		Assertions.assertEquals(3,  blockchain.size());
-		String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
-		Assertions.assertNotNull( blockchainJson );
+		
+		String blockchainJson = JSONifiable.generateArray( blockchain ).toString(); 
+		// String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
+		System.out.println("\nThe block chain: ");
 		System.out.println(blockchainJson);
+		
+		// for (Block block : blockchain) { System.out.println( block ); }
 	}
 	
 	@Test
@@ -76,12 +82,12 @@ class NoobChainTests {
 		
 		Assertions.assertTrue( BlockChain.isChainValidV1( blockchain ) );
 
-		String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
-		
-		Assertions.assertNotNull( blockchainJson );
-		
+		String blockchainJson = JSONifiable.generateArray( blockchain ).toString(); 
+		// String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
 		System.out.println("\nThe block chain: ");
 		System.out.println(blockchainJson);
+		
+		// for (Block block : blockchain) { System.out.println( block ); }
 	}
 	
 	@Test
@@ -188,8 +194,9 @@ class NoobChainTests {
 
 		Block block3 = new Block(block2.getHash() );
 		System.out.println("\nWalletB is Attempting to send funds (20) to WalletA...");
-		boolean bBlock3AddTransactionResult = block3.addTransaction(	walletB.sendFunds( walletA.getPublicKey(), 20, mapUTXOs), 
+		boolean bBlock3AddTransactionResult = block3.addTransaction(	walletB.sendFunds( walletA.getPublicKey(), 20f, mapUTXOs), 
 																		mapUTXOs, minimumTransaction);
+		
 		Assertions.assertTrue( bBlock3AddTransactionResult );
 		System.out.println("\nWalletA's balance is: " + walletA.getBalance( mapUTXOs ));
 		System.out.println("WalletB's balance is: " + walletB.getBalance( mapUTXOs ));

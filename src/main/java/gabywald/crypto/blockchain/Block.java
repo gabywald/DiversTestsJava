@@ -5,13 +5,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import gabywald.global.json.JSONException;
+import gabywald.global.json.JSONValue;
+import gabywald.global.json.JSONifiable;
+
 /**
  * Block of BlockChain. 
  * <br/><a href="https://medium.com/programmers-blockchain/create-simple-blockchain-java-tutorial-from-scratch-6eeed3cb03fa">https://medium.com/programmers-blockchain/create-simple-blockchain-java-tutorial-from-scratch-6eeed3cb03fa</a>
  * <br/><a href="https://github.com/CryptoKass/NoobChain-Tutorial-Part-1">https://github.com/CryptoKass/NoobChain-Tutorial-Part-1</a>
  * @author Gabriel Chandesris (2021)
  */
-public class Block {
+public class Block extends JSONifiable {
 
 	private String hash;
 	private String previousHash; 
@@ -113,4 +117,31 @@ public class Block {
 		{ return this.transactions; }
 	
 	
+	@Override
+	protected void setKeyValues() {
+		this.put("hash", JSONValue.instanciate( this.hash.toString() ) );
+		this.put("previousHash", JSONValue.instanciate( this.previousHash.toString() ) );
+		this.put("timeStamp", JSONValue.instanciate( this.timeStamp ) );
+		this.put("nonce", JSONValue.instanciate( this.nonce ) );
+		this.put("transactions", JSONifiable.generateArray( this.transactions ) );
+	}
+
+	@Override
+	protected <T extends JSONifiable> T reloadFrom(String json) 
+			throws JSONException {
+		return null;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sbToReturn = new StringBuilder();
+		sbToReturn.append("hash").append(": ").append( this.hash.toString() ).append("\n");
+		sbToReturn.append("previousHash").append(": ").append( this.previousHash.toString() ).append("\n");
+		sbToReturn.append("timeStamp").append(": ").append( this.timeStamp ).append("\n");
+		sbToReturn.append("transactions").append(": \n");
+		for (Transaction transaction : this.transactions) {
+			sbToReturn.append("\t transaction").append(": ").append( transaction.toString() ).append("\n");
+		}
+		return sbToReturn.toString();
+	}
 }

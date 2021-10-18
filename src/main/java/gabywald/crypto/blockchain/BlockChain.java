@@ -8,7 +8,7 @@ import java.util.List;
  * 
  * @author Gabriel Chandesris (2021)
  */
-public abstract class BlockChain {
+public class BlockChain {
 	
 	/**
 	 * Build a list of Blocks. 
@@ -141,4 +141,5 @@ public abstract class BlockChain {
 		newBlock.mineBlock(difficulty);
 		return blockchain.add(newBlock);
 	}
+
 }
