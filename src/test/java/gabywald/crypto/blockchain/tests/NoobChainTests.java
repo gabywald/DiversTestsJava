@@ -1,4 +1,4 @@
-package gabywald.crypto.blockchain;
+package gabywald.crypto.blockchain.tests;
 
 import java.security.Security;
 import java.util.HashMap;
@@ -7,6 +7,13 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import gabywald.crypto.blockchain.Block;
+import gabywald.crypto.blockchain.BlockChain;
+import gabywald.crypto.blockchain.StringUtils;
+import gabywald.crypto.blockchain.Transaction;
+import gabywald.crypto.blockchain.TransactionOutput;
+import gabywald.crypto.blockchain.Wallet;
 
 // import com.google.gson.GsonBuilder;
 
