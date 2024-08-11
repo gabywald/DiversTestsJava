@@ -59,6 +59,19 @@
 			<artifactId>bcprov-jdk15to18</artifactId>
 			<version>1.78</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/com.tilab.jade/jade -->
+		<!-- https://github.com/IdeaHeap/jade-tutorial-agent/blob/master/pom.xml -->
+		<!-- https://djug.developpez.com/java/jade/creation-agent/ -->
+		<!-- https://jade.tilab.com/developers/source-repository/ -->
+		<!-- https://jade.tilab.com/download/jade/?page_id=790 -->
+		<!-- mvn clean -U package -->
+		<!-- cf. notes to add file jar in local repo and generate pom -->
+		<dependency>
+		    <groupId>jade</groupId>
+		    <artifactId>jade</artifactId>
+		    <version>4.6.0</version>
+		</dependency>
 
 	</dependencies>
 	
