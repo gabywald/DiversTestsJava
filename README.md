@@ -8,6 +8,9 @@ Quelques tests de programmation en Java, des notes diverses,
   * Challenge CybserSec (quelques notes)
   * Java Swing : Full Screen, SpalshScreen (à revoir / préciser)
   * Java reflect / réflexivité / introspection
+  * JADE multi-agent system experiements (attention chargeemnt version 4.6.0 et lancement en ligne de commande)
+  * Utilisation de JAAS pour authentification (lancement avec fichier de config indiquant classe de Login)
+  * REST example avec Jakarta + Glassfish
 
 Voir également : 
   * JSON Web Token, KeyCloak, SSO... 

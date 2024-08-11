@@ -72,6 +72,31 @@
 		    <artifactId>jade</artifactId>
 		    <version>4.6.0</version>
 		</dependency>
+		
+		<!-- https://www.digitalocean.com/community/tutorials/restful-web-services-tutorial-java -->
+		<!-- https://www.jmdoudoux.fr/java/dejae/chap026.htm -->
+		<!-- https://jmdoudoux.developpez.com/cours/developpons/eclipse/chap-eclipse-services-web.php -->
+		<!-- https://mbaron.developpez.com/tutoriels/soa/developpement-services-web-jaxrs-maven-eclipse/ -->
+
+		<!-- https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
+		<dependency>
+		    <groupId>jakarta.ws.rs</groupId>
+		    <artifactId>jakarta.ws.rs-api</artifactId>
+		    <version>2.1.6</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.containers/jersey-container-grizzly2-http -->
+		<dependency>
+		    <groupId>org.glassfish.jersey.containers</groupId>
+		    <artifactId>jersey-container-grizzly2-http</artifactId>
+		    <version>2.44</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.glassfish.jersey.inject</groupId>
+		    <artifactId>jersey-hk2</artifactId>
+		    <version>2.44</version>
+		</dependency>
 
 	</dependencies>
 	
