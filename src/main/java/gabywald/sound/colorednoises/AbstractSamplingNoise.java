@@ -11,10 +11,9 @@ import javax.sound.sampled.SourceDataLine;
 
 /**
  * 
- * @author gchandesris
- *
+ * @author Gabriel Chandesris (2024)
  */
-public abstract class AbstractSamplingNoise implements IColoredNoise, Runnable {
+public abstract class AbstractSamplingNoise implements IColoredNoise {
 	protected AbstractSamplingNoiseConfig BASE_CONFIG = new AbstractSamplingNoiseConfig();
     
     protected AudioFormat format = null;
@@ -24,7 +23,7 @@ public abstract class AbstractSamplingNoise implements IColoredNoise, Runnable {
     protected Random random = null;
     
     private boolean isActiv = true;
-    protected boolean isActiv() { return this.isActiv; }
+    public boolean isActiv() { return this.isActiv; }
     public void isActiv(boolean isActiv) { this.isActiv = isActiv; }
     
     boolean init() {

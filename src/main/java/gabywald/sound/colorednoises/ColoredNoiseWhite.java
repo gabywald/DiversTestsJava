@@ -2,8 +2,7 @@ package gabywald.sound.colorednoises;
 
 /**
  * 
- * @author gchandesris
- *
+ * @author Gabriel Chandesris (2024)
  */
 class ColoredNoiseWhite extends AbstractSamplingNoise {
 	
