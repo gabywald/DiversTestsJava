@@ -31,9 +31,6 @@
 			</repository> -->
 	</repositories>
 
-	<!-- <exclusions> <exclusion> <groupId>com.sun.java</groupId> <artifactId>tools</artifactId> 
-		</exclusion> </exclusions> -->
-
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 		<dependency>
@@ -48,9 +45,22 @@
 			<version>4.5.13</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.sun/tools -->
-		<!-- <dependency> <groupId>com.sun</groupId> <artifactId>tools</artifactId> 
-			<version>1.7.0</version> </dependency> -->
+	<!-- https://mvnrepository.com/artifact/com.sun/tools -->
+	<!-- <dependency> <groupId>com.sun</groupId> <artifactId>tools</artifactId> 
+		<version>1.5.0</version> <scope>system</scope> </dependency> -->
+	<!-- <dependency> <exclusions> <exclusion> <groupId>com.sun.java</groupId> 
+		<artifactId>tools</artifactId> </exclusion> </exclusions> </dependency> -->
+	<!-- https://mvnrepository.com/artifact/com.sun/tools -->
+	<!-- <dependency> <groupId>com.sun</groupId> <artifactId>tools</artifactId> 
+		<version>1.7.0</version> </dependency> -->
+		
+		<dependency>
+		    <artifactId>com.sun</artifactId>
+		    <groupId>tools</groupId>
+		    <version>1.5</version>
+		    <scope>system</scope>
+		    <systemPath>${basedir}/src/main/resources/tools.jar</systemPath>
+		</dependency>
 
 		<dependency>
 			<groupId>gabywald</groupId>
@@ -106,7 +116,6 @@
 		    <artifactId>jersey-hk2</artifactId>
 		    <version>${org.glassfish.jersey}</version>
 		</dependency>
-		
 		
 		<!-- https://www.jmdoudoux.fr/java/dej/chap-websockets.htm -->
 		<!-- https://www.baeldung.com/java-websockets -->
