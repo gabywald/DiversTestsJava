@@ -13,13 +13,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import gabywald.websocket.chatServerSide.other2.BasicClient;
-import gabywald.websocket.chatServerSide.other3.explore.WebSocketServer;
+import gabywald.websocket.chatServerSide.other3.explore.WebSocketServer1;
 import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
-class WebSocketServerEndpointTest {
+class WebSocketServer1EndpointTest {
 	
 	private Server server = null;
 	
@@ -39,7 +39,7 @@ class WebSocketServerEndpointTest {
         
 		// try {
         
-			server = new Server("localhost", 8080, "", null, WebSocketServer.class);
+			server = new Server("localhost", 8080, "", null, WebSocketServer1.class);
 			
 			server.start();
 			

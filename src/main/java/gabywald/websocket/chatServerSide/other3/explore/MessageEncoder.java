@@ -12,6 +12,7 @@ public class MessageEncoder implements Encoder.Text<Message> {
 
     @Override
     public String encode(Message message) throws EncodeException {
+    	System.out.println("ME encode : " + message);
         return gson.toJson(message);
     }
 

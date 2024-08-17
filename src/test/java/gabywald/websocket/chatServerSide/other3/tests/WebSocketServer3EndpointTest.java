@@ -13,12 +13,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import gabywald.websocket.chatServerSide.other3.explore.BasicClient3;
-import gabywald.websocket.chatServerSide.other3.explore.WebSocketServer2;
+import gabywald.websocket.chatServerSide.other3.explore.WebSocketServer3;
 
 import javax.websocket.ContainerProvider;
 import javax.websocket.WebSocketContainer;
 
-class WebSocketServer2EndpointTest {
+class WebSocketServer3EndpointTest {
 	
 	private Server server = null;
 	
@@ -38,7 +38,7 @@ class WebSocketServer2EndpointTest {
         
 		// try {
         
-			server = new Server("localhost", 8080, "", null, WebSocketServer2.class);
+			server = new Server("localhost", 8080, "", null, WebSocketServer3.class);
 			
 			server.start();
 			
@@ -74,7 +74,7 @@ class WebSocketServer2EndpointTest {
 			
 			System.out.println("TEST 03");
 			
-			bc3.sendMessage("{ \"message\" }");
+			bc3.sendMessage("{ \"clef\":\"contenu\" }");
 			
 			// bc3.processMessage("pong ?");
 			
