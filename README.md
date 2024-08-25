@@ -21,4 +21,4 @@ Voir également :
   * [SSO / Signle Sign-On](https://en.wikipedia.org/wiki/Single_sign-on)
   * ... 
   
-
+Ce projet est assez "fouilli" et aggrège des codes d'utilités diverses. 
