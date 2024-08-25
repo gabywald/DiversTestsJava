@@ -166,6 +166,20 @@
 		    <version>${org.glassfish.tyrus}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.glassfish.tyrus.ext/tyrus-client-java8 -->
+		
+		<!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+		<dependency>
+		    <groupId>com.auth0</groupId>
+		    <artifactId>java-jwt</artifactId>
+		    <version>4.4.0</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.json/json -->
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20240303</version>
+		</dependency>
 
 		<!-- junit 5, unit test -->
 		<dependency>

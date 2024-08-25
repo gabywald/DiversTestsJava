@@ -9,6 +9,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * 
+ * @author Gabriel Chandesris (2024)
+ */
 @Path("hello")
 @Produces(MediaType.TEXT_PLAIN)
 public class HelloResource {
@@ -16,7 +20,7 @@ public class HelloResource {
     
     @GET
     public String getHello() {
-        return "Bonjour !";
+        return "Bonjour les gens";
     }
     
     @GET

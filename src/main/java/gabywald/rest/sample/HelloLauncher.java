@@ -10,6 +10,10 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
+/**
+ * 
+ * @author Gabriel Chandesris (2024)
+ */
 public class HelloLauncher {
 
     public static final URI BASE_URI = getBaseURI();
@@ -38,6 +42,6 @@ public class HelloLauncher {
         }
     }
     
-    // curl --header "name:Anne ONYME" http://localhost:9991/api/hello/SCHOOL
-    // curl --header "name:Albert ONYME" http://localhost:9991/api/hello/withheaders/SCHOOL -v
+    // curl --header "name:Mickael BARON" http://localhost:9991/api/hello/ENSMA
+    // curl --header "name:Mickael BARON" http://localhost:9991/api/hello/withheaders/ENSMA -v
 }
