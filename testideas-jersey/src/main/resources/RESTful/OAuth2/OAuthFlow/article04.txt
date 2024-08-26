@@ -1,0 +1,49 @@
+https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_understanding_refresh_token_oauth.htm -- 
+
+Understanding the OAuth Refresh Token Process
+The Web server OAuth authentication flow and user-agent flow both provide a refresh token that can be used to obtain a new access token.
+
+Access tokens have a limited lifetime specified by the session timeout in Salesforce. If an application uses an expired access token, a “Session expired or invalid” error is returned. If the application is using the Web server or user-agent OAuth authentication flows, a refresh token may be provided during authorization that can be used to get a new access token.
+The client application obtains a new access token by sending a POST request to the token request endpoint with the following request parameters:
+Parameters 	Description
+grant_type 	Value must be refresh_token.
+refresh_token 	The refresh token the client application already received.
+client_id 	The Consumer Key from the connected app definition.
+client_secret 	The Consumer Secret from the connected app definition. This parameter is optional.
+format 	Expected return format. The default is json. Values are:
+
+    urlencoded
+    json
+    xml
+
+The return format can also be specified in the header of the request using one of the following:
+
+    Accept: application/x-www-form-urlencoded
+    Accept: application/json
+    Accept: application/xml
+
+This parameter is optional.
+An example refresh token POST request might look something like:
+1	POST /services/oauth2/token HTTP/1.1
+2	Host: https://login.salesforce.com/
+3	grant_type=refresh_token&client_id=3MVG9lKcPoNINVBIPJjdw1J9LLM82HnFVVX19KY1uA5mu0
+4	QqEWhqKpoW3svG3XHrXDiCQjK1mdgAvhCscA9GE&client_secret=1955279925675241571
+5	&refresh_token=your token here
+Once Salesforce verifies the refresh token request, it sends a response to the application with the following response body parameters:
+Parameters 	Description
+access_token 	Access token that acts as a session ID that the application uses for making requests. This token should be protected as though it were user credentials.
+instance_url 	Identifies the Salesforce instance to which API calls should be sent.
+id 	Identity URL that can be used to both identify the user as well as query for more information about the user. Can be used in an HTTP request to get more information about the end user.
+issued_at 	When the signature was created, represented as the number of seconds since the Unix epoch (00:00:00 UTC on 1 January 1970).
+signature 	Base64-encoded HMAC-SHA256 signature signed with the consumer's private key containing the concatenated ID and issued_at value. The signature can be used to verify that the identity URL wasn’t modified because it was sent by the server.
+An example JSON response body might look something like:
+1	{ "id":"https://login.salesforce.com/id/00Dx0000000BV7z/005x00000012Q9P",
+2	"issued_at":"1278448384422","instance_url":"https://na1.salesforce.com",
+3	"signature":"SSSbLO/gBhmmyNUvN18ODBDFYHzakxOMgqYtu+hDPsc=",
+4	"access_token":"00Dx0000000BV7z!AR8AQP0jITN80ESEsj5EbaZTFG0RNBaT1cyWk7T
+5	rqoDjoNIWQ2ME_sTZzBjfmOE6zMHq6y8PIW4eWze9JksNEkWUl.Cju7m4"}
+Keep in mind the following considerations when using the refresh token OAuth process:
+
+    The session timeout for an access token can be configured in Salesforce from Setup by entering Session Settings in the Quick Find box, then selecting Session Settings.
+    If the application uses the username-password OAuth authentication flow, no refresh token is issued, as the user cannot authorize the application in this flow. If the access token expires, the application using username-password OAuth flow must re-authenticate the user.
+

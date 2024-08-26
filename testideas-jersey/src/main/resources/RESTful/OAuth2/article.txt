@@ -1,0 +1,367 @@
+
+http://blog.netapsys.fr/oauth-comment-ca-marche/comment-page-1/ --
+++ http://www.bubblecode.net/fr/2013/03/10/comprendre-oauth2/ --  
+
+OAuth : Comment ça marche ?
+26 décembre 2014 Hoby RATSITOBAINA
+
+Vous avez sûrement remarqué que certains sites nous proposent de nous authentifier à partir de nos comptes Facebook ou Twitter ou encore Google + et ainsi récupérer les informations de notre  profil. En tant qu'utilisateur cela est bien pratique, mais savez-vous ce qui se passe dans les coulisses ?
+
+Cette fonctionnalité est rendue possible grâce à une API sécurisée proposée par Facebook, Twitter, Google+. Ces derniers proposent également plusieurs API permettant de faire un peu de tout avec votre compte. En ayant connaissance de cette information, il est donc possible que le site sur lequel vous vous connectez puisse tout faire avec votre compte. Avez-vous intérêt à vous y connecter, à lui fournir vos identifiants de connexion ?
+
+Pour pallier ces craintes, la solution est de mettre en place un mécanisme de délégation d'autorisation entre les différentes entités. OAuth a été crée dans ce sens.
+
+Qu'est-ce que OAuth ?
+
+OAuth 2.0
+
+OAuth est un protocole libre qui permet d'autoriser une application client à utiliser l'API sécurisée d'une autre application pour le compte d'un utilisateur.
+
+L'intérêt majeur d'OAuth vient du fait que l'utilisateur n'a plus besoin de fournir ses informations d'identification à une application tierce car la connexion se passe sur l'application de l'API. Cela suppose que l'utilisateur lui a à priori fait confiance.
+
+Actuellement, OAuth est à la version 2.0. Voyons ensembles les notions de base de l'OAuth.
+Les rôles
+
+OAuth propose 4 rôles :
+
+    Ressource Owner (Le détenteur des données)
+
+Il s'agit d'une entité capable d'accorder l'accès à une ressource protégée. Lorsque le propriétaire de la ressource est une personne, il est désigné en tant qu'utilisateur final.
+
+    Ressource Server (Le serveur de ressources)
+
+Il s'agit d'un serveur qui héberge les ressources protégées, qui est capable d'accepter et de répondre aux demandes de ressources protégées en utilisant des jetons d'accès (Access Token).
+
+    Client (Le client)
+
+Il s'agit d'une application demandant des ressources protégées au nom du propriétaire de celles-ci et avec son autorisation. Cela peut-être une application PHP côté serveur,  une application JavaScript côté client, une application mobile.
+
+    Authorization Server (Le serveur d'autorisation)
+
+Il s'agit d'un serveur qui délivre des jetons d'accès (Access Token) au client après que le propriétaire de la ressource a été formellement authentifié et qu'il a obtenu une autorisation de sa part.
+
+Ci-dessous un résumé des flux du protocole OAuth :
+
+	[[Resume_flux_OAuth.jpg]] Résumé des flux du protocole OAuth 2.0
+
+ 
+Le token
+
+Le token est une chaîne de caractères, il est émit par le serveur d'autorisation à la demande du client. Le serveur d'autorisation définit sa durée de vie et les valeurs des autres paramètres.
+
+    Access token (jeton d'accès)
+
+Le jeton d'accès permet au client d'accéder aux ressources protégées d'un utilisateur sur le serveur de ressources. A chacune des requêtes du client vers le serveur de ressources, le token est envoyé soit en paramètre soit dans un header de la requête. Il doit rester confidentiel dès que possible.
+
+	Refresh token (jeton de renouvellement)
+
+Le jeton de renouvellement est un token pour renouveler le jeton d'accès lorsque ce dernier est expiré. Le client envoie le jeton de renouvellement au serveur d'autorisation pour obtenir un nouveau jeton d'accès. Le jeton de renouvellement est délivré en même temps que le jeton d'accès, cependant il n'est pas envoyé à chaque requête du client.
+
+
+Les scopes
+
+Le scope est un paramètre qui définit la portée des droits de la demande d'autorisation. La liste des scopes est définie au niveau du serveur d'autorisation.
+
+Le client doit préciser le ou les scopes qu'il souhaite utiliser lors de la demande d'autorisation.
+
+
+HTTPS
+
+OAuth impose l'utilisation de HTTPS pour les échanges entre le client et le serveur d'autorisation du fait des données sensibles qui transitent entre les deux (jeton d'accès, éventuellement des identifiants et des mots de passe).
+
+HTTP est un protocole de communication client-serveur développé pour le World Wide Web.
+
+HTTPS n'est autre que la combinaison du HTTP avec une couche de chiffrement comme SSL ou TLS.
+
+
+Les types de Client
+
+OAuth a défini deux types de client, basés sur leur capacité à s'authentifier en toute sécurité sur le serveur d'autorisation.
+Confidentiel (Confidential)
+
+Il s'agit d'un client qui a la capacité de maintenir la confidentialité de ses informations d'identification ou de sécuriser l'authentification client à l'aide d'autres moyens.
+Public (Public)
+
+Il s'agit d'un client qui a les aptitudes inverses d'un client confidentiel.
+
+
+
+Les différents profils de client
+
+OAuth a défini trois profils client :
+Application web (Web application)
+
+Une application Web est un client de type confidentiel qui fonctionne sur un serveur web.
+
+La ressource protégée du propriétaire est accessible par le client via une interface utilisateur en HTML rendu par un user-agent (par exemple, navigateur Web) d'un dispositif utilisé par le propriétaire de la  ressource.
+
+Les informations d'identification du client ainsi que le jeton d'accès émis au client sont stockés sur le serveur web et sont non exposés ou non accessibles par le propriétaire de la ressource.
+Application basée sur un user-agent (User-agent-based application)
+
+Une application basée sur un user-agent est un client de type public dans lequel le code client est téléchargé à partir d'un serveur Web et exécuté sur un user-agent (par exemple, navigateur Web) d'un dispositif utilisé par le propriétaire de la  ressource.
+
+Les données du protocole et les informations d'identification sont facilement accessibles (et souvent visibles) pour le propriétaire de la ressource.
+Application native (Native application)
+
+Une application native est un client de type public installé et exécuté sur un dispositif utilisé par propriétaire de la ressource.
+
+Les données du protocole et les informations d'identification sont facilement accessibles (et souvent visible) au propriétaire de la ressource. Cela suppose que les informations d'identification inclues dans l'application peuvent être extraites.
+
+
+
+Enregistrement du client
+
+Avant d'utiliser le protocole OAuth, il faut que le client s'enregistre auprès du serveur d'autorisation.
+
+Le protocole a défini des paramètres qui doivent être renseignés par le client :
+
+    Spécifier le type de client
+    Fournir les URL de redirection du client
+    Fournir d'autres informations requises par le serveur d'autorisation
+
+Exemple :
+
+    Application Name: le nom de l'application
+    Redirect URLs: les URLs du client vers lesquelles les redirections (contenant le code d'autorisation et le token d'accès) seront effectuées par le serveur d'autorisation
+    Grant Type(s): les types d'autorisation qui seront utilisées par le client
+    Javascript Origin (optionnel): le nom de domaine qui sera autorisé à effectuer des requêtes XMLHttpRequest vers le serveur de ressource
+
+En retour de l'enregistrement du client, le serveur d'autorisation renvoie les paramètres suivants :
+
+    Client Id: chaîne de caractères unique et générée aléatoirement
+    Client Secret: clé secrète qui doit le rester en toute circonstance
+
+
+
+Les types d'autorisation
+
+Pour demander un jeton d'accès, le client doit obtenir une autorisation du propriétaire de la ressource.
+
+OAuth a défini quatre types d'autorisation : Authorization Code Grant, Implicit Grant, Resource Owner Password Credentials Grant, Client Credentials Grant
+L'autorisation via un code (Authorization Code Grant)
+
+L'autorisation via un code est utilisée pour obtenir en même temps un jeton d'accès et un jeton de renouvellement ce qui permet d'obtenir un jeton d'accès de longue durée. Il est optimisé pour un client de type Confidentiel.
+
+Ses avantages sont :
+
+    le jeton d'accès n'est pas visible par le propriétaire de la ressource
+    le jeton d'accès n'est pas exposé côté client
+
+	[[authorization_code.jpg]] Diagramme de séquence - L'autorisation via un code
+
+Exemple :
+
+    Détenteur des données (Resource Owner) : vous
+    Serveur de ressources (Resource Server) : un serveur Facebook
+    Client (Client Application) : un site internet quelconque
+    Serveur d'autorisation (Authorization Server) : un serveur Facebook
+
+Scénario :
+
+    Le client souhaite accéder aux informations de votre profil Facebook.
+    Vous êtes redirigé par le client vers le serveur d'autorisation.
+    Si vous autorisez l'accès, le serveur d'autorisation envoie un code d'autorisation au client.
+    Ce code est échangé par un token d'accès de façon transparente pour vous.
+    Le client peut donc maintenant utiliser ce token d'accès pour accéder aux données de votre profil par le serveur de ressources.
+ 
+L'autorisation implicite (Implicit Grant)
+
+L'autorisation implicite est utilisée pour obtenir seulement un jeton d'accès. Il ne permet pas d'obtenir le jeton de renouvellement. Il est optimisé pour un client de type public qui est généralement mis en œuvre dans un navigateur en utilisant un langage de script.
+
+L'inconvénient :
+
+    Il expose le jeton d'accès côté client
+
+	[[implicit.jpg]] Diagramme de séquence - L'autorisation implicite
+
+Exemple :
+
+    Détenteur des données (Resource Owner) : vous
+    Serveur de ressources (Resource Server) : un serveur Facebook
+    Client (Client Application) : un site internet utilisant AngularJS par exemple
+    Serveur d'autorisation (Authorization Server) : un serveur Facebook
+
+Scénario :
+
+    Le client souhaite accéder aux informations de votre profil Facebook.
+    Vous êtes redirigé par le navigateur web vers le serveur d'autorisation.
+    Si vous autorisez l'accès, le serveur d'autorisation vous redirige sur le client et met à disposition le token d'accès dans le fragment de l'url (non envoyé au serveur web). Exemple de callback : http://example.com/oauthcallback#access_token=MzJmNDc3M2VjMmQzN.
+    Ce token d'accès peut maintenant être utilisé (après avoir été validé) pour faire des appels à l'API Facebook via Javascript (par exemple https://graph.facebook.com/me?access_token=MzJmNDc3M2VjMmQzN).
+
+L'autorisation via mot de passe (Resource Owner Password Credentials Grant)
+
+L'autorisation via mot de passe est utilisée dans le cas où le propriétaire de la ressource a une relation de confiance avec le client. En effet, les informations d'identification du propriétaire de ressource sont envoyées au client.
+
+Elle est utilisée pour obtenir en même temps un jeton d'accès et un jeton de renouvellement en échange des informations d'identification auprès du serveur d'autorisation.
+
+	[[Resource-Owner-Password-Credentials.jpg]] Diagramme de séquence - L'autorisation via mot de passe
+
+Exemple :
+
+    Détenteur des données (Resource Owner) : vous ayant un compte sur le site acme.com de la société Acme
+    Serveur de ressources (Resource Server) : la société Acme exposant son API à api.acme.com
+    Client (Client Application) : le site internet acme.com de la société Acme
+    Serveur d'autorisation (Authorization Server) : un serveur de la société Acme
+
+Scénario :
+
+    La société Acme fait les choses bien et a pensé à mettre à disposition à des applications tierces une API RESTful exposant tout plein de méthodes pratiques pour récupérer des données diverses et variées de ses utilisateurs.
+    Cette société se dit qu'il serait pratique d'utiliser sa propre API pour éviter de réinventer la roue et de maintenir du code à plusieurs endroits.
+    Elle a donc besoin d'un token d'accès pour appeler les méthodes de son API.
+    Pour cela elle vous demande de renseigner vos identifiants de connexion via un formulaire HTML classique tel que vous le faites habituellement.
+    L'application côté serveur (le site acme.com) va échanger vos identifiants contre un token d'accès auprès du serveur d'autorisation (si vos identifiants sont valides bien évidemment).
+    L'application peut donc maintenant utiliser ce token d'accès auprès du serveur de ressources (api.acme.com).
+
+ 
+L'autorisation serveur à serveur (Client Credentials Grant)
+
+L'autorisation serveur à serveur est utilisée dans le cas où le client est lui-même détenteur de données. Il n'y a pas d'autorisation à obtenir de la part de l'utilisateur final.
+
+Le client peut demander un jeton d'accès en utilisant uniquement ses informations d'identification client lorsqu'il a demandé l'accès à des ressources protégées sous son contrôle.
+
+	[[client_credentials.jpg]] Diagramme de séquence - L'autorisation serveur à serveur
+
+Exemple :
+
+    Détenteur des données (Resource Owner) : un site internet quelconque
+    Serveur de ressources (Resource Server) : Google Cloud Storage
+    Client (Client Application) : le détenteur des données
+    Serveur d'autorisation (Authorization Server) : un serveur Google
+
+Scénario :
+
+    Un site internet quelconque stocke des fichiers de toute sorte sur Google Cloud Storage.
+    Le site internet doit passer par l'API Google pour récupérer ou modifier des fichiers et doit donc s'authentifier auprès du serveur d'autorisation.
+    Une fois authentifié, le site internet obtient un token d'accès qu'il peut désormais utiliser auprès du serveur de ressources .
+
+ 
+Conclusion
+
+Nous avons vu les notions de base du protocole OAuth 2.0 . OAuth 2.0 est devenu un standard pour la délégation d'autorisation entre différentes applications. Les grands firmes l'ont adopté et pourquoi pas vous ?
+Enfin une dernière chose, si vous souhaitez utiliser ce protocole dans vos applications, il faut veiller scrupuleusement à la sécurité. Le protocole propose des solutions plus ou moins facile à mettre en œuvre.
+
+Ressources Web
+
+OAuth 2.0 : http://oauth.net/2/ , http://tools.ietf.org/html/rfc6749
+Sécurités OAuth 2.0 : http://tools.ietf.org/html/rfc6819
+
+***** ***** ***** ***** ***** 
+https://www.javacodegeeks.com/2019/01/right-flow-job-oauth-2-0-flow-should-use.html
+About Grzegorz Mirek
+Grzegorz is a software developer from Cracow, Poland. He started his adventure with Java roughly 6 years ago when he was at university and since that time, he keeps expanding his knowledge in this field. He is especially interested in JVM performance and optimisations and this is what he mostly blogs about.
+The Right Flow For The Job: Which OAuth 2.0 Flow Should I Use?
+
+Posted by: Grzegorz Mirek in Enterprise Java January 8th, 2019
+
+What is What in OAuth 2.0
+
+OAuth 2.0 is a well-adopted delegated authorization framework which is already with us for many years and seems that it is here to stay. If you are not familiar with the basic concepts of OAuth 2.0, there is an
+excellent article written by Takahiko Kawasaki. Here is just a quick reminder of the OAuth 2.0 parties:
+
+    Resource Owner – an owner of the protected resource, e.g. user
+    Client – an application that  wants to get access to a protected resource, e.g. server-side web app or single-page application (SPA)
+    Authorization Server – a server that issues tokens
+    Resource Server – a server that manages Resource Owner’s protected data
+
+Let’s go through each OAuth 2.0 flow and discuss their usages.
+
+Client Credentials Grant
+
+It’s the simplest flow. It allows a Client to request an Access Token using its Client ID and Client Secret. Both are kept securely on the Client side and registered in an Authorization Server.
+
+OAuth 2.0 Flow
+
+    In the first step, the Client sends an HTTP request to the Authorization Server including its Client ID and Client Secret (in Authorization header, for example). The request may include requested scopes as well.
+    In the response, the Authorization Server sends an Access Token.
+    The Client uses the Access Token to call Resource Server.
+
+When to use?
+
+As you can see, there is no user involved. Client Credentials Grant is recommended for machine-to-machine authorization. Typically, one trusted service calling another.
+
+Authorization Code Grant
+
+The most commonly used flow, designed especially for server-side applications that can maintain the confidentiality of their Client Secrets. It’s one of the redirection-based flows.
+
+OAuth 2.0 Flow
+
+    The Client initiates the flow by redirecting the User Agent of the Resource Owner to the Authorization Server. The Client includes its Client ID, requested scopes and the redirect URI.
+    Resource Owner authorizes Client, by granting permissions requested by the Client.
+    Authorization Server redirects User Agent back to the Client (using redirect URI from point 1). The redirect URI includes a temporary Authorization Code (as a query param).
+    Client requests an Access Token from the Authorization Server. The request includes Client ID, Client Secret, and Authorization Code received in the previous step.
+    If everything is valid, the Authorization Server returns Access Token and optionally, a Refresh Token.
+    The client uses the Access Token to call the Resource Server on behalf of the Resource Owner.
+
+Why do we need the additional Authorization Code?
+
+Why can’t we just request an Access Token directly? Why was the Authorization Code introduced in the first place? It turns out that main goal was to separate the information exposed to a Client and User Agent. Notice that Access Token doesn’t go through the browser at all. It’s requested from the Client (server-side app) using
+
+Authorization Code forwarded through the User Agent. What’s the problem with going through the browser? OAuth 2.0 doesn’t requireClient server to support HTTPS. So technically, there might be a redirect to a Client server which isn’t done over SSL. If that happens, Authorization Code is sent via plaintext. If someone intercepts it, it’s still useless without Client Secret. However, if you would  directly send an Access Token via HTTP, it could be compromised.
+
+When to use?
+
+As mentioned earlier, this flow is recommended for server-side web applications. However, in the recent years, the variations of this flow has been used also for single-page and mobile applications.
+
+Single-Page Apps
+
+For single-page applications, the only difference is that Client (SPA) doesn’t have Client Secret. Since the SPA run in a browser, and its source code is sort of public, a Client Secret cannot be kept confidential on a browser side. That’s why in the step 4 of the previous diagram, an Authorization Code is exchanged for an Access Token without sending Client Secret.
+
+Native Mobile Apps
+
+Similarly to SPA, native mobile apps are considered to be public, not confidential clients. That’s the reason Client Secret should not be stored in a mobile device (and thus not sent when requesting Access Token). There might be some security issues with Authorization Code Flow without Client Secret implemented in mobile. One such issue is that the Authorization Code might be intercepted by an attacker and exchanged for an Access Token. To mitigate that risk, there is a technique called Proof Key for Code Exchange (PKCE). For every authorization request, the Client has to create a random key called Code Verifier. Its hashed version called Code Challenge is included into the request for Authorization Code. The Authorization Server should associate this Code Challenge with the Authorization Code that it generates. Later, when exchanging the Authorization Code for an Access Token, Client includes Code Verifier as a query parameter. In addition to validation of the standard parameters, the Authorization Server should also validate the Code Verifier using previously received Code Challenge.
+
+OAuth 2.0 Flow
+
+    Client mobile app opens a browser with the authorization request. Authorization request consists of Client ID, requested scopes, redirect URI and Code Challenge.
+    An authorization request is sent to Authentication Server
+    Resource Owner authorizes Client.
+    As a result, the Authorization Code is returned to the User Agent.
+    Authorization Code is passed to the Client.
+    Client app sends the Authorization Code and Code Verifier together with redirect URI and the Client ID to the Authorization Server.
+    The Authorization Server compares a hash of the Code Verifier with the previously sent Code Challenge. If they match, the Authorization Code is exchanged for an Access Token (and optionally Refresh Token)
+    Client uses Access Token to call Resource Server on behalf of the Resource Owner.
+
+Additionally, the current best practice is to use only external User Agent (not embedded web-views) to send requests for Authorization Code.
+
+Implicit Grant
+
+It’s similar to Authorization Code Grant, but it skips the Authorization Code step completely. The Client requests Access Token directly, without the need for an Authorization Code. Additionally,  Client Secret is not involved. In the Implicit Grant, Refresh Tokens are not used. It’s important to mention that an Access Token is returned in a 3xx redirect with as a hash fragment, which is never sent from the browser.
+
+When to use?
+
+It was initially designed as a flow for SPA. It relies on browser and might not be implemented securely in other environments. However, as mentioned previously, for SPA, in the recent years more and more organizations have been moving towards Authorization Code Flow without Client Secret instead of Implicit Flow .
+
+Resource Owner Password Credentials Grant
+
+In this flow, Resource Owner submits his credentials directly to a Client application. Client application uses that credentials to exchange them directly for an Access Token (and optionally a Refresh Token). Similarly to Client Credentials, it’s a not a redirect-based flow.
+
+OAuth 2.0 Flow
+
+    Resource Owner submits his credentials to the Client application.
+    Client forwards the credentials to the Authorization Server.
+    Authorization Server returns Access Token (and optionally a Refresh Token)
+    The Client uses Access Token to call Resource Server on behalf of the Resource Owner.
+
+When to use?
+
+If there is a high degree of trust between the Resource Owner and the Client application. It’s recommended to use it only if other flows are not possible. Most of the original use cases for the Resource Owner Password Credentials Grant can be now covered by Device Flow extension.
+
+Device Flow
+
+It’s a new extension flow added to OAuth 2.0 to cover the scenario when a device has an Internet connection, but don’t have a browser or limited input capability to enter the text, e.g. TV.
+
+In this flow, the device asks the user to open a specific URL on a device with a browser (e.g. smartphone) in order to authorize.
+
+Summary
+
+Here is a quick summary of which flow is designed to be used in a given scenario:
+
+    server-to-server: Client Credentials Flow
+    server-side app: Authorization Code Flow
+    SPA: Authorization Code Flow without Client Secret or Implicit Flow
+    mobile: Authorization Code Flow with PKCE
+    device without browser: Device Flow
+
+Published on Java Code Geeks with permission by Grzegorz Mirek, partner at our JCG program [https://www.javacodegeeks.com/join-us/jcg]. See the original article here: The Right Flow For The Job: Which OAuth 2.0 Flow Should I Use? [http://performantcode.com/2019/01/06/the-right-flow-for-the-job/]
+
+Opinions expressed by Java Code Geeks contributors are their own.

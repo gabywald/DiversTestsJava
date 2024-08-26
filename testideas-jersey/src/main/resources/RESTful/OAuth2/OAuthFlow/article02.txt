@@ -1,0 +1,52 @@
+https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_understanding_user_agent_oauth_flow.htm -- 
+
+Understanding the User-Agent OAuth Authentication Flow
+The user-agent authentication flow is used by client applications (consumers) residing in the user’s device. This could be implemented in a browser using a scripting language such as JavaScript, or from a mobile device or a desktop application. These consumers cannot keep the client secret confidential.
+
+In this flow, the client application requests the authorization server to redirect the user to another Web server or resource which is capable of extracting the access token and passing it back to the application. The following shows the steps for this flow.
+User-agent OAuth authentication flow
+
+    The application redirects the user to the appropriate Salesforce authorization endpoint, such as https://login.salesforce.com/services/oauth2/authorize. The following parameters are required:
+    Parameter	Description
+    response_type	Must be token for this authentication flow
+    client_id	The Consumer Key from the connected app definition.
+    redirect_uri	The Callback URL from the connected app definition.
+    The following parameters are optional:
+    Parameter	Description
+    display	Changes the login page’s display type. Valid values are:
+        page—Full-page authorization screen. This is the default value if none is specified.
+        popup—Compact dialog optimized for modern Web browser popup windows.
+        touch—Mobile-optimized dialog designed for modern smartphones such as Android and iPhone.
+        mobile—Mobile optimized dialog designed for smartphones such as BlackBerry OS 5 that don’t support touch screens.
+    scope	Specifies what data your application can access. See “Scope Parameter Values” in the online help for more information.
+    state	Specifies any additional URL-encoded state data to be returned in the callback URL after approval.
+    An example authorization URL might look something like the following:
+    1	https://login.salesforce.com/services/oauth2/authorize?response_type=token&
+    2	client_id=3MVG9lKcPoNINVBIPJjdw1J9LLJbP_pqwoJYyuisjQhr_LLurNDv7AgQvDTZwCoZuD
+    3	ZrXcPCmBv4o.8ds.5iE&redirect_uri=https%3A%2F%2Fwww.mysite.com%2Fuser_callback.jsp&
+    4	state=mystate
+    The user logs into Salesforce with their credentials. The user interacts with the authorization endpoint directly, so the application never sees the user’s credentials.
+    Once authorization is granted, the authorization endpoint redirects the user to the redirect URL. This URL is defined in the remote access application created for the application. Salesforce appends access token information to the redirect URL with the following values:
+    Parameters	Description
+    access_token	Access token that acts as a session ID that the application uses for making requests. This token should be protected as though it were user credentials.
+    expires_in	Amount of time the access token is valid, in seconds.
+    refresh_token	Token that can be used in the future to obtain new access tokens.
+   	Warning
+		This value is a secret. You should treat it like the user's password and use appropriate measures to protect it.
+    The refresh token is only returned if the redirect URI is https://login.salesforce.com/services/oauth2/success or used with a custom protocol that is not HTTPS.
+    state	The state value that was passed in as part of the initial request, if applicable.
+    instance_url	Identifies the Salesforce instance to which API calls should be sent.
+    id	Identity URL that can be used to both identify the user as well as query for more information about the user. Can be used in an HTTP request to get more information about the end user.
+    issued_at	When the signature was created, represented as the number of seconds since the Unix epoch (00:00:00 UTC on 1 January 1970).
+    signature	Base64-encoded HMAC-SHA256 signature signed with the consumer's private key containing the concatenated ID and issued_at value. The signature can be used to verify that the identity URL wasn’t modified because it was sent by the server.
+    An example callback URL with access information appended after the hash sign (#) might look something like:
+    1	https://www.mysite.com/user_callback.jsp#access_token=00Dx0000000BV7z%21AR8
+    2	AQBM8J_xr9kLqmZIRyQxZgLcM4HVi41aGtW0qW3JCzf5xdTGGGSoVim8FfJkZEqxbjaFbberKGk
+    3	8v8AnYrvChG4qJbQo8&refresh_token=5Aep8614iLM.Dq661ePDmPEgaAW9Oh_L3JKkDpB4xR
+    4	eb54_pZfVti1dPEk8aimw4Hr9ne7VXXVSIQ%3D%3D&expires_in=7200&state=mystate
+    The application uses the provided access token and refresh token to access protected user data.
+
+Keep the following considerations in mind when using the user-agent OAuth flow:
+
+    Because the access token is encoded into the redirection URI, it might be exposed to the end-user and other applications residing on the computer or device. If you’re authenticating using JavaScript, call window.location.replace(); to remove the callback from the browser’s history.
+

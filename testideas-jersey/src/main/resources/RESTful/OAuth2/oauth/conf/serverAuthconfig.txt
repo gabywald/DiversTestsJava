@@ -1,0 +1,3 @@
+port				=	61335
+package4handlers	=	gabywald.oauth.ideas.httpserver.handlers.auth
+repository			=	resources/oauth/conf/authelements.txt
