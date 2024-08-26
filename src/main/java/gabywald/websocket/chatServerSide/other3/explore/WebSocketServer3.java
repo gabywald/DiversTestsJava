@@ -10,11 +10,14 @@ import javax.websocket.OnOpen;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.server.ServerEndpoint;
 
+import gabywald.websocket.chatServerSide.messages.MessageDecoder;
+import gabywald.websocket.chatServerSide.messages.MessageEncoder;
+
 import javax.websocket.Session;
 
 @ServerEndpoint(value = "/websocket/server",
-				encoders = {MessageEncoder.class},
-				decoders = {MessageDecoder.class})
+                encoders = {MessageEncoder.class},
+                decoders = {MessageDecoder.class})
 public class WebSocketServer3 {
     @OnOpen
     public void onOpen(Session session) {
@@ -44,7 +47,7 @@ public class WebSocketServer3 {
         }
         public void onMessage(String message) {
             try {
-            	this._remoteEndpoint.sendText(message);
+                this._remoteEndpoint.sendText(message);
             } catch (IOException e) {
                 e.printStackTrace();
             }

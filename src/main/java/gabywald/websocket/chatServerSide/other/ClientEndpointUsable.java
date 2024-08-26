@@ -24,10 +24,10 @@ public class ClientEndpointUsable {
         javax.websocket.WebSocketContainer container =
             javax.websocket.ContainerProvider.getWebSocketContainer();
         try {
-            container.connectToServer(	ClientEndpointUsable.class, 
-					            		new URI("ws://localhost:8080/websocket/server"));
-							            // new URI("ws://localhost:8887/"));
-            							// new URI("ws://localhost:8887/chat/usertest"));
+            container.connectToServer(    ClientEndpointUsable.class, 
+                                        new URI("ws://localhost:8080/websocket/server"));
+                                        // new URI("ws://localhost:8887/"));
+                                        // new URI("ws://localhost:8887/chat/usertest"));
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         }

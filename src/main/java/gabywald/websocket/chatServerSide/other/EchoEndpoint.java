@@ -1,16 +1,10 @@
 package gabywald.websocket.chatServerSide.other;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Logger;
-import javax.websocket.CloseReason;
-import javax.websocket.EndpointConfig;
-import javax.websocket.MessageHandler;
 import javax.websocket.OnMessage;
-import javax.websocket.RemoteEndpoint;
-import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 @ServerEndpoint("/echo")

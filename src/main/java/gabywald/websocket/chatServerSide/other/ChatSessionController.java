@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
 
+@SuppressWarnings("serial")
 @Named
 @ApplicationScoped
 public class ChatSessionController implements java.io.Serializable {

@@ -17,20 +17,20 @@ import javax.ws.rs.core.SecurityContext;
  */
 @Path("/library")
 public class LibraryResource {
-	
+    
     @Context
     SecurityContext securityContext;
-	
+    
     @RolesAllowed("LIBRARIAN")
     @POST
     @Path("/addBook")
     public Response addBook(@HeaderParam("book") String newBook) {
-    	
+        
         // Authorization check passed, a librarian can add a book
         // Add book logic here
-    	
-    	return Response.ok("NEW BOOK: {" + newBook + "}").build();
-    	// return Response.status(Status.NOT_IMPLEMENTED).build();
+        
+        return Response.ok("NEW BOOK: {" + newBook + "}").build();
+        // return Response.status(Status.NOT_IMPLEMENTED).build();
     }
     
     @RolesAllowed("MEMBER")
@@ -39,9 +39,9 @@ public class LibraryResource {
     public Response viewBooks() {
         // Authorization check passed, a member can view books
         // Return book list
-    	
-    	return Response.ok("VIEW BOOKS").build();
-    	// return Response.status(Status.NOT_IMPLEMENTED).build();
+        
+        return Response.ok("VIEW BOOKS").build();
+        // return Response.status(Status.NOT_IMPLEMENTED).build();
     }
     
     @PermitAll // @DenyAll
@@ -50,9 +50,9 @@ public class LibraryResource {
     public Response findBook(@PathParam("isbn") String isbn) {
         // Authorization check passed, a member can view books
         // FIND book 
-    	
-    	return Response.ok("FIND BOOK: {" + isbn + "}").build();
-    	// return Response.status(Status.NOT_IMPLEMENTED).build();
+        
+        return Response.ok("FIND BOOK: {" + isbn + "}").build();
+        // return Response.status(Status.NOT_IMPLEMENTED).build();
     }
-	
+    
 }

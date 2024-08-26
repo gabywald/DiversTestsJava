@@ -6,8 +6,8 @@ import javax.websocket.server.ServerEndpoint;
 
 @ServerEndpoint(value = "/basicEndpoint")
 public class BasicEndpoint { 
-	@OnMessage
-	public void onMessage(Session session, String message) {
-		// perform an action
-	}
+    @OnMessage
+    public void onMessage(Session session, String message) {
+        // perform an action
+    }
 }

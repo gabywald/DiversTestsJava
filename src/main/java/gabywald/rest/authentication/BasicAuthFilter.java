@@ -15,9 +15,9 @@ import org.apache.commons.codec.binary.Base64;
 public class BasicAuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) {
-    	
-    	// final SecurityContext securityContext = requestContext.getSecurityContext();
-    	
+        
+        // final SecurityContext securityContext = requestContext.getSecurityContext();
+        
         // Extract credentials from the request header
         String authHeader = requestContext.getHeaderString("Authorization");
         
@@ -32,9 +32,9 @@ public class BasicAuthFilter implements ContainerRequestFilter {
             System.out.println( outputData );
         } 
         
-        if ( ! isOKandDone) { requestContext.abortWith(	Response.status(Response.Status.NOT_FOUND)
-					                		.entity( "Resource not found. " )
-					                		.build() ); }
+        if ( ! isOKandDone) { requestContext.abortWith(    Response.status(Response.Status.NOT_FOUND)
+                                            .entity( "Resource not found. " )
+                                            .build() ); }
     }
     
 }

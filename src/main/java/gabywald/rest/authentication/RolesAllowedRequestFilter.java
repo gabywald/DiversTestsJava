@@ -15,16 +15,16 @@ import javax.ws.rs.core.SecurityContext;
  */
 @Priority(Priorities.AUTHORIZATION)
 public class RolesAllowedRequestFilter implements ContainerRequestFilter {
-	
-	@Override
-	public void filter(ContainerRequestContext requestContext) throws IOException {
-		
-		// see https://stackoverflow.com/questions/44692946/inject-securitycontext-in-service
-		final SecurityContext securityContext = requestContext.getSecurityContext();
-		
+    
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
+        
+        // see https://stackoverflow.com/questions/44692946/inject-securitycontext-in-service
+        final SecurityContext securityContext = requestContext.getSecurityContext();
+        
         // boolean hasRole = stream(rolesAllowed).anyMatch(r -> requestContext.getSecurityContext().isUserInRole(r));
         // TODO hasRole
 
-	}
+    }
 
 }

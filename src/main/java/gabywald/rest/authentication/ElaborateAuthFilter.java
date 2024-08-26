@@ -15,12 +15,12 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class ElaborateAuthFilter implements ContainerResponseFilter {
 
-	@Override
-	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
-			throws IOException {
-		
-    	// final SecurityContext securityContext = requestContext.getSecurityContext();
-    	
+    @Override
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
+            throws IOException {
+        
+        // final SecurityContext securityContext = requestContext.getSecurityContext();
+        
         // Extract credentials from the request header
         String authHeader = requestContext.getHeaderString("Authorization");
         
@@ -38,14 +38,14 @@ public class ElaborateAuthFilter implements ContainerResponseFilter {
         }
         
         Response.Status respCode = ( (isOKandDone) && (hasLoginAndPassword) ) ? Response.Status.OK : Response.Status.NOT_FOUND ;
-        		// (isOKandDone) ? ( (hasLoginAndPassword) ? Response.Status.OK : Response.Status.PARTIAL_CONTENT ) : Response.Status.NOT_FOUND ;
+                // (isOKandDone) ? ( (hasLoginAndPassword) ? Response.Status.OK : Response.Status.PARTIAL_CONTENT ) : Response.Status.NOT_FOUND ;
         
         if ( (isOKandDone) && (hasLoginAndPassword) ) { System.out.println( "Filter is OK !" ); } else { ; }
         
-    	responseContext.setStatus(respCode.getStatusCode());
-    	responseContext.setStatusInfo(respCode);
+        responseContext.setStatus(respCode.getStatusCode());
+        responseContext.setStatusInfo(respCode);
         // responseContext.setEntity(outputData);
-    	
-	}
+        
+    }
 
 }

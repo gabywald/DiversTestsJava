@@ -35,10 +35,10 @@ public class WebSocketServer2 {
     public void onMessage(Session session, String message) {
         System.out.println(String.format("Received message(2)::%s - sessionId::%s", message, session.getId()));
         try {
-			session.getBasicRemote().sendText("Raiponce : '" + message + "'");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+            session.getBasicRemote().sendText("Raiponce : '" + message + "'");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     private class ServerMessageHandler2 implements MessageHandler.Whole<String> {
@@ -49,7 +49,7 @@ public class WebSocketServer2 {
         }
         public void onMessage(String message) {
             try {
-            	this._remoteEndpoint.sendText(message);
+                this._remoteEndpoint.sendText(message);
             } catch (IOException e) {
                 e.printStackTrace();
             }

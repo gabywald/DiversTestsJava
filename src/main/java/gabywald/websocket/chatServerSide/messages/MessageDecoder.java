@@ -1,4 +1,4 @@
-package gabywald.websocket.chatServerSide.other3.explore;
+package gabywald.websocket.chatServerSide.messages;
 
 import javax.websocket.DecodeException;
 import javax.websocket.Decoder;
@@ -12,7 +12,6 @@ public class MessageDecoder implements Decoder.Text<Message> {
 
     @Override
     public Message decode(String s) throws DecodeException {
-    	System.out.println("MD decode : " + s);
         return gson.fromJson(s, Message.class);
     }
 

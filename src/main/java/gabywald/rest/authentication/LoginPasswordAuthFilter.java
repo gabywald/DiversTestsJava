@@ -15,13 +15,13 @@ import org.apache.commons.codec.binary.Base64;
  */
 @Provider
 public class LoginPasswordAuthFilter implements ContainerRequestFilter {
-	@Override
-	public void filter(ContainerRequestContext requestContext) throws IOException {
-    	// final SecurityContext securityContext = requestContext.getSecurityContext();
-    	
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
+        // final SecurityContext securityContext = requestContext.getSecurityContext();
+        
         // Extract credentials from the request header
-		String loginHeader = requestContext.getHeaderString("login");
-		String psswdHeader = requestContext.getHeaderString("password");
+        String loginHeader = requestContext.getHeaderString("login");
+        String psswdHeader = requestContext.getHeaderString("password");
         
         boolean isOKandDone = false;
         
@@ -35,10 +35,10 @@ public class LoginPasswordAuthFilter implements ContainerRequestFilter {
             System.out.println( outputData );
         } 
         
-        if ( ! isOKandDone) { requestContext.abortWith(	Response.status(Response.Status.NOT_FOUND)
-					                		.entity( "Resource not found. " )
-					                		.build() ); }
+        if ( ! isOKandDone) { requestContext.abortWith(    Response.status(Response.Status.NOT_FOUND)
+                                            .entity( "Resource not found. " )
+                                            .build() ); }
 
-	}
+    }
 
 }
