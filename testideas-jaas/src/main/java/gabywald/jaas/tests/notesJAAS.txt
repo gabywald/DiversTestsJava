@@ -1,0 +1,8 @@
+
+https://docs.oracle.com/javase/8/docs/technotes/guides/security/jaas/tutorials/GeneralAcnOnly.html JAAS Authentication Tutorial
+https://docs.oracle.com/javase/8/docs/technotes/guides/security/jaas/tutorials/GeneralAcnAndAzn.html JAAS Authorization Tutorial
+
+java -Djava.security.auth.login.config==sample_jaas.config gabywald.jaas.tests.SampleAcn
+
+https://docs.oracle.com/javase/8/docs/technotes/guides/security/permissions.html Permissions in the Java Development Kit (JDK)
+https://docs.oracle.com/javase/8/docs/technotes/guides/security/PolicyFiles.html Default Policy Implementation and Policy File Syntax

@@ -1,5 +1,0 @@
-
-20240812
-	https://gist.github.com/gyassine/a6689d1d7b5332da561f73401917d605
-	mvn install:install-file -Dfile=src/main/resources/Jade/JADE-bin-4.6.0/jade/lib/jade.jar -DgroupId=jade -DartifactId=jade -Dversion=4.6.0 -Dpackaging=jar -DgeneratePom=true
-	java -cp src/main/resources/Jade/JADE-JADE-all-4.6.0/JADE-bin-4.6.0/jade/lib/jade.jar jade.Boot -gui
