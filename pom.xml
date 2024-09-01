@@ -112,6 +112,6 @@
     	<module>testideas-websockets</module>
     	<module>testideas-sgbd</module>
     	<module>testideas-jersey</module>
-    	<module>testideas-httpANDrest</module>
+    	<module>testideas-httpREST</module>
     </modules>
 </project>

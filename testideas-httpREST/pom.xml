@@ -9,7 +9,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>testideas-httpANDrest</artifactId>
+	<artifactId>testideas-httpREST</artifactId>
 
 	<properties>
 		<apache.http.client.version>4.5.13</apache.http.client.version>
