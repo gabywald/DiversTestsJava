@@ -7,6 +7,10 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
 
+/**
+ * 
+ * @author Gabriel Chandesris (2024)
+ */
 @SuppressWarnings("serial")
 @Named
 @ApplicationScoped

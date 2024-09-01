@@ -1,4 +1,4 @@
-package gabywald.websocket.chatServerSide.other2;
+package gabywald.websocket.chatServerSide.other3.explore;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,6 +26,8 @@ public class BasicClient {
 		try {
 			WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 			this.session = container.connectToServer(this, endpointURI);
+			// ***** session.addMessageHandler(new ServerMessageHandler(this.session.getBasicRemote()));
+			// ***** this.addMessageHandler(this.session.getBasicRemote());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -35,7 +37,7 @@ public class BasicClient {
 	public void onOpen(Session session) {
 		this.session = session;
 		try {
-			session.getBasicRemote().sendText("Opening connection");
+			this.session.getBasicRemote().sendText("Opening connection");
 		} catch (IOException ex) {
 			System.out.println(ex);
 		}
@@ -62,5 +64,11 @@ public class BasicClient {
 	public static interface MessageHandler {
 		public void handleMessage(String message);
 	}
+
+
+	public void closeConnection() throws IOException { this.session.close(); }
+
+	// TODO closeConnection(String reason)
+	// public void closeConnection(String reason) { this.session.close(reason); }
 
 }

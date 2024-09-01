@@ -12,12 +12,13 @@ import org.junit.jupiter.api.BeforeEach;
 
 import org.junit.jupiter.api.Test;
 
-import gabywald.websocket.chatServerSide.other3.explore.BasicClient3;
+import gabywald.websocket.chatServerSide.other3.explore.BasicClient;
 import gabywald.websocket.chatServerSide.other3.explore.WebSocketServer2;
 
-import javax.websocket.ContainerProvider;
-import javax.websocket.WebSocketContainer;
-
+/**
+ * 
+ * @author Gabriel Chandesris (2024)
+ */
 class WebSocketServer2EndpointTest {
 	
 	private Server server = null;
@@ -39,7 +40,7 @@ class WebSocketServer2EndpointTest {
 		// try {
         
 			server = new Server("localhost", 8080, "", null, WebSocketServer2.class);
-			
+
 			server.start();
 			
 			// BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -63,34 +64,34 @@ class WebSocketServer2EndpointTest {
 		
 		System.out.println("TEST 01");
 		
-        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        // WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         
         System.out.println("TEST 02");
 
         try {
 			// Session currentSession = container.connectToServer(	BasicClient.class, new URI("ws://localhost:8080/websocket/server"));
         	
-        	BasicClient3 bc3 = new BasicClient3(new URI("ws://localhost:8080/websocket/server"));
+        	BasicClient bc = new BasicClient(new URI("ws://localhost:8080/websocket/server"));
 			
 			System.out.println("TEST 03");
 			
-			bc3.sendMessage("{ \"message\" }");
+			bc.sendMessage("message");
 			
-			// bc3.processMessage("pong ?");
+			try { Thread.sleep(1000); } 
+			catch (InterruptedException e) { e.printStackTrace(); }
 			
-	
-			bc3.closeConnection();
+			bc.sendMessage("ceci est un autre message");
 			
-			// currentSession.getBasicRemote().sendText( "test" );
-			// currentSession.getAsyncRemote().sendText("txt");
+			try { Thread.sleep(1000); } 
+			catch (InterruptedException e) { e.printStackTrace(); }
+			
+			bc.closeConnection();
 			
 			System.out.println("TEST 04");
 			
 		} catch (IOException | URISyntaxException e) { System.out.println("Exception");e.printStackTrace(); }
         
         System.out.println("TEST 05");
-		
-		// fail("Not yet implemented");
 	}
 
 }

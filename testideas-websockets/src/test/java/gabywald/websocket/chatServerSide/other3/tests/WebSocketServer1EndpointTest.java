@@ -19,6 +19,10 @@ import javax.websocket.DeploymentException;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
+/**
+ * 
+ * @author Gabriel Chandesris (2024)
+ */
 class WebSocketServer1EndpointTest {
 	
 	private Server server = null;
@@ -72,6 +76,8 @@ class WebSocketServer1EndpointTest {
 			Session currentSession = container.connectToServer(	BasicClient.class, new URI("ws://localhost:8080/websocket/server"));
 			
 			System.out.println("TEST 03");
+			
+			System.out.println( currentSession.isOpen() );
 			
 			// currentSession.getBasicRemote().sendText( "test" );
 			// currentSession.getAsyncRemote().sendText("txt");

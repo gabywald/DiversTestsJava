@@ -1,18 +1,29 @@
 package gabywald.websocket.chatServerSide.messages;
 
+import java.util.Arrays;
+
 import javax.websocket.EncodeException;
 import javax.websocket.Encoder;
 import javax.websocket.EndpointConfig;
 
-import com.google.gson.Gson;
+import org.json.JSONObject;
 
+/**
+ * 
+ * @author Gabriel Chandesris (2024)
+ */
 public class MessageEncoder implements Encoder.Text<Message> {
-
-    private static Gson gson = new Gson();
 
     @Override
     public String encode(Message message) throws EncodeException {
-        return gson.toJson(message);
+    	
+    	System.out.println("EN-CODING MESSAGE !!");
+    	
+    	JSONObject jsonobj = new JSONObject();
+    	Arrays.asList( Message.fieldNames ).forEach( nameOfField -> {
+    		jsonobj.append(nameOfField, message.getField(nameOfField) );
+    	});
+        return jsonobj.toString();
     }
 
     @Override

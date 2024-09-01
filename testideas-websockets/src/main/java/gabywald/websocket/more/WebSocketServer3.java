@@ -1,13 +1,15 @@
-package gabywald.websocket.chatServerSide.other3.explore;
+package gabywald.websocket.more;
 
 import java.io.IOException;
 
+import javax.websocket.EncodeException;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.server.ServerEndpoint;
 
+import gabywald.websocket.chatServerSide.messages.Message;
 import gabywald.websocket.chatServerSide.messages.MessageDecoder;
 import gabywald.websocket.chatServerSide.messages.MessageEncoder;
 
@@ -20,7 +22,7 @@ import javax.websocket.Session;
 @ServerEndpoint(value = "/websocket/server", 
 				decoders = MessageDecoder.class, 
 				encoders = MessageEncoder.class )
-public class WebSocketServer2 {
+public class WebSocketServer3 {
     @OnOpen
     public void onOpen(Session session) {
         System.out.println(String.format("Connection Established::%s", session.getId()));
@@ -37,23 +39,23 @@ public class WebSocketServer2 {
     public void onError(Throwable t) {
         System.out.println(t.toString());
     }
-
-    @OnMessage
-    public void onMessage(Session session, String message) {
-        System.out.println(String.format("Received message::%s - sessionId::%s", message, session.getId()));
-        try {
-			session.getBasicRemote().sendText("Message reçu : {" + message + "}");
-			session.getBasicRemote().flushBatch();
-		} catch (IOException e) { e.printStackTrace(); }
-    }
     
 //    @OnMessage
-//    public void onMessage(Session session, Message message) {
-//        System.out.println(String.format("Received OBJECT message::%s - sessionId::%s", message, session.getId()));
+//    public void onMessage(Session session, String message) {
+//        System.out.println(String.format("Received message::%s - sessionId::%s", message, session.getId()));
 //        try {
-//			session.getBasicRemote().sendText("Message OBJECT reçu : {" + message + "}");
+//			session.getBasicRemote().sendText("Message reçu : {" + message + "}");
 //			session.getBasicRemote().flushBatch();
 //		} catch (IOException e) { e.printStackTrace(); }
 //    }
-
+    
+    @OnMessage
+    public void onMessage(Session session, Message message) {
+        System.out.println(String.format("Received OBJECT message::%s - sessionId::%s", message.getContent(), session.getId()));
+        try {
+        	message.setContent( "passé par le serveur ! (was: '" + message.getContent() + "')" );
+			session.getBasicRemote().sendObject( message );
+			session.getBasicRemote().flushBatch();
+		} catch (IOException | EncodeException e) { e.printStackTrace(); }
+    }
 }

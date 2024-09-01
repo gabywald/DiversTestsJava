@@ -10,6 +10,10 @@ import javax.websocket.DeploymentException;
 import javax.websocket.OnMessage;
 import javax.websocket.Session;
 
+/**
+ * 
+ * @author Gabriel Chandesris (2024)
+ */
 @ClientEndpoint
 public class ClientEndpointUsable {
     private static final Logger LOGGER = Logger.getLogger(ClientEndpointUsable.class.getName());
@@ -24,10 +28,10 @@ public class ClientEndpointUsable {
         javax.websocket.WebSocketContainer container =
             javax.websocket.ContainerProvider.getWebSocketContainer();
         try {
-            container.connectToServer(    ClientEndpointUsable.class, 
-                                        new URI("ws://localhost:8080/websocket/server"));
-                                        // new URI("ws://localhost:8887/"));
-                                        // new URI("ws://localhost:8887/chat/usertest"));
+            container.connectToServer(	ClientEndpointUsable.class, 
+					            		new URI("ws://localhost:8080/websocket/server"));
+							            // new URI("ws://localhost:8887/"));
+            							// new URI("ws://localhost:8887/chat/usertest"));
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         }

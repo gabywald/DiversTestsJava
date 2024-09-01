@@ -1,18 +1,37 @@
 package gabywald.websocket.chatServerSide.messages;
 
+import java.util.Arrays;
+
 import javax.websocket.DecodeException;
 import javax.websocket.Decoder;
 import javax.websocket.EndpointConfig;
 
-import com.google.gson.Gson;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+/**
+ * 
+ * @author Gabriel Chandesris (2024)
+ */
 public class MessageDecoder implements Decoder.Text<Message> {
-
-    private static Gson gson = new Gson();
 
     @Override
     public Message decode(String s) throws DecodeException {
-        return gson.fromJson(s, Message.class);
+    	
+    	System.out.println("DE-CODING MESSAGE !!");
+    	
+    	try {
+	    	JSONObject jsonobj = new JSONObject( s );
+	    	Message msg = new Message();
+	    	Arrays.asList( Message.fieldNames ).forEach( nameOfField -> {
+	    		msg.setField(nameOfField, jsonobj.get( nameOfField ).toString());
+	    	});
+	        return msg;
+    	} catch (JSONException je) {
+    		Message mje = new Message();
+    		mje.setContent("[JSONException]: \"" + je.getMessage() + "\" ; /" + s + "/");
+    		return mje;
+    	}
     }
 
     @Override
