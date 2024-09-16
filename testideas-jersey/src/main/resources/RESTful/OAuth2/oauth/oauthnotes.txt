@@ -1,0 +1,68 @@
+https://en.wikipedia.org/wiki/OAuth -- 
+http://www.bubblecode.net/fr/2016/01/22/comprendre-oauth2/ -- 
+https://www.tutorialspoint.com/oauth2.0/ -- 
+
+https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html -- 
+
+https://fr.wikibooks.org/wiki/Programmation_Java/Réflexion -- 
+
+https://tools.ietf.org/html/rfc6749 -- 
+
+4 types d'authorisation (Authorization Grant Types)
+	L'autorisation via un code (Authorization Code Grant)
+	L'autorisation implicite (Implicit Grant)
+	L'autorisation via mot de passe (Resource Owner Password Credentials Grant)
+	L'autorisation serveur à serveur (Client Credentials Grant)
+	=> -- authorization code, implicit, resource owner password credentials, client credentials --
+	
+4 rôles
+	Resource Owner (utilisateur ou équivalent)
+	Resource Server (serveur de données)
+	Client [Application] (utilisation des données)
+	Authorization Server (serveur qui délivre tokens / jetons)
+	
+
+ * https://aaronparecki.com/2012/07/29/2/oauth2-simplified -- 
+ * The first step of OAuth 2 is to get authorization from the user. For browser-based or mobile apps, this is usually accomplished by displaying an interface provided by the service to the user.
+ * OAuth 2 provides several "grant types" for different use cases. The grant types defined are:
+ *   Authorization Code for apps running on a web server
+ *   Implicit for browser-based or mobile apps
+ *   Password for logging in with a username and password
+ *   Client credentials for application access
+ * 
+ * 
+ * Web Server OAuth Authentication Flow<br/>
+ * 		Application redirect to {authorize}
+ * 			Required parameters : response_type [code] ; client_id ; redirect_uri
+ * 			Optional parameters : code_challenge ; display {page,popup,touch,mobile} ; immediate {false,true} ; login_hint ; nonce ; prompt {login,consent} ; scope ; state
+ * 		Authentication with specific server (user logs), reply with {redirect_uri} and parameters. 
+ * 			Parameters : code ; state
+ * 		Request token. 
+ * 			Required parameters : grant_type [authorization_code] ; client_id ; client_secret ; redirect_uri ; code
+ * 			Optional parameters : client_assertion ; client_assertion_type ; code_verifier ; format {urlencoded;json;xml}
+ * 		Request successful. 
+ * 			Parameters : access_token ; refresh_token ; instance_url ; id ; issued_at ; signature
+ * 		Application provides access to data. 
+ * 
+ * User-Agent OAuth Authentication Flow<br/>
+ * 		Application redirect to {authorize}
+ * 			Required parameters : response_type [token] ; client_id ; redirect_uri
+ * 			Optional parameters : display {page,popup,touch,mobile} ; scope ; state
+ * 		Authentication with specific server (user logs), reply with {redirect_uri} and parameters. 
+ * 			Parameters : access_token ; expires_in ; refresh_token ; state ; instance_url ; id ; issued_at ; signature
+ * 		Application use the token / provides access to data. 
+ * 
+ * Username-Password OAuth Authentication Flow<br/>
+ * 		Application use username and password to request token. 
+ * 			Parameters : grant_type [password] ; client_id ; client_secret ; username ; password
+ * 		Request successful. 
+ * 			Parameters : access_token ; instance_url ; id ; issued_at ; signature
+ * 		Application use the token / provides access to data. 
+ * 
+ * OAuth Refresh Token Process<br/>
+ * 		To the token request endpoint. 
+ * 			Parameters : grant_type [refresh_token] ; refresh_token ; client_id ; client_secret ; format {urlencoded;json;xml}
+ * 		Request successful. 
+ * 			Parameters : access_token ; instance_url ; id ; issued_at ; signature
+ * 		Application use the token / provides access to data. 
+ 

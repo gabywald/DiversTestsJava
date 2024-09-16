@@ -1,0 +1,34 @@
+
+Authentification / Authentication : 
+http://httpd.apache.org/docs/current/howto/auth.html -- 
+
+REST : 
+http://www.oracle.com/technetwork/articles/javase/index-137171.html --
+
+Annotations Java : 
+https://en.wikipedia.org/wiki/Java_annotation -- 
+http://docs.oracle.com/javase/tutorial/java/annotations/predefined.html -- 
+http://docs.oracle.com/javase/tutorial/java/annotations/declaring.html -- 
+
+... : 
+https://zestedesavoir.com/tutoriels/422/la-theorie-rest-restful-et-hateoas/ -- 
+
+OAuth : 
+http://blog.netapsys.fr/oauth-comment-ca-marche/comment-page-1/ -- 
+http://www.bubblecode.net/fr/2013/03/10/comprendre-oauth2/ -- 
+https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_understanding_username_password_oauth_flow.htm -- 
+https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_understanding_web_server_oauth_flow.htm --
+https://www.javacodegeeks.com/2019/01/right-flow-job-oauth-2-0-flow-should-use.html 
+
+JAX-RS specification
+https://jax-rs-spec.java.net/ -- Java API for RESTful Services (JAX-RS)
+https://jax-rs-spec.java.net/nonav/2.0-rev-a/apidocs/index.html
+
+HTTP
+http://www.mkyong.com/java/how-to-send-http-request-getpost-in-java/ -- 
+http://www.mkyong.com/java/how-to-automate-login-a-website-java-example/ -- 
+
+How to write a 3D soft engine...
+http://blogs.msdn.com/b/davrous/archive/2013/06/13/tutorial-series-learning-how-to-write-a-3d-soft-engine-from-scratch-in-c-typescript-or-javascript.aspx --
+http://www.sitepoint.com/write-3d-soft-engine-scratch-part-1/ --  
+http://loulou.developpez.com/tutoriels/moteur3d/ -- 

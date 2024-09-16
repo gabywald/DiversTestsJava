@@ -5,6 +5,8 @@ Quelques tests de programmation en Java, des notes diverses,
   * OAuth
   * Socket implementation
   * HTTP use
+  * Blockchain basique
+  * Sons colorés et tests Java Sound
   * Challenge CybserSec (quelques notes)
   * Java Swing : Full Screen, SpalshScreen (à revoir / préciser)
   * Java reflect / réflexivité / introspection
@@ -21,4 +23,4 @@ Voir également :
   * [SSO / Signle Sign-On](https://en.wikipedia.org/wiki/Single_sign-on)
   * ... 
   
-
+Ce projet est assez "fouilli" et aggrège des codes d'utilités diverses ; découpage le 20240826 pour répartir l'exploration en plusieurs modules maven afin de segmenter les dépendances, les resources et offir une meilleure visibilité sur chaque parties. 

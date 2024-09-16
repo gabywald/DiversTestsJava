@@ -1,0 +1,52 @@
+	static String 	APPLICATION_ATOM_XML
+	A String constant representing "application/atom+xml" media type.
+	static MediaType 	APPLICATION_ATOM_XML_TYPE
+	A MediaType constant representing "application/atom+xml" media type.
+	static String 	APPLICATION_FORM_URLENCODED
+	A String constant representing "application/x-www-form-urlencoded" media type.
+	static MediaType 	APPLICATION_FORM_URLENCODED_TYPE
+	A MediaType constant representing "application/x-www-form-urlencoded" media type.
+	static String 	APPLICATION_JSON
+	A String constant representing "application/json" media type.
+	static MediaType 	APPLICATION_JSON_TYPE
+	A MediaType constant representing "application/json" media type.
+	static String 	APPLICATION_OCTET_STREAM
+	A String constant representing "application/octet-stream" media type.
+	static MediaType 	APPLICATION_OCTET_STREAM_TYPE
+	A MediaType constant representing "application/octet-stream" media type.
+	static String 	APPLICATION_SVG_XML
+	A String constant representing "application/svg+xml" media type.
+	static MediaType 	APPLICATION_SVG_XML_TYPE
+	A MediaType constant representing "application/svg+xml" media type.
+	static String 	APPLICATION_XHTML_XML
+	A String constant representing "application/xhtml+xml" media type.
+	static MediaType 	APPLICATION_XHTML_XML_TYPE
+	A MediaType constant representing "application/xhtml+xml" media type.
+	static String 	APPLICATION_XML
+	A String constant representing "application/xml" media type.
+	static MediaType 	APPLICATION_XML_TYPE
+	A MediaType constant representing "application/xml" media type.
+	static String 	CHARSET_PARAMETER
+	The media type charset parameter name.
+	static String 	MEDIA_TYPE_WILDCARD
+	The value of a type or subtype wildcard "*".
+	static String 	MULTIPART_FORM_DATA
+	A String constant representing "multipart/form-data" media type.
+	static MediaType 	MULTIPART_FORM_DATA_TYPE
+	A MediaType constant representing "multipart/form-data" media type.
+	static String 	TEXT_HTML
+	A String constant representing "text/html" media type.
+	static MediaType 	TEXT_HTML_TYPE
+	A MediaType constant representing "text/html" media type.
+	static String 	TEXT_PLAIN
+	A String constant representing "text/plain" media type.
+	static MediaType 	TEXT_PLAIN_TYPE
+	A MediaType constant representing "text/plain" media type.
+	static String 	TEXT_XML
+	A String constant representing "text/xml" media type.
+	static MediaType 	TEXT_XML_TYPE
+	A MediaType constant representing "text/xml" media type.
+	static String 	WILDCARD
+	A String constant representing wildcard "*/*" media type .
+	static MediaType 	WILDCARD_TYPE
+	A MediaType constant representing wildcard "*/*" media type.

@@ -1,0 +1,18 @@
+port	61337
+authentication	activated
+authenticationflow	tobedefined
+authenticationruri	localserver
+OAuth:format	application/json
+account	admin	password
+account	user	password
+account	anonymous	anonymous
+service	authorize	all username	password
+service	token	all	username	password
+service	revoke	all	token
+service	authentication	all	username	password
+service	listusers	identified
+service	parsely	identified
+service	connected	identified
+service	adduser	admin	username	password
+service	onemoreservice	all	param01	param02	param03	param04	param05
+service	content	all	content

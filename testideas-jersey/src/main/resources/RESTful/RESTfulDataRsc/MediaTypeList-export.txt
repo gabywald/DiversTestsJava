@@ -1,0 +1,52 @@
+	/** A String constant representing "application/atom+xml" media type. */
+	public static String APPLICATION_ATOM_XML = "application/atom+xml";
+	/** A MediaType constant representing "application/atom+xml" media type. */
+	public static MediaType APPLICATION_ATOM_XML_TYPE = new MediaType("application/atom+xml");
+	/** A String constant representing "application/x-www-form-urlencoded" media type. */
+	public static String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
+	/** A MediaType constant representing "application/x-www-form-urlencoded" media type. */
+	public static MediaType APPLICATION_FORM_URLENCODED_TYPE = new MediaType("application/x-www-form-urlencoded");
+	/** A String constant representing "application/json" media type. */
+	public static String APPLICATION_JSON = "application/json";
+	/** A MediaType constant representing "application/json" media type. */
+	public static MediaType APPLICATION_JSON_TYPE = new MediaType("application/json");
+	/** A String constant representing "application/octet-stream" media type. */
+	public static String APPLICATION_OCTET_STREAM = "application/octet-stream";
+	/** A MediaType constant representing "application/octet-stream" media type. */
+	public static MediaType APPLICATION_OCTET_STREAM_TYPE = new MediaType("application/octet-stream");
+	/** A String constant representing "application/svg+xml" media type. */
+	public static String APPLICATION_SVG_XML = "application/svg+xml";
+	/** A MediaType constant representing "application/svg+xml" media type. */
+	public static MediaType APPLICATION_SVG_XML_TYPE = new MediaType("application/svg+xml");
+	/** A String constant representing "application/xhtml+xml" media type. */
+	public static String APPLICATION_XHTML_XML = "application/xhtml+xml";
+	/** A MediaType constant representing "application/xhtml+xml" media type. */
+	public static MediaType APPLICATION_XHTML_XML_TYPE = new MediaType("application/xhtml+xml");
+	/** A String constant representing "application/xml" media type. */
+	public static String APPLICATION_XML = "application/xml";
+	/** A MediaType constant representing "application/xml" media type. */
+	public static MediaType APPLICATION_XML_TYPE = new MediaType("application/xml");
+	/** The media type charset parameter name. */
+	public static String CHARSET_PARAMETER = "toCheck";
+	/** The value of a type or subtype wildcard "*". */
+	public static String MEDIA_TYPE_WILDCARD = "toCheck";
+	/** A String constant representing "multipart/form-data" media type. */
+	public static String MULTIPART_FORM_DATA = "multipart/form-data";
+	/** A MediaType constant representing "multipart/form-data" media type. */
+	public static MediaType MULTIPART_FORM_DATA_TYPE = new MediaType("multipart/form-data");
+	/** A String constant representing "text/html" media type. */
+	public static String TEXT_HTML = "text/html";
+	/** A MediaType constant representing "text/html" media type. */
+	public static MediaType TEXT_HTML_TYPE = new MediaType("text/html");
+	/** A String constant representing "text/plain" media type. */
+	public static String TEXT_PLAIN = "text/plain";
+	/** A MediaType constant representing "text/plain" media type. */
+	public static MediaType TEXT_PLAIN_TYPE = new MediaType("text/plain");
+	/** A String constant representing "text/xml" media type. */
+	public static String TEXT_XML = "text/xml";
+	/** A MediaType constant representing "text/xml" media type. */
+	public static MediaType TEXT_XML_TYPE = new MediaType("text/xml");
+	/** A String constant representing wildcard "*/*" media type . */
+	public static String WILDCARD = "toCheck";
+	/** A MediaType constant representing wildcard "*/*" media type. */
+	public static MediaType WILDCARD_TYPE = "toCheck";

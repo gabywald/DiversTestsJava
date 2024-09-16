@@ -1,0 +1,103 @@
+https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_understanding_web_server_oauth_flow.htm -- 
+
+Understanding the Web Server OAuth Authentication Flow
+The Web server authentication flow is used by applications that are hosted on a secure server. A critical aspect of the Web server flow is that the server must be able to protect the consumer secret. You can also use code challenge and verifier values in the flow to prevent authorization code interception.
+
+In this flow, the client application requests the authorization server to redirect the user to another web server or resource that authorizes the user and sends the application an authorization code. The application uses the authorization code to request an access token. The following shows the steps for this flow.
+
+Web server OAuth authentication flow
+    The application redirects the user to the appropriate Salesforce authorization endpoint, such as https://login.salesforce.com/services/oauth2/authorize. The following parameters are required:
+    Parameter	Description
+    response_type	Must be code for this authentication flow.
+    client_id	The Consumer Key from the connected app definition.
+    redirect_uri	The Callback URL from the connected app definition.
+    The following parameters are optional:
+    Parameter	Description
+    code_challenge	Specifies the SHA256 hash value of the code_verifier value in the token request to help prevent authorization code interception attacks. The hash value must be base64url encoded as defined here: https://tools.ietf.org/html/rfc4648#section-5.
+        If the code_challenge value is provided in the authorization request and a code_verifier value is provided in the token request, Salesforce compares the code_challenge to the code_verifier. If the code_challenge is invalid or doesn’t match, the login fails with the invalid_request error code.
+        If the code_challenge value is provided in the authorization request, but a code_verifier value is not provided in the token request, the login fails with the invalid_grant error code.
+   	Note
+   		The value should be base64url-encoded only once.
+    display	Changes the login page’s display type. Valid values are:
+        page—Full-page authorization screen. This is the default value if none is specified.
+        popup—Compact dialog optimized for modern Web browser popup windows.
+        touch—Mobile-optimized dialog designed for modern smartphones such as Android and iPhone.
+        mobile—Mobile optimized dialog designed for smartphones such as BlackBerry OS 5 that don’t support touch screens.
+    immediate	Determines whether the user should be prompted for login and approval. Values are either true or false. Default is false.
+        If set to true, and if the user is currently logged in and has previously approved the application, the approval step is skipped.
+        If set to true and the user is not logged in or has not previously approved the application, the session is immediately terminated with the immediate_unsuccessful error code.
+    login_hint	Provides a valid username value to pre-populate the login page with the username. For example:login_hint=username@company.com. If a user already has an active session in the browser, then the login_hint parameter does nothing; the active user session continues.
+    nonce	Specifies a value to be returned in the response; this is useful for detecting "replay" attacks. Optional with the openid scope for getting a user ID token.
+    prompt	Specifies how the authorization server prompts the user for reauthentication and reapproval. This parameter is optional. The only values Salesforce supports are:
+        login—The authorization server must prompt the user for reauthentication, forcing the user to log in again.
+        consent—The authorization server must prompt the user for reapproval before returning information to the client.
+    It is valid to pass both values, separated by a space, to require the user to both log in and reauthorize. For example:
+    1	?prompt=login%20consent
+    scope	Specifies what data your application can access. See “Scope Parameter Values” in the online help for more information.
+    state	Specifies any additional URL-encoded state data to be returned in the callback URL after approval.
+    An example authorization URL might look something like the following:
+    1	https://login.salesforce.com/services/oauth2/authorize?response_type=code
+    2	&client_id=3MVG9lKcPoNINVBIPJjdw1J9LLM82HnFVVX19KY1uA5mu0QqEWhqKpoW3svG3X
+    3	HrXDiCQjK1mdgAvhCscA9GE&redirect_uri=https%3A%2F%2Fwww.mysite.com%2F
+    4	code_callback.jsp&state=mystate
+    The user logs into Salesforce with their credentials. The user is interacting with the authorization endpoint directly, so the application never sees the user’s credentials. After successfully logging in, the user is asked to authorize the application. Note that if the user has already authorized the application, this step is skipped.
+    After Salesforce confirms that the client application is authorized, the end-user’s Web browser is redirected to the callback URL specified by the redirect_uri parameter. Salesforce appends authorization information to the redirect URL with the following values:
+    Parameters	Description
+    code	Authorization code the consumer must use to obtain the access and refresh tokens.
+    state	The state value that was passed in as part of the initial request, if applicable.
+    An example callback URL with authorization information might look something like:
+    1	https://www.mysite.com/authcode_callback?code=aWekysIEeqM9PiT
+    2	hEfm0Cnr6MoLIfwWyRJcqOqHdF8f9INokharAS09ia7UNP6RiVScerfhc4w%3D%3D
+    The application extracts the authorization code and passes it in a request to Salesforce for an access token. This request is a POST request sent to the appropriate Salesforce token request endpoint, such as https://login.salesforce.com/services/oauth2/token. The following parameters are required:
+    Parameter	Description
+    grant_type	Value must be authorization_code for this flow.
+    client_id	The Consumer Key from the connected app definition.
+    client_secret	The Consumer Secret from the connected app definition.
+    redirect_uri	The Callback URL from the connected app definition.
+    code	Authorization code the consumer must use to obtain the access and refresh tokens.
+    The following parameters are optional:
+    Parameter	Description
+    client_assertion	Instead of passing in client_secret you can choose to provide a client_assertion and client_assertion_type. If a client_secret parameter is not provided, Salesforce checks for the client_assertion and client_assertion_type automatically. The value of client_assertion must be a typical JWT bearer token, signed with the private key associated with the OAuth consumer’s uploaded certificate. Only the RS256 algorithm is currently supported. For more information on using client_assertion, see the OpenID Connect specifications for the private_key_jwt client authentication method.
+    client_assertion_type	Provide this value when using the client_assertion parameter. The value of client_assertion_type must be urn:ietf:params:oauth:client-assertion-type:jwt-bearer.
+    code_verifier	Specifies 128 bytes of random data with high enough entropy to make it difficult to guess the value to help prevent authorization code interception attacks. The value also must be base64url encoded as defined here: https://tools.ietf.org/html/rfc4648#section-5.
+        If the code_verifier value is provided in the token request and a code_challenge value is in the authorization request, Salesforce compares the code_verifier to the code_challenge. If the code_verifier is invalid or doesn’t match, the login fails with the invalid_grant error code.
+        If the code_verifier value is provided in the token request, but a code_challenge value was not provided in the authorization request, the login fails with the invalid_grant error code.
+   	Note
+		The value should be base64url-encoded only once.
+    format	Expected return format. The default is json. Values are:
+        urlencoded
+        json
+        xml
+    The return format can also be specified in the header of the request using one of the following:
+        Accept: application/x-www-form-urlencoded
+        Accept: application/json
+        Accept: application/xml
+    An example access token POST request might look something like:
+    1	POST /services/oauth2/token HTTP/1.1
+    2	Host: login.salesforce.com
+    3	grant_type=authorization_code&code=aPrxsmIEeqM9PiQroGEWx1UiMQd95_5JUZ
+    4	VEhsOFhS8EVvbfYBBJli2W5fn3zbo.8hojaNW_1g%3D%3D&client_id=3MVG9lKcPoNI
+    5	NVBIPJjdw1J9LLM82HnFVVX19KY1uA5mu0QqEWhqKpoW3svG3XHrXDiCQjK1mdgAvhCs
+    6	cA9GE&client_secret=1955279925675241571&
+    7	redirect_uri=https%3A%2F%2Fwww.mysite.com%2Fcode_callback.jsp
+    If this request is successful, the server returns a response body that contains the following:
+    Parameters	Description
+    access_token	Access token that acts as a session ID that the application uses for making requests. This token should be protected as though it were user credentials.
+    refresh_token	Token that can be used in the future to obtain new access tokens.
+   	Warning
+		This value is a secret. You should treat it like the user's password and use appropriate measures to protect it.
+    instance_url	Identifies the Salesforce instance to which API calls should be sent.
+    id	Identity URL that can be used to both identify the user as well as query for more information about the user. Can be used in an HTTP request to get more information about the end user.
+    issued_at	When the signature was created, represented as the number of seconds since the Unix epoch (00:00:00 UTC on 1 January 1970).
+    signature	Base64-encoded HMAC-SHA256 signature signed with the consumer's private key containing the concatenated ID and issued_at value. The signature can be used to verify that the identity URL wasn’t modified because it was sent by the server.
+    An example JSON response body might look something like:
+    1	{"id":"https://login.salesforce.com/id/00Dx0000000BV7z/005x00000012Q9P",
+    2	"issued_at":"1278448101416",
+    3	"refresh_token":"5Aep8614iLM.Dq661ePDmPEgaAW9Oh_L3JKkDpB4xReb54_
+    4	pZebnUG0h6Sb4KUVDpNtWEofWM39yg==",
+    5	"instance_url":"https://na1.salesforce.com",
+    6	"signature":"CMJ4l+CCaPQiKjoOEwEig9H4wqhpuLSk4J2urAe+fVg=",
+    7	"access_token":"00Dx0000000BV7z!AR8AQP0jITN80ESEsj5EbaZTFG0R
+    8	NBaT1cyWk7TrqoDjoNIWQ2ME_sTZzBjfmOE6zMHq6y8PIW4eWze9JksNEkWUl.Cju7m4"}
+    The application uses the provided access token and refresh token to access protected user data.
+

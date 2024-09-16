@@ -1,0 +1,83 @@
+
+https://dzone.com/articles/learnings-from-blockchain-based-development -- 
+
+Learnings From Blockchain-Based Development
+Check out one dev's experience developing blockchain-based platforms with Quorum.
+by Kuldeep Singh
+·
+Feb. 15, 19 · Security Zone · Presentation
+
+Blockchain or DLT (Distributed Ledger Technology) is getting good traction in the IT world these days. Earlier, this technology was being mostly explored by banks and other finance-related institutions, such as Bitcoin and Ethereum. Now, it is getting explored for other use cases for building distributed applications. Blockchain technology comes with a decentralized and immutable data structure that maintains a connected block of information. Each block is connected using a hash of the previous block, and every new block on the chain is validated (mined) before adding and replicating it. This post is about my learnings and challenges while building an enterprise blockchain platform based on Quorum blockchain technology. 
+[Quorum ... https://www.jpmorgan.com/global/Quorum] 
+
+Blockchain-Based Enterprise Platform
+
+We have built a commodity trading platform that matches the trades from different parties and store-related trade data on smart contracts. Trade operations are private to the counterparties; however, packaging and delivery operations are performed privately to all the blockchain network partners. The delivery operation involves multiple delivery partners and approval processes, which are safely recorded in the blockchain environment. The platform acts as a trusted single source of truth and, at the same time, keeping data distributed in the client's autonomy.  
+
+The platform built on Quorum, which is an Ethereum-based blockchain technology supporting private transactions on top of Ethereum. A React-based GUI is backed by the API layer of Spring Boot + Web3J. Smart contracts are written in Solidity. Read more here to start on a similar technology stack and know the blockchain.
+[https://dzone.com/articles/intro-to-blockchain-with-ethereum-web3j-and-spring] 
+
+The following diagram represents the reference architecture: 
+
+Image title [blockchainBasedDev.png]
+
+Blockchain Development Learnings
+
+Blockchain comes with a lot of promises to safely perform distributed operations on a peer-to-peer network. It keeps data secure and makes them immutable so that data written on a blockchain can be trusted as the source of truth. However, it comes with its own challenges; we have learned a lot while solving the challenges and making the platform production-ready. These learnings are based on the technology we used; however, it can be co-related any of the similar DLT solutions.   
+The Product, Business, and Technology Alignment
+
+Business owners, analysts, and product drives need to understand the technology and its limitation — this will help in proposing a well-aligned solution supported by the technology. 
+
+        Not for the real-time system — Blockchain technology supports eventual consistency, which means that data (a block) will be added/available eventually on the network nodes, but it may not be available in real-time. This is because it is an asynchronous system. Products/ applications built using this technology may not be a real-time system where end-users expect the immediate impact of the operation. We may end up building a lot of overhead to make real-time end-user interfaces by implementing polling, web-sockets, time-outs, event-bus, on smart-contract events.  The ideal end-user interface would have a request pipeline where the user can see the status of all its requests. Once a request is successful, then only the user will expect the impact. 
+        There is no rollback on the blockchain due to its immutability, so atomicity across transactions is not available implicitly. It is a good practice to keep the operation as small as possible and design the end interface accordingly.        
+        Blockchain’s transaction order is guaranteed, thus making it more of a sequential system, if a user is submitting multiple requests then they will go in sequentially to the chain. 
+        (Private Blockchain) Each user/network node has its own smart contract data for which the node has participated into the transaction on the start contract, so adding new node/user to the contact would not see the past data available on the contract. It may have an implication on business exceptions. 
+        Backward compatibility is anti-pattern on the blockchain. It would be better if we may bind business features to the contract/release versions, new features will be only available in the new contract, otherwise implementing backward compatibility takes a huge effort.         
+
+Architecture and Technology Learnings 
+
+        Think multi-tenancy from the start — Blockchain system is mostly about operations/transactions between multiple parties and multiple organizations. Most enterprise platforms have multiple layers of applications, such as end-user client layer (web, mobile, etc.), API layers, authentications and authorizations, indexes, and integrations with other systems. It is wise to think of multi-tenancy across the layers from the start of the project and design the product accordingly, instead of introducing it at the later stage.
+        Security does not come on its own — Blockchain-based systems generally introduce another layer of integration between the API and data layer. We still need to protect all the critical points at multiple network nodes owned by different participants. So, defining the security process and practices are even more important and complex for blockchain-based solutions than that of the classic web application. Make sure these practices are followed by all the participant's node.  
+        A hybrid solution — We might need to keep data index/cache (SQL or NoSQL) to meet the need multiple users read, as reading every time from a smart contract may not meet the performance criteria. The index/cache building module may subscribe to the smart contract transaction event and build data index/cache to serve as reading a copy of blockchain data. Each participant's node will have its own index and end-users' interface of that participant organization. It will definitely add complexity to maintain the index, but until blockchain technology becomes as fast as reading cache, we have this option to go Hybrid way (blockchain + read indexes). We can replay a smart-contract transaction event as and when required; it helps in rebuilding indexes/cache in case we lost the index.
+        Carefully add business validation in the smart-contract — we may add business data validation in the smart contract itself, but it has a transaction cost (performance cost), and more complex validation may lead to out of gas issues, also getting a detailed exception from the contract is not fully supported. If we are maintaining indexes, then we may do validation before making the contract transitions by reading from indexes, but it is also not a proof solution, as there might be race conditions. The ideal way is to perform business validation before, and if race condition occurs, just override/ignore the operation and choose the approach wisely based on the business impact.
+        Fear of Losing Transactions — What if we can not process a transaction due to an error? Depending on the case, we either need to wait for the problem to be fixed and halt all the further events or just log the error and proceed. As mentioned in the previous section, choose to override/ignore wisely; it may have a significant business impact.
+        Smart Contract Limitation — Solidity has a limitation on a number of parameters in a method, stack depth, string handling, contract size, gas limits. So, design contract methods accordingly. 
+        Tracing — Think of application tracing from web/mobile <-> API server <-> blockchain <-> indexes from the start. Each request should be traceable. Quorum doesn’t support any tracing/message header kind of mechanism to send co-relation identifier; however, we may link the application a trace id to the transaction hash. 
+        Configurability/Master Data Management — Every enterprise system needs some master data, which can be used across the organizations since participant's nodes are decentralized. So, this data needs to be synchronized across nodes. Device out a mechanism to replicate this data across the nodes. Any inconsistency may result in the failure of transactions. 
+        Smart Contract Backward Compatibility — This is the most complex part of the contract. We need to write a wrapper contract on the older contract and delegate a call to the old one. Note that we cannot access the private data of the existing contract, so we need to implement all the private data in the wrapper contract and conditional delegate call to the old contract. Managing event listeners for different versions are also complex; we may need to keep multiple versions in event listeners in the code base to support multiple versions of the contracts. We also need to make sure all the participants are on the same version of contracts. It would be better if we bound business features with this version. In that case, any new transaction operation may not be available on the old contract.
+        Scaling the API/Client Layer — Since the blockchain processes the transactions in a sequential manner, scaling the API/client layer is complex; we need to implement some locking mechanism to avoid the same transaction getting performed from multiple instances of the API layer. Deployment is another challenge here. 
+        Feature toggle on the contract side is also quite complex
+
+Testing Learnings
+
+        Solidity unit tests take a lot of gas as the functionality grows, so it is better to use JS API-based tests for contract unit tests.
+        Define contract migration testing approach and it's automation up front. 
+        Automate environment preparation as it needs multiple tenants' nodes to interact to test the functionality.
+        API integration tests need to poll the other participants' API to see the expected impact. It increases the API test development times as well as execution time. 
+        Define approach for test automation around index/cache rebuilding
+        The version-based feature toggles in tests artifacts are complex to maintain.  
+        Automation of meta-data management across the nodes 
+        Testing of CI/CD scripts as the scripts grow, so complex with time and impact of any issue is critical. 
+
+Continuous Integration and Deployment
+
+        Define the blockchain node deployment strategy upfront (private/public cloud); you may not change it once it is deployed without losing data. 
+        Securely storing secrets on the cloud.
+        Have a process for access management reviews. 
+        Analyze the impact of secret rotation on blockchain node setup and automate the process.
+        Backup and restore strategy for blockchain
+        Making sure all the nodes are on the same version of blockchain and software artifact
+        High availability is a challenge when new deployment has to happen, as we need to stop service completely before deploying the new version to avoid corrupt indexes/blockchain due to the intermediate state of operations (multi-transaction operation).
+
+Project Management 
+
+        The blockchain is still a growing technology. It is better to have a dedicated sub-team that takes care of blockchain research-related work and define best practices for the project and industry.
+        Dedicated infra team is needed to manage and improve the CI/CD environment.   
+        Security testing resources and audits. 
+        Legal point of view on GDPR and storing data with blockchain. 
+        Coordination with participant’s infra team
+        Support SLA with each participant. 
+
+Conclusion 
+
+Blockchain/DLT is a growing technology, and a lot is yet to be done in the private blockchain space. I have presented the learnings and challenges that we have faced during the development of blockchain-based enterprise platforms. I hope this will help you avoid some of the challenges that we have already faced.

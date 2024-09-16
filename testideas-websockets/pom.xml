@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>gabywald</groupId>
+		<artifactId>testideas</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>testideas-websockets</artifactId>
+
+	<properties>
+		<org.json.version>20240303</org.json.version>
+
+		<jakartaee.version>9.0.0-RC3</jakartaee.version><!-- TODO 9.0.0 -->
+		<jakartaws>2.0.0</jakartaws> <!-- 2.2.0-M1 -->
+
+		<org.glassfish.jersey.version>2.44</org.glassfish.jersey.version>
+		<org.glassfish.tyrus.version>1.21</org.glassfish.tyrus.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- https://mvnrepository.com/artifact/org.json/json -->
+		<!-- https://www.baeldung.com/java-org-json -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>${org.json.version}</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/jakarta.platform/jakarta.jakartaee-api -->
+		<dependency>
+			<groupId>jakarta.platform</groupId>
+			<artifactId>jakarta.jakartaee-api</artifactId>
+			<version>${jakartaee.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.glassfish.tyrus.bundles/tyrus-standalone-client-jdk -->
+		<dependency>
+			<groupId>org.glassfish.tyrus.bundles</groupId>
+			<artifactId>tyrus-standalone-client-jdk</artifactId>
+			<version>${org.glassfish.tyrus.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.tyrus.bundles</groupId>
+			<artifactId>tyrus-standalone-client</artifactId>
+			<version>${org.glassfish.tyrus.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.glassfish.tyrus/tyrus-server -->
+		<dependency>
+			<groupId>org.glassfish.tyrus</groupId>
+			<artifactId>tyrus-server</artifactId>
+			<version>${org.glassfish.tyrus.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.tyrus</groupId>
+			<artifactId>tyrus-container-grizzly-server</artifactId>
+			<version>${org.glassfish.tyrus.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.glassfish.tyrus.ext/tyrus-client-java8 -->
+
+	</dependencies>
+</project>

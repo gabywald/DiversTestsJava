@@ -1,0 +1,1603 @@
+
+https://jersey.dev.java.net/ -- 
+
+http://www.ibm.com/developerworks/websphere/library/techarticles/1312_ahmed/1312_ahmed.html --
+
+http://restcookbook.com/Basics/loggingin/ --  
+
+https://blogs.oracle.com/enterprisetechtips/entry/consuming_restful_web_services_with -- 
+
+http://codes-sources.commentcamarche.net/source/100793-snippet-rest-java -- 
+
+http://www.oracle.com/technetwork/articles/javase/index-137171.html -- 
+
+RESTful Web Services
+  	  	
+  	 
+By Sameer Tyagi, August 2006 	  	
+
+Articles Index
+
+In software engineering, the term software architectural style generally refers to "a set of design rules that identify the kinds of components and connectors that may be used to compose a system or subsystem." * Some common examples of architectural styles include the Pipe and Filter, Layered, Push Based, and so on. In the web services world, REpresentational State Transfer (REST) is a key design idiom that embraces a stateless client-server architecture in which the web services are viewed as resources and can be identified by their URLs. Web service clients that want to use these resources access a particular representation by transferring application content using a small globally defined set of remote methods that describe the action to be performed on the resource. REST is an analytical description of the existing web architecture, and thus the interplay between the style and the underlying HTTP protocol appears seamless.
+
+The HTTP methods such as GET and POST are the verbs that the developer can use to describe the necessary create, read, update, and delete (CRUD) actions to be performed. Some may see an analogy to operations in SQL, which also relies on a few common verbs, as shown in Table 1. However, the REST style and HTTP protocol are mutually exclusive, and REST does not require HTTP.
+Table 1: Relationships Between SQL and HTTP Verbs
+ 
+Action	SQL		HTTP
+Create	Insert	PUT
+Read	Select	GET
+Update	Update	POST
+Delete	Delete	DELETE
+ 
+When to Use REST
+
+Architects and developers need to decide when this particular style is an appropriate choice for their applications. A RESTFul design may be appropriate when
+
+    The web services are completely stateless. A good test is to consider whether the interaction can survive a restart of the server.
+
+    A caching infrastructure can be leveraged for performance. If the data that the web service returns is not dynamically generated and can be cached, then the caching infrastructure that web servers and other intermediaries inherently provide can be leveraged to improve performance. However, the developer must take care because such caches are limited to the HTTP GET method for most servers.
+
+    The service producer and service consumer have a mutual understanding of the context and content being passed along. Because there is no formal way to describe the web services interface, both parties must agree out of band on the schemas that describe the data being exchanged and on ways to process it meaningfully. In the real world, most commercial applications that expose services as RESTful implementations also distribute so-called value-added toolkits that describe the interfaces to developers in popular programming languages.
+
+    Bandwidth is particularly important and needs to be limited. REST is particularly useful for limited-profile devices such as PDAs and mobile phones, for which the overhead of headers and additional layers of SOAP elements on the XML payload must be restricted.
+
+    Web service delivery or aggregation into existing web sites can be enabled easily with a RESTful style. Developers can use technologies such as Asynchronous JavaScript with XML (AJAX) and toolkits such as Direct Web Remoting (DWR) to consume the services in their web applications. Rather than starting from scratch, services can be exposed with XML and consumed by HTML pages without significantly refactoring the existing web site architecture. Existing developers will be more productive because they are adding to something they are already familiar with, rather than having to start from scratch with new technology.
+
+A SOAP-based design may be appropriate when
+
+    A formal contract must be established to describe the interface that the web service offers. The Web Services Description Language (WSDL) describes the details such as messages, operations, bindings, and location of the web service.
+
+    The architecture must address complex nonfunctional requirements. Many web services specifications address such requirements and establish a common vocabulary for them. Examples include Transactions, Security, Addressing, Trust, Coordination, and so on. Most real-world applications go beyond simple CRUD operations and require contextual information and conversational state to be maintained. With the RESTful approach, developers must build this plumbing into the application layer themselves.
+
+    The architecture needs to handle asynchronous processing and invocation. In such cases, the infrastructure provided by standards such as WSRM and APIs such as JAX-WS with their client-side asynchronous invocation support can be leveraged out of the box.
+
+RESTful Support in JAX-WS
+
+The Java API for XML Web Services (JAX-WS) provides full support for building and deploying RESTful web services. The API was developed through the Java Community Process program as JSR 224. It is tightly integrated with the Java Architecture for XML Binding (JAXB) for binding XML to Java technology data and is included in both the Java Platform, Standard Edition (Java SE) 6 and the Java Platform, Enterprise Edition (Java EE) 5.
+
+ 
+Building RESTful Services
+
+
+The example used in this section builds on the purchase order service described in the Java EE BluePrints catalog as the "Patterns and Design" white papers (Parts 1, 2, and 3). The original endpoint contained only one method -- acceptPO -- that accepted a PurchaseOrder and returned a PurchaseOrderStatus, both of which were defined by individual schemas.
+
+Table 2 shows some more CRUD operations to add to this service.
+Table 2: Additional CRUD Operations
+	
+ 
+ 
+Description
+	
+Java Technology Method Signature
+Create a new order
+	
+public Purchase OrderStatus acceptPO(PurchaseOrder order)
+Retrieve an existing order
+	
+public PurchaseOrder retrievePO (String orderID)
+Modify an existing order
+	
+public PurchaseOrder updatePO(PurchaseOrder order)
+Cancel an order already submitted
+	
+public void cancelPO(String orderID)
+ 
+
+JAX-WS enables building RESTful endpoints through a javax.xml.ws.Provider interface in the API. Provider is a generic interface that can be implemented by a class as a dynamic alternative to a service endpoint interface (SEI), and a service implementing this interface can be deployed in a Java EE container or published in a stand-alone mode through the JAX-WS Endpoint API. The Provider interface contains a single method with the following signature:
+
+T invoke(T request)
+
+ 
+
+Provider is a low-level generic API, but using it requires the endpoint to have an intimate knowledge of the desired message or payload structure being passed to the service. Depending on how the provider is implemented, the supported types for T and their uses are the following:
+
+    javax.xml.transform.Source . Allows the provider to generate and consume XML directly
+    javax.activation.DataSource . Works with MIME-typed messages
+    javax.xml.soap.SOAPMessage . Conveniently works with and manipulates the entire SOAP message
+
+The ServiceMode annotation is used to configure the messaging mode of a Provider instance. With @ServiceMode(value=MESSAGE), the provider will receive and return entire protocol messages -- for example, a SOAP message when using the SOAP binding. With @ServiceMode(value=PAYLOAD), the runtime will pass only the message payload on to the provider -- for example, the contents of a SOAP Body element when using the SOAP binding. This is useful when you want to build a WSDL-based web service but want to directly access the XML in the payload and return XML directly as well. For details, refer to the "Switching off Data Binding" strategy in this previous article.
+
+Code Sample 1 shows a simple stand-alone provider that, when accessed by browsing to http://127.0.0.1:8084/hello/world, returns the XML message <p>hello world</p>. Note: The URLs provided in this article are for demonstration purposes only and are not live links.
+
+Code Sample 1
+
+                    @WebServiceProvider
+                    @ServiceMode(value=Service.Mode.PAYLOAD)
+public class MyProvider implements Provider<Source> {
+    public Source invoke(Source source) {
+         String replyElement = new String("<p>hello world</p>");
+         StreamSource reply = new StreamSource(
+                                  new StringReader(replyElement));
+         return reply;
+      }
+
+public static void main(String args[]) {
+       Endpoint e = Endpoint.create( HTTPBinding.HTTP_BINDING,
+                                     new MyProvider());
+      e.publish("http://127.0.0.1:8084/hello/world");
+       // Run forever  e.stop();
+ }
+}
+                
+
+ 
+
+Code Sample 2 shows an extract for the PurchaseOrderService class that implements a Provider interface. The service processes the four main HTTP methods and invokes business operations in their context. Table 3 lists the operation invoked, the sample HTTP request, the HTTP response, and the Java technology method. It is useful -- though not required -- to include the schemas representing the data exchanged and other documentation with the endpoint Web ARchive (WAR) so that clients can inspect them and reference them as needed.
+
+Code Sample 2
+
+                    @javax.xml.ws.WebServiceProvider
+                    @javax.xml.ws.ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
+public class PurchaseOrderService implements Provider<Source>{
+    private JAXBContext jc;
+    @javax.annotation.Resource(type=Object.class)
+    protected WebServiceContext wsContext;
+    
+    public PurchaseOrderService() {
+        try {
+            jc = JAXBContext.newInstance("com.sun.examples.rest");
+           
+        } catch(JAXBException je) {
+        throw new WebServiceException("Cannot create JAXBContext", je);
+        }
+    }
+
+                    public Source invoke(Source source) {
+  try{
+    MessageContext mc = wsContext.getMessageContext();
+    String path = (String)mc.get(MessageContext.PATH_INFO);
+    String method = (String)mc.get(MessageContext.HTTP_REQUEST_METHOD);
+    if (method.equals("GET")) 
+          return get(mc);
+    if (method.equals("POST")) 
+          return post(source, mc);
+    if (method.equals("PUT")) 
+          return put(source, mc); 
+    if (method.equals("DELETE")) 
+          return delete(source, mc); 
+    throw new WebServiceException("Unsupported method:" +method); 
+        } catch(JAXBException je) {
+            throw new WebServiceException(je);
+        }
+    }
+// Other methods not shown here 
+                
+
+ 
+
+With RESTFul web services, there is a natural mapping between the HTTP methods and most CRUD-like business operations that many services expose. Though there are no hard and fast rules, the following general guidelines are applicable for most cases:
+
+    GET is used to retrieve data or perform a query on a resource. The data returned from the web service is a representation of the requested resource.
+    POST is used to create a new resource. The web service may respond with data or status indicating success or failure.
+    PUT is used to update existing resources or data.
+    DELETE is used to remove a resource or data.
+
+In some cases, the update and delete actions may be performed with POST operations as well, for example, when the services are consumed by browsers that do not support PUT or DELETE. The GlassFish application server and the JAX-WS API support all four HTTP operations shown in Table 1.
+
+Table 3 shows the HTTP request and HTTP response messages for the operation in the implementation of the purchase order service.
+Table 3: HTTP Request and HTTP Response Messages for the Purchase Order Service
+	
+ 
+ 
+link
+(Click here for larger sample.)
+ 
+
+Use cases in which the service needs to indicate an exception can do this by setting the appropriate HTTP status code and response message on the MessageContext. For example, a response to an order retrieval process with an invalid ID can be implemented by setting the HTTP 400 status code and including the XML from the POProcessingProblem.xsd schema. Code Fragment 1 illustrates this.
+
+Code Fragment 1
+link
+(Click here for larger sample.)
+ 
+
+ 
+Strategy: Implement the verb as part of the URI.
+
+
+To process a purchase order, make an HTTP request to the URL http://127.0.0.1:8080/restfulwebservice-war/poservice/acceptPO
+
+The service or resource interprets the verb in the URI as the action that it must perform. The service retrieves the necessary data from the request, which physically can be an HTTP GET or POST, and it returns data based on the PurchaseOrder.xsd schema.
+
+Strategy: Use the protocol method to describe the verb or operation.
+
+To retrieve a purchase order in which the order ID is ABC123, make an HTTP request using a GET operation. In this case, the requested URL would be http://127.0.0.1:8080/restfulwebservice-war/poservice/ABC123
+
+Following is a sample HTTP request:
+
+GET /restfulwebservice-war/poservice/ABC123 HTTP/1.0
+Accept-Language: en-us
+Connection: close
+Content-Type: text/xml
+Host: 127.0.0.1:9090
+
+ 
+
+To cancel a purchase order in which an order ID is ABC123, make an HTTP request using a DELETE operation. In this case, the URL would also be http://127.0.0.1:8080/restfulwebservice-war/poservice/ABC123
+
+Following is a sample HTTP request:
+
+DELETE /restfulwebservice-war/poservice/ABC123 HTTP/1.0
+Accept-Language: en-us
+Connection: close
+Content-Type: text/xml
+Host: 127.0.0.1:9090
+Pragma: no-cache
+
+ 
+Consuming RESTful Services
+
+Applications can access RESTful services in one of two ways: programmatically or by using browsers.
+
+Accessing Services Programmatically
+
+JAX-WS enables a client to consume RESTful web services programmatically. The main API is the javax.xml.ws.Dispatch interface described in Code Sample 3.
+
+Code Sample 3
+
+// T is the message type.
+public interface Dispatch<T> {
+// synchronous request-response
+   T invoke(T msg);
+// async request-response
+   Response<T> invokeAsync(T msg);
+   Future<?> invokeAsync(T msg, AsyncHandler<T> h);
+
+// one-way
+
+   void invokeOneWay(T msg);
+}
+
+ 
+
+Unlike the Provider on the server side, developers don't actually implement this API. Instead, they obtain an instance from the Service object as shown here:
+
+service = Service.create(qname); 
+service.addPort(qname, HTTPBinding.HTTP_BINDING, url);
+Dispatch<Source> dispatcher = service.createDispatch(new QName("", ""),
+                                        Source.class, Service.Mode.PAYLOAD);
+
+ 
+
+The typed Dispatch<T> interface and the invoke method can accept and return four major datatypes:
+
+    Dispatch<javax.xml.transform.Source> . Useful for HTTP binding payload mode
+    Dispatch<javax.xml.soap.SOAPMessage> . Useful for SOAP message mode
+    Dispatch<javax.activation.DataSource> . Useful for handling MIME messages
+    Dispatch<Object> . Useful for payload mode with JAXB binding
+
+Code Fragment 2 demonstrates how to make a POST request to http://127.0.0.1:8080/restfulwebservice-war/poservice/acceptPO with the XML as the body of the POST request read from a string.
+
+Code Fragment 2
+
+private void acceptPO() {
+    Service service = Service.create(qname);
+    service.addPort(qname, HTTPBinding.HTTP_BINDING, url + "acceptPO");
+    Dispatch<Source> dispatcher = service.createDispatch(qname, 
+                                           Source.class, Service.Mode.MESSAGE);
+    Map<String, Object> requestContext = dispatcher.getRequestContext();
+    requestContext.put(MessageContext.HTTP_REQUEST_METHOD, "POST");
+    Source result = dispatcher.invoke(new StreamSource(new StringReader(poXML)));
+    printSource(result);
+}
+
+ 
+
+Code Fragment 3 demonstrates how to make a similar POST request, but it differs from Code Fragment 2 in that it sends and returns JAXB-generated objects rather than handling strings directly.
+
+Code Fragment 3
+link
+(Click here for larger sample.)
+ 
+
+Code Fragment 4 demonstrates how to make a similar PUT request using the Dispatch interface.
+
+Code Fragment 4
+link
+(Click here for larger sample.)
+ 
+
+Accessing Services Using Browsers
+
+Because RESTful web services deployed in JAX-WS are exposed using the standard HTTP protocol and methods, they can be easily accessed from browsers. In addition to using simple GET and POST requests directly from browsers, developers can leverage the capabilities of the JavaScript technology XMLHttpRequest object that most modern browsers support. This is the same object used for building AJAX user interfaces (UIs).
+
+Code Sample 4 shows a simple script that is included with the downloadable sample code and test client that you can use to test RESTful web services from browsers.
+
+Code Sample 4
+link
+(Click here for larger sample.)
+ 
+
+Figure 1 shows the display resulting from this code.
+ 
+Figure 1: Resulting Display (Click image for larger view.)
+ 
+Describing RESTful Endpoints
+
+Unlike SOAP-based web services, which have a standard vocabulary to describe the web service interface through WSDL, RESTful web services currently have no such grammar. For a service consumer to understand the context and content of the data that must be sent to and received from the service, both the service consumer and service producer must have an out-of-band agreement. This takes the form of documentation, sample code, and an API that the service provider publishes for developers to use. For example, the many web-based services available from Google, Yahoo, Flickr, and so on have accompanying artifacts describing how to consume the services.
+
+If you are developing RESTful web services, the following general guidelines provide a good starting point:
+
+    Make the XML schemas available to service consumers and package them with the WAR file.
+    Clearly document the expected input, output, and error conditions that may arise as result of invocation.
+
+Web Application Description Language (WADL)
+
+The style of documenting RESTful web services that this article has previously described is fine for use by developers, but it prevents tools from programmatically consuming such services and generating artifacts specific to programming languages. For example, a WSDL file can be consumed by various tools and proxies or by generated stubs that applications can use directly. A research effort from Sun Labs called Web Application Description Language (WADL) attempts to resolve some of these issues by providing a means to describe services in terms of schemas, HTTP methods, and the request or response structures exchanged. The schema in Code Sample 5 shows a sample WADL description for the example discussed previously.
+
+Code Sample 5
+link
+(Click here for larger sample.)
+ 
+Summary
+
+JAX-WS provides comprehensive support for building web services. Developers can leverage the capabilities of this API to build and consume a variety of web services, whether those services are based on WSDL or are RESTful in behavior. The combination of the Provider and Dispatch interfaces allows web services to be built and consumed, and it provides developers with the flexibility to process the messages sent over the wire in a variety of ways. In addition, the future holds the possibility of describing RESTful web services for tools to consume, which will further simplify the developer's experience.
+For More Information
+
+    Toward Boxology: Preliminary Classification of Architectural Styles, by M. Shaw and P. Clements
+    Downloadable sample code and test client
+    Architectural Styles and the Design of Network-based Software Architectures, by Roy Thomas Fielding
+    Java API for XML Web Services (JAX-WS)
+    JSR 224: Java API for XML-Based Web Services (JAX-WS) 2.0
+    Web Application Description Language (WADL)
+    Patterns and Strategies for Building Document-Based Web Services: Part 1 in a Series
+    Interoperability With Patterns and Strategies for Document-Based Web Services: Part 2 in a Series
+    Realizing Strategies for Document-Based Web Services With JAX-WS 2.0: Part 3 in a Series
+
+About the Author
+
+Sameer Tyagi is a senior staff engineer at Sun Microsystems with the Web Services group. He remains focused on architecture, design, and implementation of large-scale enterprise applications with Java technology. Among his publications are industry periodicals and books on Java and Java EE technologies, as well as a blog.
+
+http://www.journaldunet.com/developpeur/tutoriel/xml/030707xml_rest1a.shtml -- 
+
+L'architecture REST
+
+Page 1 | 2
+Manière de représenter la logique de l'Internet, REST définit également des bonnes pratiques de création de service Web, tout en simplifiant leur élaboration par l'utilisation de standards historiques.  (7 juillet 2003)
+ 
+
+Qu'est-ce que REST ?
+REST est une architecture de services Web, à la manière de SOAP et de XML-RPC. C'est l'acronyme de REpresentational State Transfer. Elaboré en l'an 2000 par Roy Fielding, l'un des créateurs du protocole HTTP, du serveur Apache HTTPd et d'autres travaux fondamentaux, REST est à l'origine une tentative de décrire les principes de l'architecture du Web.
+
+Cette architecture part du principe selon lequel Internet est composé de ressources accessibles à partir d'une URL. Par exemple, pour avoir le temps à Paris, un utilisateur pourrait utiliser une adresse de la forme http://www.meteo.fr/paris/ : Paris serait alors une ressource telle que définie par Météo France.
+A la requête de cet URL serait renvoyée une représentation de la ressource demandée (paris.php, par exemple). Cette représentation place l'application cliente dans un état (state) donné.
+Si l'application cliente lance un appel sur un des liens de la représentation en cours, une autre ressource est appelée, dont une représentation est envoyée. Ainsi, l'application cliente change d'état (state transfer) pour chaque représentation de ressource.
+
+Il faut bien noter que REST n'est pas en soi un standard : il n'existe pas de spécification du W3C pour la décrire. Il s'agit plutôt d'un style d'architecture, d'un "mode de compréhension du Web" sur lequel le développeur construit ses services (Web).
+REST fait en revanche usage des standards Web : protocole HTTP, URLs, formats de fichiers pour la représentation des ressources (XML, HTML, JPEG...), types MIME pour la description de ces représentations... Le Web lui-même est d'ailleurs un système REST à part entière.
+
+Un service "RESTful" ("reposé" ou "tranquille") se distingue largement d'un service SOAP ou XML-RPC en cela qu'il repose uniquement sur l'utilisation d'HTTP, des URIs et d'XML, là où les deux autres protocoles se compliquent la tâche en utilisant des API RPC (Remote Procedure Call, appel de procédure distante). SOAP et XML-RPC ne suivent pas la spécification HTTP, car ils ajoutent une nouvelle couche d'abstraction par-dessus le protocole, plutôt que de l'utiliser tel qu'il a été conçu. De même, leur utilisation des URIs n'est pas idéale...
+
+Simplement, REST part du principe selon lequel HTTP suffit largement à l'ensemble des besoins d'un service Web, pour peu qu'on utilise l'ensemble des méthodes de ce protocole : GET, POST, mais aussi PUT, DELETE, CONNECT...
+
+Pour résumer, là où SOAP et XML-RPC se basent sur des méthodes, REST se base sur les ressources existantes.
+
+Page 1 | 2
+ 
+[ Xavier Borderie,,  JDNet
+
+http://www.journaldunet.com/developpeur/tutoriel/xml/030707xml_rest1b.shtml -- 
+
+L'architecture REST
+
+Page 1 | 2
+
+Manière de représenter la logique de l'Internet, REST définit également des bonnes pratiques de création de service Web, tout en simplifiant leur élaboration par l'utilisation de standards historiques.
+ (7 juillet 2003)
+ 
+
+Un service RESTful
+Voyons comment construire et utiliser un service suivant le style REST.
+
+Un service REST devrait respecter les "conventions" suivantes :
+- toutes les ressources devant être exposées au travers du service doivent être correctement identifiées, et de manière unique. Chaque ressource devra se voir assigner une URL. Qui plus est, l'URL en question devra être de la forme http://www.site.com/contenus/1789 plutôt que http://www.site.com/contenus.php?id=1789.
+- les ressources doivent être catégorisées selon leurs possibilités offertes à l'application cliente : ne peut-elle que recevoir une représentation (GET) ou peut-elle modifier/créer une ressource (POST, PUT, DELETE) ?
+- chaque ressource devrait faire un lien vers les ressources liées.
+- la manière dont fonctionne le service sera décrite au sein d'un document WSDL, ou simplement HTML.
+
+Prenons une entreprise de jouets qui veut permettre à ses clients 1) d'obtenir une liste des jouets disponibles à la vente, 2) d'obtenir des informations sur un jouet précis.
+
+1) La liste des jouets est disponible à l'URL suivante :
+
+http://www.youpilesjouets.com/jouets/
+
+La manière dont le service génère cette liste n'est pas important pour le client : tout ce qu'il sait, c'est que cette adresse lui renverra la liste. La société est donc libre de modifier la manière dont la liste est générée, tant qu'elle l'est. C'est le principe du "couplage lâche" (loose coupling).
+
+Le client reçoit une réponse sous la forme suivante :
+
+<?xml version="1.0"?>
+  <p:Jouets xmlns:p="http://www.youpilesjouets.com/" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <Jouet id="0001" xlink:href="http://www.youpilesjouets.com/jouets/0001"/>
+    <Jouet id="0002" xlink:href="http://www.youpilesjouets.com/jouets/0002"/>
+    <Jouet id="0003" xlink:href="http://www.youpilesjouets.com/jouets/0003"/>
+[...]
+  </p:Jouets>
+
+La liste des jouets contient des liens pour obtenir des informations sur chaque jouet. C'est là la clef de REST : le lien entre les ressources. Le client peut ensuite choisir parmi les liens proposés pour aller plus loin.
+
+2) Les détails d'un jouet se trouvent à l'URL :
+
+http://www.youpilesjouets.com/jouets/00002/
+
+Ce qui renvoi la réponse :
+
+<?xml version="1.0"?>
+  <p:Jouet xmlns:p="http://www.youpilesjouets.com" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <Jouet-ID>0001</Jouet-ID>
+    <Nom>Bisounours : Gros Câlin</Nom>
+    <Description>Coeur sur le ventre</Description>
+    <Details xlink:href="http://www.youpilesjouets.com/jouets/00002/details"/>
+    <CoutUnitaire monnaire="EUR">30</CoutUnitaire>
+    <Quantite>37</Quantite>
+  </p:Jouet>
+
+A nouveau, plus de ressources sont accessibles grâce à un lien...
+
+Nous verrons dans un prochain article les avantages et inconvénients face à SOAP et XML-RPC...
+
+Page 1 | 2
+ 
+[ Xavier Borderie,,  JDNet
+
+
+https://blogs.oracle.com/enterprisetechtips/entry/implementing_restful_web_services_in -- 
+
+
+Implementing RESTful Web Services in Java
+By edort on Nov 16, 2007
+
+By Jakub Podlesak and Paul Sandoz
+
+This Tech Tip will show you how to write RESTful web services in Java that conform to the JAX-RS: Java API for RESTful Web Services (JSR-311) specification and its reference implementation - Jersey. You'll learn some of the principles of Representational State Transfer (REST) and get introduced to JAX-RS and Jersey.
+
+The tip uses a sample application to demonstrate some of the JAX-RS concepts and techniques. You can obtain the sample by downloading the latest Jersey snapshot from the Jersey downloads page. The code examples in the tip are taken from the source code of the sample application (which is included in the download package).
+
+An Introduction to RESTful Web Services
+
+Representational State Transfer (REST) is a style of software architecture for distributed systems such as the World Wide Web. The term was introduced in the doctoral dissertation of Roy Fielding in 2000, and has since come into widespread use in the networking community. An important concept in REST is the existence of resources, each of which can be referred to using a global identifier, that is, a URI. In order to manipulate these resources, components of the network, clients and servers, communicate using a standardized interface such as HTTP and exchange representations of these resources.
+
+RESTful web services are services built using the RESTful architectural style. Building web services using the RESTful approach is emerging as a popular alternative to using SOAP-based technologies for deploying services on the Internet, due to its lightweight nature and the ability to transmit data directly over HTTP.
+
+RESTful Web Service Principles
+
+A RESTful web service is based on the following principles:
+
+    Resources and representations. Instead of providing just one endpoint for a particular web service and having that endpoint perform various operations, you provide access to resources. A resource is a single piece of your web application that you make accessible to clients. Because the resources you have are not transportable over the network, "providing them" means providing representations of their state.
+
+    Addressability and connectedness. Resources have their representations, but providing representations of resources would be useless if you could not address them. In REST, every resource must have at least one address, that is, one URI. To address the resource, you simply specify the URI. This concept is called "addressability". By publishing your web application, you introduce many different URIs that are connected to each other. Because of that connectedness, the only URI you need to give to your clients is one URI called the "bootstrap URI".
+
+    Uniform interface. Even if you make resources available through URIs and representations to exchange between the client and server, it still does not allow you to establish communication. You need a communication protocol/interface to use. In a REST architecture, such an interface must be uniform. It means that whatever URI you access, the interface should be the same. For instance, on the World Wide Web no matter what URI (resource address) you enter, your web browser simply uses an HTTP GET method to retrieve a corresponding web page (resource representation) and displays it.
+
+    Statelessness. Statelessness means that a web application is not responsible for keeping any information about the state of its clients. REST does not encompass the concept of HTTP sessions. The client is responsible for tracking its own actions (if it needs to). The service maintains its resources and provides a uniform interface to the clients.
+
+JAX-RS and Jersey
+
+JAX-RS provides a standardized API for building RESTful web services in Java. The API basically provides a set of annotations and associated classes and interfaces. Applying the annotations to Plain Old Java Objects (POJOs) enables you to expose web resources. The API is not yet complete. The final version should become part of Java EE 6. You can find more information about JAX-RS in the jsr311 project.
+
+Jersey is a reference implementation of JAX-RS. You can find downloadable distributions of Jersey on the Jersey project downloads page. If you select the latest Jersey snapshot and unzip it, you will see that the Jersey implementation is bundled with several examples demonstrating its use. Let's examine one of those examples.
+
+An Example of JAX-RS in Use: The Bookmark Application
+
+One of the examples distributed with Jersey is a bookmark application. You'll find it in the examples/Bookmark subdirectory. The application uses the JAX-RS API to maintain information about bookmarks saved by users. If you run the application and specify a specific user, the application returns data similar to the following:
+   {sdesc":"test desc","userid":"testuserid","uri":
+   "http://java.sun.com","ldesc":"long test description"}
+
+Notice that the application returns the data in JavaScript Object Notation (JSON) format.
+
+If you navigate below the examples/Bookmark subdirectory to the resources subdirectory, you'll find the following resources for the application:
+
+    UsersResource: Represents a list of users
+    UserResource: Represents a specific user
+    BookmarksResource: Represents a list of bookmarks for a specific user
+    BookmarkResource: Represents a specific bookmark
+
+Recall that to address a resource in REST you specify its URI. However, to communicate with a resource, you also need to specify a communication protocol such as HTTP. Here are the URIs and HTTP methods that correspond to the resources in the Bookmark application:
+ 
+Resource
+	
+URI Path
+	
+HTTP Methods
+UsersResource
+	
+/users
+	
+GET
+UserResource
+	
+/users/{userid}
+	
+GET, PUT, DELETE
+BookmarksResource
+	
+/users/{userid}/bookmarks
+	
+GET, POST
+BookmarkResource
+	
+/users/{userid}/bookmarks/{bmid}
+	
+GET, PUT, DELETE
+ 
+
+To understand some of the basics of the JAX-RS, let's look at two of these resources: UsersResource and UserResource.
+
+UsersResource
+
+Here is a snippet of source code from the UsersResource class:
+   @UriTemplate("/users/")
+
+   public class UsersResource {
+     
+       @HttpContext UriInfo uriInfo;    
+
+       @PersistenceUnit(unitName = "BookmarkPU")
+       EntityManagerFactory emf;
+
+       /\*\* Creates a new instance of Users \*/
+       public UsersResource() {
+       }
+    
+       public List<UserEntity> getUsers() {
+           return emf.createEntityManager().createQuery(
+                  "SELECT u from UserEntity u").getResultList();
+       }
+    
+       @UriTemplate("{userid}/")
+       public UserResource getUser(@UriParam("userid") 
+              String userid) {
+           return new UserResource(
+                  uriInfo, emf.createEntityManager(), userid);
+       }
+
+       @HttpMethod("GET")
+       @ProduceMime("application/json")
+       public JSONArray getUsersAsJsonArray() {
+           JSONArray uriArray = new JSONArray();
+           UriBuilder ub = null;
+           for (UserEntity userEntity : getUsers()) {
+               ub = (ub == null) ? 
+                      uriInfo.getBuilder() : ub.clone();
+               URI userUri = ub.
+                       path(userEntity.getUserid()).
+                       build();
+               uriArray.put(userUri.toString());
+           }
+           return uriArray;
+       }
+   }
+
+Notice that the UsersResource class is annotated by the @UriTemplate("/users/") annotation. @UriTemplate is a JAX-RS annotation that identifies the URI path for the resource. Here the annotation identifies the URI path as /users/:
+   @UriTemplate("/users/")
+
+Annotating the class with a @UriTemplate annotation makes the class a "Root resource class." It also means that for client requests that access the /users/ URI path, this resource is responsible for providing appropriate responses. Note too that the /users/ URI path is the bootstrap URI path for the entire Bookmark web application.
+
+Another JSR-311 annotation in the UsersResource class is @HttpContext.
+   @HttpContext UriInfo uriInfo;
+
+This annotation injects information into a class field or method parameter. In the UsersResource class, @HttpContext injects information about the URI into the uriInfo variable, which is then available to provide pertinent information about the URI.
+
+UsersResource Methods
+
+The UsersResource class has two methods, getUser and getUsersAsJsonArray. For the moment, let's skip getUser and focus on getUsersAsJsonArray. The getUsersAsJsonArray method returns the URIs for all user resources. Notice that the method is annotated with two JSR 311 annotations: @HttpMethod and @ProduceMime. The @HttpMethod annotation indicates that the annotated method should be used to handle HTTP requests. The annotation also specifies the type of HTTP request to which the method will respond. In this example, the annotation specifies that the getUsersAsJsonArray method serves HTTP GET requests.
+   @HttpMethod("GET")
+
+Methods like this that serve REST requests are called "Resource methods".
+
+The @ProduceMime annotation specifies the MIME types that a method can produce. Here, the annotation specifies that the getUsersAsJsonArray method returns a JSONArray object containing an array of URIs for all existing user resources.
+   @ProduceMime("application/json")
+
+Get Users Resources
+Get Users Resources
+ 
+
+The JSON array object that the method returns to a client might look like this:
+   ["http://localhost:8080/Bookmark/resources/users/joe", 
+   "http://localhost:8080/Bookmark/resources/users/mary"]
+
+This JSON array contains URIs, that is, links, to two user resources, joe and mary.
+
+The getUser method gets information about a specific user. For example, if a client wants to get information about user joe, the client accesses the resource at its URI -- in this case, http://localhost:8080/Bookmark/resources/users/joe. Recall that the UsersResource class serves all requests for paths beginning with /users/, including the URI path for joe, that is, /users/joe.
+
+Here it's important that the getUser method is annotated with @UriTemplate("{userid}/"). This makes the method a "Sub-resource locator". Also the getUser method is annotated with @UriParam. As a result, when the getUser method is invoked, a userid from the current request URI path is injected into the userid parameter.
+
+Notice that there is no @HttpMethod annotation associated with the getUser method. Because of that, the output of the method is considered a Resource class object. This means that request processing will be delegated to the Resource class and appropriate @HttpMethod-annotated methods will be looked up there. Because the getUser method returns a UserResource object:
+   public UserResource getUser(@UriParam("userid") 
+                 String userid) {
+           return new UserResource(...)
+
+an appropriate method in the UserResource class is invoked.
+Get User Resources
+Get User Resources
+ 
+
+UserResource
+
+As just mentioned, request processing for the getUser method in the UsersResource class is delegated to an appropriate method in a newly instantiated UserResource object. Here is a snippet of code from the UserResource class showing one of its methods, getUser.
+   @HttpMethod("GET")
+   @ProduceMime("application/json")
+   public JSONObject getUser() throws JSONException {
+       if (null == userEntity) {
+           throw new NotFoundException(
+                  "userid " + userid + "does not exist!");
+       }
+       return new JSONObject()
+           .put("userid", userEntity.getUserid())
+           .put("username", userEntity.getUsername())
+           .put("email", userEntity.getEmail())
+           .put("password", userEntity.getPassword())
+           .put("bookmarks", 
+                uriInfo.getBuilder().path("bookmarks").build());
+    } 
+
+Notice that this method also is annotated by @HttpMethod("GET") and @ProduceMime("application/json"). Here the getUsers method serves HTTP GET requests and returns a JSONObject object. The JSONObject object contains a representation of a particular user, for instance, the representation of the user whose userid is joe.
+
+You're encouraged to examine the rest of the source code in UserResource. You'll notice additional JSR 311 annotations, such as @ConsumeMime, which identifies the MIME types that a method can accept.
+
+Building and Deploying the Sample Code
+
+The sample code for the tip is available as a NetBeans project. You can build an deploy the sample from the NetBeans IDE or from the command line. In either case:
+
+    If you haven't already done so, download and install GlassFish V2.
+
+    Download the latest Jersey snapshot from the Jersey downloads page and extract its contents. You should now see the newly extracted directory as <sample_install_dir>/jersey, where <sample_install_dir> is the directory where you installed the sample application. For example, if you extracted the contents to C:\\ on a Windows machine, then your newly created directory should be at C:\\jersey.
+
+Building and Deploying the Sample Code in NetBeans
+
+    If you haven't already done so, download and install the NetBeans 5.5.1 IDE.
+
+    Start the NetBeans IDE. If you haven't already done so, register GlassFish V2 in NetBeans as follows:
+
+        Right click on Servers node in the Runtime window.
+        Select Add Server.
+        Leave the Server as Sun Java System Application Server.
+        Click the Next button.
+        Click the Browse button and browse to the location that you installed GlassFish V2.
+        Click the Choose button.
+        Click the Next button.
+        Set the Admin Password to the default, adminadmin, unless you chose a different password for GlassFish.
+        Click the Finish button.
+
+    Open the Bookmark project as follows:
+
+        Select Open Project from the File menu.
+        Browse to the Bookmark subdirectory.
+        Click the Open Project Folder button.
+
+    Build and deploy the Bookmark project as follows:
+
+        Right click the Bookmark project node in the Projects window.
+        Select Deploy Project or press F6 (Run Main Project).
+
+Building and Deploying the Sample Code From the Command Line
+
+    Set the AS_HOME environment variable to the GlassFish v2 installation directory, for example, (here shown in bash syntax):
+
+          export AS_HOME= <GF_install_dir>
+
+    where <GF_install_dir> is the directory where you installed GlassFish v2.
+
+    Navigate below the <sample_install_dir>/jersey directory to the /examples/Bookmark directory. Build the Bookmark application by entering the following command on the command line (here shown in bash syntax):
+
+          AS_HOME/lib/ant/bin/ant run-on-glassfish
+
+Running the Sample Code
+
+You can run the deployed Bookmark application as follows using Curl, a command line HTTP tool.
+
+    If you haven't already done so, download Curl.
+
+    Add a new user by entering the following command on the command line (note that the commands in this and subsequent steps are shown on multiple lines for formatting purposes):
+
+          curl -i --data "{\\"userid\\":\\"techtip\\",\\"username\\":
+          \\"TechTip User\\",\\"email\\":\\"techtip@example.com\\",
+          \\"password\\":\\"TEST\\"}" -H Content-type:application/json 
+          -X PUT 
+          http://localhost:8080/Bookmark/resources/users/techtip/
+
+    In response, an HTTP GET request is dispatched to the getUser method in the UsersResource class, which instantiates a new UserResource object. The request is further dispatched to the putUser method.
+
+    You should see output similar to the following:
+
+          HTTP/1.1 204 No Content
+          X-Powered-By: Servlet/2.5
+          Server: Sun Java System Application Server 9.1_01
+          Date: Thu, 01 Nov 2007 14:31:53 GMT
+
+    Get a list of users by entering the following command on the command line:
+
+          curl -i -X GET 
+          http://localhost:8080/Bookmark/resources/users/
+
+    This invokes the getUsersListAsJson method of the UsersResource class.
+
+    You should see output similar to the following:
+
+          HTTP/1.1 200 OK
+          X-Powered-By: Servlet/2.5
+          Server: Sun Java System Application Server 9.1_01
+          Content-Type: application/json
+          Transfer-Encoding: chunked
+          Date: Thu, 01 Nov 2007 14:34:07 GMT
+
+          ["http:\\/\\/localhost:8080\\/Bookmark\\/resources\\/users\\
+          /techtip"]
+
+    Get the representation of a user by entering the following command on the command line :
+
+          curl -i -X GET 
+          http://localhost:8080/Bookmark/resources/users/techtip/
+
+    The resulting actions here are similar to those for step 2.
+
+    You should see output similar to the following:
+
+          HTTP/1.1 200 OK
+          X-Powered-By: Servlet/2.5
+          Server: Sun Java System Application Server 9.1_01
+          Content-Type: application/json
+          Transfer-Encoding: chunked
+          Date: Thu, 01 Nov 2007 14:35:38 GMT
+
+          {"userid":"techtip","username":"TechTip User",
+          "email":"techtip@example.com","password":"TEST",
+          "bookmarks":"http:\\/\\/localhost:8080\\/Bookmark\\/resources
+          \\/users\\/techtip\\/bookmarks"}
+
+Summary
+
+This tip demonstrated how you can write RESTful web services in Java that conform to the JAX-RS: Java API for RESTful Web Services (JSR-311) specification. You can learn more about JAX-RS in the jsr311 project. You can learn more about Jersey, the reference implementation of JAX-RS, in the Jersey project.
+
+About the Authors
+
+Jakub Podlesak is a member of the Jersey project team. Previously, he participated in the development of Metro, the GlassFish v2 web services stack, as a member of the WS-Policy team.
+
+Paul Sandoz is the co-spec lead and implementation lead for JSR 311: Java API for RESTful Web Services. He has participated in the W3C, ISO, and ITU-T standards organizations and contributed various performance-related technologies and improvements to the GlassFish web services stack, particularly in standardization, implementation, integration, and interoperability of Fast Infoset.
+
+Category: web services
+
+Tags: rest services web
+
+Permanent link to this entry
+
+
+http://www.vogella.com/tutorials/REST/article.html -- 
+
+REST with Java (JAX-RS) using Jersey - Tutorial
+Lars Vogel
+
+Version 2.4
+
+Copyright © 2009, 2010, 2011, 2012, 2013, 2014 vogella GmbH
+
+20.08.2014
+
+RESTful web services with Java (Jersey / JAX-RS)
+
+This tutorial explains how to develop RESTful web services in Java with the JAX-RS reference implementation Jersey.
+
+In this tutorial Eclipse 4.4 (Luna), Java 1.6, Tomcat 6.0 and JAX-RS 2.0 (with Jersey 2.11) is used.
+
+Table of Contents
+
+1. REST - Representational State Transfer
+
+    1.1. What is REST?
+    1.2. HTTP methods
+    1.3. RESTFul web services
+
+2. JAX-RS with Jersey
+
+    2.1. JAX-RS
+    2.2. Jersey
+    2.3. JAX-RS annotations
+
+3. Installation of Jersey
+4. Web container
+5. Prerequisites
+6. Create your first RESTful Webservice
+
+    6.1. Create a new web project
+    6.2. Add Jersey JARs
+    6.3. Java Class
+    6.4. Define Jersey Servlet dispatcher
+    6.5. Run your rest service
+
+7. Create a client
+8. RESTful web services and JAXB
+
+    8.1. Create project
+    8.2. Create a client
+
+9. CRUD RESTful webservice
+
+    9.1. Project
+    9.2. Create a simple HTML form
+    9.3. Rest Service
+    9.4. Run
+    9.5. Create a client
+    9.6. Using the REST service via HTML page
+
+10. About this website
+11. Links and Literature
+
+    11.1. Rest Resources
+    11.2. vogella GmbH training and consulting support
+
+1. REST - Representational State Transfer
+1.1. What is REST?
+
+REST is an architectural style which is based on web-standards and the HTTP protocol. REST was first described by Roy Fielding in 2000.
+
+In a REST based architecture everything is a resource. A resource is accessed via a common interface based on the HTTP standard methods.
+
+In a REST based architecture you typically have a REST server which provides access to the resources and a REST client which accesses and modifies the REST resources.
+
+Every resource should support the HTTP common operations. Resources are identified by global IDs (which are typically URIs).
+
+REST allows that resources have different representations, e.g., text, XML, JSON etc. The REST client can ask for a specific representation via the HTTP protocol (content negotiation).
+1.2. HTTP methods
+
+The PUT, GET, POST and DELETE methods are typical used in REST based architectures.
+
+The following table gives an explanation of these operations.
+
+    GET defines a reading access of the resource without side-effects. The resource is never changed via a GET request, e.g., the request has no side effects (idempotent).
+
+    PUT creates a new resource. It must also be idempotent.
+
+    DELETE removes the resources. The operations are idempotent. They can get repeated without leading to different results.
+
+    POST updates an existing resource or creates a new resource.
+
+1.3. RESTFul web services
+
+A RESTFul web services are based on HTTP methods and the concept of REST. A RESTFul web service typically defines the base URI for the services, the supported MIME-types (XML, text, JSON, user-defined, ...) and the set of operations (POST, GET, PUT, DELETE) which are supported.
+2. JAX-RS with Jersey
+2.1. JAX-RS
+
+Java defines REST support via the Java Specification Request (JSR) 311. This specification is called JAX-RS (The Java API for RESTful Web Services). JAX-RS uses annotations to define the REST relevance of Java classes.
+2.2. Jersey
+
+Jersey is the reference implementation for the JSR 311 specification.
+
+The Jersey implementation provides a library to implement Restful webservices in a Java servlet container.
+
+On the server side Jersey provides a servlet implementation which scans predefined classes to identify RESTful resources. In your web.xml configuration file your register this servlet for your web application.
+
+The Jersey implementation also provides a client library to communicate with a RESTful webservice.
+
+The base URL of this servlet is:
+
+http://your_domain:port/display-name/url-pattern/path_from_rest_class 
+
+This servlet analyzes the incoming HTTP request and selects the correct class and method to respond to this request. This selection is based on annotations in the class and methods.
+
+A REST web application consists, therefore, out of data classes (resources) and services. These two types are typically maintained in different packages as the Jersey servlet will be instructed via the web.xml to scan certain packages for data classes.
+
+JAX-RS supports the creation of XML and JSON via the Java Architecture for XML Binding (JAXB).
+
+JAXB is described in the JAXB Tutorial .
+2.3. JAX-RS annotations
+
+The most important annotations in JAX-RS are listed in the following table.
+
+Table 1. JAX-RS annotations
+Annotation 	Description
+@PATH(your_path) 	Sets the path to base URL + /your_path. The base URL is based on your application name, the servlet and the URL pattern from the web.xml configuration file.
+@POST 	Indicates that the following method will answer to an HTTP POST request.
+@GET 	Indicates that the following method will answer to an HTTP GET request.
+@PUT 	Indicates that the following method will answer to an HTTP PUT request.
+@DELETE 	Indicates that the following method will answer to an HTTP DELETE request.
+@Produces(MediaType.TEXT_PLAIN[, more-types]) 	@Produces defines which MIME type is delivered by a method annotated with @GET. In the example text ("text/plain") is produced. Other examples would be "application/xml" or "application/json".
+@Consumes(type[, more-types]) 	@Consumes defines which MIME type is consumed by this method.
+@PathParam 	Used to inject values from the URL into a method parameter. This way you inject, for example, the ID of a resource into the method to get the correct object.
+
+
+The complete path to a resource is based on the base URL and the @PATh annotation in your class.
+
+http://your_domain:port/display-name/url-pattern/path_from_rest_class 
+
+3. Installation of Jersey
+
+Download the Jersey distribution as zip file from the Jersey download site.
+
+The zip contains the Jersey implementation JAR and its core dependencies. It does not provide dependencies for third party JARs beyond those for JSON support and JavaDoc.
+4. Web container
+
+For this tutorial you can use any web container, for example Tomcat or the Google App Engine.
+
+If you want to use Tomcat as servlet container please see Eclipse WTP and Apache Tomcat for instructions on how to install and use Eclipse WTP and Apache Tomcat.
+
+Alternative you could also use the Google App Engine for running the server part of the following REST examples. If you use the Google App Engine, you do not have to install and configure Tomcat.
+Tip
+
+If you are using GAE/J, you have to create App Engine projects instead of Dynamic Web Project. The following description is based on Apache Tomcat.
+5. Prerequisites
+
+The following description assumes that you are familiar with creating web applications in Eclipse. See Eclipse WTP development for an introduction into creating web applications with Eclipse.
+6. Create your first RESTful Webservice
+6.1. Create a new web project
+
+Create a new Dynamic Web Project called com.vogella.jersey.first.
+
+Ensure that you create the web.xml deployment descriptor.
+
+6.2. Add Jersey JARs
+
+Copy all JARs from your Jersey download into the WEB-INF/lib folder.
+
+6.3. Java Class
+
+Create the following class.
+
+package com.vogella.jersey.first;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+// Plain old Java Object it does not extend as class or implements 
+// an interface
+
+// The class registers its methods for the HTTP GET request using the @GET annotation. 
+// Using the @Produces annotation, it defines that it can deliver several MIME types,
+// text, XML and HTML. 
+
+// The browser requests per default the HTML MIME type.
+
+//Sets the path to base URL + /hello
+@Path("/hello")
+public class Hello {
+
+  // This method is called if TEXT_PLAIN is request
+  @GET
+  @Produces(MediaType.TEXT_PLAIN)
+  public String sayPlainTextHello() {
+    return "Hello Jersey";
+  }
+
+  // This method is called if XML is request
+  @GET
+  @Produces(MediaType.TEXT_XML)
+  public String sayXMLHello() {
+    return "<?xml version=\"1.0\"?>" + "<hello> Hello Jersey" + "</hello>";
+  }
+
+  // This method is called if HTML is request
+  @GET
+  @Produces(MediaType.TEXT_HTML)
+  public String sayHtmlHello() {
+    return "<html> " + "<title>" + "Hello Jersey" + "</title>"
+        + "<body><h1>" + "Hello Jersey" + "</body></h1>" + "</html> ";
+  }
+
+} 
+
+This class register itself as a get resource via the @GET annotation. Via the @Produces annotation it defines that it delivers the text and the HTML MIME types. It also defines via the @Path annotation that its service is available under the hello URL.
+
+The browser will always request the HTML MIME type. To see the text version, you can use tool like curl.
+6.4. Define Jersey Servlet dispatcher
+
+You need to register Jersey as the servlet dispatcher for REST requests. Open the file web.xml and modify it to the following.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
+  <display-name>com.vogella.jersey.first</display-name>
+ <servlet>
+    <servlet-name>Jersey REST Service</servlet-name>
+    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+     <!-- Register resources and providers under com.vogella.jersey.first package. -->
+    <init-param>
+        <param-name>jersey.config.server.provider.packages</param-name>
+        <param-value>com.vogella.jersey.first</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Jersey REST Service</servlet-name>
+    <url-pattern>/rest/*</url-pattern>
+  </servlet-mapping>
+</web-app> 
+
+The parameter jersey.config.server.provider.packages defines in which package Jersey will look for the web service classes. This property must point to your resources classes. The URL pattern defines the part of the base URL your application will be placed.
+6.5. Run your rest service
+
+Run you web application in Eclipse. See Eclipse WTP for details on how to run dynamic web applications.
+
+You should be able to access your resources under the following URL: http://localhost:8080/com.vogella.jersey.first/rest/hello
+
+Result of the Jersey service
+
+This name is derived from the "display-name" defined in the web.xml file, augmented with the servlet-mapping URL-pattern and the hello @Path annotation from your class file. You should get the message "Hello Jersey".
+
+The browser requests the HTML representation of your resource. In the next chapter we are going to write a client which will read the XML representation.
+7. Create a client
+
+Jersey contains a REST client library which can be used for testing or to build a real client in Java. The usage of this library is demonstrated in the following tutorial.
+
+Create a new Java project com.vogella.jersey.first.client and add the Jersey JARs to the project and the project build path. Create the following test class.
+
+package com.vogella.jersey.first;
+
+import java.net.URI;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
+import org.glassfish.jersey.client.ClientConfig;
+
+public class Test {
+
+  public static void main(String[] args) {
+    ClientConfig config = new ClientConfig();
+
+    Client client = ClientBuilder.newClient(config);
+
+    WebTarget target = client.target(getBaseURI());
+
+    String response = target.path("rest").
+              path("hello").
+              request().
+              accept(MediaType.TEXT_PLAIN).
+              get(Response.class)
+              .toString();
+
+
+    String plainAnswer = target.path("rest").path("hello").request().accept(MediaType.TEXT_PLAIN).get(String.class);
+    String xmlAnswer = target.path("rest").path("hello").request().accept(MediaType.TEXT_XML).get(String.class);
+    String htmlAnswer= target.path("rest").path("hello").request().accept(MediaType.TEXT_HTML).get(String.class);
+
+    System.out.println(response);
+    System.out.println(plainAnswer);
+    System.out.println(xmlAnswer);
+    System.out.println(htmlAnswer);
+  }
+
+  private static URI getBaseURI() {
+    return UriBuilder.fromUri("http://localhost:8080/com.vogella.jersey.first").build();
+  }
+} 
+
+8. RESTful web services and JAXB
+
+JAX-RS supports the automatic creation of XML and JSON via JAXB. For an introduction into XML please see Java and XML - Tutorial. For an introduction into JAXB please see JAXB. You can continue this tutorial without reading these tutorials, but they contain more background information.
+8.1. Create project
+
+Create a new Dynamic Web Project called com.vogella.jersey.jaxb. Ensure you create web.xml deployment descriptor.
+
+Copy all Jersey JARs into the WEB-INF/lib folder.
+
+Create your domain class.
+
+package com.vogella.jersey.jaxb.model;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+// JAX-RS supports an automatic mapping from JAXB annotated class to XML and JSON
+// Isn't that cool?
+public class Todo {
+  private String summary;
+  private String description;
+  public String getSummary() {
+    return summary;
+  }
+  public void setSummary(String summary) {
+    this.summary = summary;
+  }
+  public String getDescription() {
+    return description;
+  }
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  
+} 
+
+Create the following resource class. This class simply returns an instance of the Todo class.
+
+package com.vogella.jersey.jaxb.model;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Path("/todo")
+public class TodoResource {
+  // This method is called if XMLis request
+  @GET
+  @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+  public Todo getXML() {
+    Todo todo = new Todo();
+    todo.setSummary("This is my first todo");
+    todo.setDescription("This is my first todo");
+    return todo;
+  }
+  
+  // This can be used to test the integration with the browser
+  @GET
+  @Produces({ MediaType.TEXT_XML })
+  public Todo getHTML() {
+    Todo todo = new Todo();
+    todo.setSummary("This is my first todo");
+    todo.setDescription("This is my first todo");
+    return todo;
+  }
+
+} 
+
+Change web.xml to the following.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
+  <display-name>com.vogella.jersey.first</display-name>
+ <servlet>
+    <servlet-name>Jersey REST Service</servlet-name>
+    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+     <!-- Register resources and providers under com.vogella.jersey.first package. -->
+    <init-param>
+        <param-name>jersey.config.server.provider.packages</param-name>
+        <param-value>com.vogella.jersey.jaxb</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Jersey REST Service</servlet-name>
+    <url-pattern>/rest/*</url-pattern>
+  </servlet-mapping>
+</web-app> 
+
+Run you web application in Eclipse and validate that you can access your service. Your application should be available under the following URL.
+
+http://localhost:8080/com.vogella.jersey.jaxb/rest/todo 
+
+8.2. Create a client
+
+Create a new Java project de.vogella.jersey.jaxb.client and add the Jersey JARs to the project and the project build path. Create the following test class.
+
+package com.vogella.jersey.jaxb.client;
+
+import java.net.URI;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
+import org.glassfish.jersey.client.ClientConfig;
+
+public class TodoTest {
+
+  public static void main(String[] args) {
+    ClientConfig config = new ClientConfig();
+    Client client = ClientBuilder.newClient(config);
+
+    WebTarget target = client.target(getBaseURI());
+    // Get XML
+    String xmlResponse = target.path("rest").path("todo").request()
+        .accept(MediaType.TEXT_XML).get(String.class);
+    // Get XML for application
+    String xmlAppResponse =target.path("rest").path("todo").request()
+        .accept(MediaType.APPLICATION_XML).get(String.class);
+
+    // For JSON response also add the Jackson libraries to your webapplication
+        // In this case you would also change the client registration to
+        // ClientConfig config = new ClientConfig().register(JacksonFeature.class);
+        // Get JSON for application
+        // System.out.println(target.path("rest").path("todo").request()
+        // .accept(MediaType.APPLICATION_JSON).get(String.class));
+    
+    System.out.println(xmlResponse);
+    System.out.println(xmlAppResponse);
+  }
+
+  private static URI getBaseURI() {
+    return UriBuilder.fromUri("http://localhost:8080/_com.vogella.jersey.jaxb").build();
+  }
+
+} 
+
+9. CRUD RESTful webservice
+
+This section creates a CRUD (Create, Read, Update, Delete) restful web service. It will allow to maintain a list of TODOs in your web application via HTTP calls.
+9.1. Project
+
+Create a new dynamic project called com.vogella.jersey.todo and add the Jersey libs. Change the web.xml file to the following.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
+  <display-name>com.vogella.jersey.first</display-name>
+ <servlet>
+    <servlet-name>Jersey REST Service</servlet-name>
+    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+     <!-- Register resources and providers under com.vogella.jersey.first package. -->
+    <init-param>
+        <param-name>jersey.config.server.provider.packages</param-name>
+        <param-value>com.vogella.jersey.todo.resources</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Jersey REST Service</servlet-name>
+    <url-pattern>/rest/*</url-pattern>
+  </servlet-mapping>
+</web-app> 
+
+Create the following data model and a Singleton which serves as the data provider for the model. We use the implementation based on an enumeration. Please see the link for details. The Todo class is annotated with a JAXB annotation. See Java and XML to learn about JAXB.
+
+package com.vogella.jersey.todo.model;
+
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+public class Todo {
+  private String id;
+  private String summary;
+  private String description;
+  
+  public Todo(){
+    
+  }
+  public Todo (String id, String summary){
+    this.id = id;
+    this.summary = summary;
+  }
+  public String getId() {
+    return id;
+  }
+  public void setId(String id) {
+    this.id = id;
+  }
+  public String getSummary() {
+    return summary;
+  }
+  public void setSummary(String summary) {
+    this.summary = summary;
+  }
+  public String getDescription() {
+    return description;
+  }
+  public void setDescription(String description) {
+    this.description = description;
+  }
+  
+  
+} 
+
+package com.vogella.jersey.todo.dao;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.vogella.jersey.todo.model.Todo;
+
+public enum TodoDao {
+  instance;
+  
+  private Map<String, Todo> contentProvider = new HashMap<>();
+  
+  private TodoDao() {
+    
+    Todo todo = new Todo("1", "Learn REST");
+    todo.setDescription("Read http://www.vogella.com/tutorials/REST/article.html");
+    contentProvider.put("1", todo);
+    todo = new Todo("2", "Do something");
+    todo.setDescription("Read complete http://www.vogella.com");
+    contentProvider.put("2", todo);
+    
+  }
+  public Map<String, Todo> getModel(){
+    return contentProvider;
+  }
+  
+} 
+
+9.2. Create a simple HTML form
+
+The REST service can be used via HTML forms. The following HTML form will allow to post new data to the service. Create the following page called create_todo.html in the WebContent folder.
+
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>Form to create a new resource</title>
+ </head>
+<body>
+  <form action="../com.vogella.jersey.todo/rest/todos" method="POST">
+  <label for="id">ID</label>
+  <input name="id" />
+  <br/>
+  <label for="summary">Summary</label>
+  <input name="summary" />
+  <br/>
+  Description:
+  <TEXTAREA NAME="description" COLS=40 ROWS=6></TEXTAREA>
+  <br/>
+  <input type="submit" value="Submit" />
+  </form>
+</body>
+</html> 
+
+9.3. Rest Service
+
+Create the following classes which will be used as REST resources.
+
+package com.vogella.jersey.todo.resources;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBElement;
+
+import com.vogella.jersey.todo.dao.TodoDao;
+import com.vogella.jersey.todo.model.Todo;
+
+public class TodoResource {
+  @Context
+  UriInfo uriInfo;
+  @Context
+  Request request;
+  String id;
+  public TodoResource(UriInfo uriInfo, Request request, String id) {
+    this.uriInfo = uriInfo;
+    this.request = request;
+    this.id = id;
+  }
+  
+  //Application integration     
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public Todo getTodo() {
+    Todo todo = TodoDao.instance.getModel().get(id);
+    if(todo==null)
+      throw new RuntimeException("Get: Todo with " + id +  " not found");
+    return todo;
+  }
+  
+  // for the browser
+  @GET
+  @Produces(MediaType.TEXT_XML)
+  public Todo getTodoHTML() {
+    Todo todo = TodoDao.instance.getModel().get(id);
+    if(todo==null)
+      throw new RuntimeException("Get: Todo with " + id +  " not found");
+    return todo;
+  }
+  
+  @PUT
+  @Consumes(MediaType.APPLICATION_XML)
+  public Response putTodo(JAXBElement<Todo> todo) {
+    Todo c = todo.getValue();
+    return putAndGetResponse(c);
+  }
+  
+  @DELETE
+  public void deleteTodo() {
+    Todo c = TodoDao.instance.getModel().remove(id);
+    if(c==null)
+      throw new RuntimeException("Delete: Todo with " + id +  " not found");
+  }
+  
+  private Response putAndGetResponse(Todo todo) {
+    Response res;
+    if(TodoDao.instance.getModel().containsKey(todo.getId())) {
+      res = Response.noContent().build();
+    } else {
+      res = Response.created(uriInfo.getAbsolutePath()).build();
+    }
+    TodoDao.instance.getModel().put(todo.getId(), todo);
+    return res;
+  }
+  
+  
+
+} 
+
+package com.vogella.jersey.todo.resources;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.UriInfo;
+
+import com.vogella.jersey.todo.dao.TodoDao;
+import com.vogella.jersey.todo.model.Todo;
+
+// Will map the resource to the URL todos
+@Path("/todos")
+public class TodosResource {
+
+  // Allows to insert contextual objects into the class,
+  // e.g. ServletContext, Request, Response, UriInfo
+  @Context
+  UriInfo uriInfo;
+  @Context
+  Request request;
+
+  // Return the list of todos to the user in the browser
+  @GET
+  @Produces(MediaType.TEXT_XML)
+  public List<Todo> getTodosBrowser() {
+    List<Todo> todos = new ArrayList<Todo>();
+    todos.addAll(TodoDao.instance.getModel().values());
+    return todos;
+  }
+
+  // Return the list of todos for applications
+  @GET
+  @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+  public List<Todo> getTodos() {
+    List<Todo> todos = new ArrayList<Todo>();
+    todos.addAll(TodoDao.instance.getModel().values());
+    return todos;
+  }
+
+  // retuns the number of todos
+  // Use http://localhost:8080/com.vogella.jersey.todo/rest/todos/count
+  // to get the total number of records
+  @GET
+  @Path("count")
+  @Produces(MediaType.TEXT_PLAIN)
+  public String getCount() {
+    int count = TodoDao.instance.getModel().size();
+    return String.valueOf(count);
+  }
+
+  @POST
+  @Produces(MediaType.TEXT_HTML)
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  public void newTodo(@FormParam("id") String id,
+      @FormParam("summary") String summary,
+      @FormParam("description") String description,
+      @Context HttpServletResponse servletResponse) throws IOException {
+    Todo todo = new Todo(id, summary);
+    if (description != null) {
+      todo.setDescription(description);
+    }
+    TodoDao.instance.getModel().put(id, todo);
+
+    servletResponse.sendRedirect("../create_todo.html");
+  }
+
+  // Defines that the next path parameter after todos is
+  // treated as a parameter and passed to the TodoResources
+  // Allows to type http://localhost:8080/com.vogella.jersey.todo/rest/todos/1
+  // 1 will be treaded as parameter todo and passed to TodoResource
+  @Path("{todo}")
+  public TodoResource getTodo(@PathParam("todo") String id) {
+    return new TodoResource(uriInfo, request, id);
+  }
+
+} 
+
+This TodosResource uses the @PathParam annotation to define that the id is inserted as parameter.
+9.4. Run
+
+Run you web application in Eclipse and test the availability of your REST service under: http://localhost:8080/com.vogella.jersey.todo/rest/todos . You should see the XML representation of your TODO items.
+
+To see the count of TODO items use http://localhost:8080/com.vogella.jersey.todo/rest/todos/count to see an exiting TODO use "http://localhost:8080/com.vogella.jersey.todo/rest/todos/{id}", e.g., http://localhost:8080/com.vogella.jersey.todo/rest/todos/1 to see the TODO with ID 1. We currently have only TODOs with the ids 1 and 2, all other requests will result in an HTTP error code.
+
+Please note that with the browser you can only issue HTTP GET requests. The next chapter will use the Jersey client libraries to issue get, post and delete.
+9.5. Create a client
+
+To test your service can you create new class in your server project. This project has already all required libs in the classpath, so this is faster than creating a new project.
+
+Create the following class.
+
+package com.vogella.jersey.todo.client;
+
+import java.net.URI;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
+import org.glassfish.jersey.client.ClientConfig;
+
+import com.vogella.jersey.todo.model.Todo;
+
+public class Tester {
+  public static void main(String[] args) {
+
+
+    ClientConfig config = new ClientConfig();
+    Client client = ClientBuilder.newClient(config);
+    WebTarget service = client.target(getBaseURI());
+
+    // create one todo
+    Todo todo = new Todo("3", "Blabla");
+    Response response = service.path("rest").path("todos").path(todo.getId()).request(MediaType.APPLICATION_XML).put(Entity.entity(todo,MediaType.APPLICATION_XML),Response.class);
+
+    // Return code should be 201 == created resource
+    System.out.println(response.getStatus());
+
+    // Get the Todos
+    System.out.println(service.path("rest").path("todos").request().accept(MediaType.TEXT_XML).get(String.class));
+
+//    // Get JSON for application
+//    System.out.println(service.path("rest").path("todos").request().accept(MediaType.APPLICATION_JSON).get(String.class));
+
+    // Get XML for application
+    System.out.println(service.path("rest").path("todos").request().accept(MediaType.APPLICATION_XML).get(String.class));
+
+    //Get Todo with id 1
+    Response checkDelete = service.path("rest").path("todos/1").request().accept(MediaType.APPLICATION_XML).get();
+
+    //Delete Todo with id 1
+    service.path("rest").path("todos/1").request().delete();
+
+    //Get get all Todos id 1 should be deleted
+    System.out.println(service.path("rest").path("todos").request().accept(MediaType.APPLICATION_XML).get(String.class));
+
+    //Create a Todo
+    Form form =new Form();
+    form.param("id", "4");
+    form.param("summary","Demonstration of the client lib for forms");
+    response = service.path("rest").path("todos").request().post(Entity.entity(form,MediaType.APPLICATION_FORM_URLENCODED),Response.class);
+    System.out.println("Form response " + response.getStatus());
+
+    //Get all the todos, id 4 should have been created
+    System.out.println(service.path("rest").path("todos").request().accept(MediaType.APPLICATION_XML).get(String.class));
+
+  }
+
+  private static URI getBaseURI() {
+    return UriBuilder.fromUri("http://localhost:8080/com.vogella.jersey.todo").build();
+  }
+} 
+
+9.6. Using the REST service via HTML page
+
+The above example contains a form which calls a post method of your rest service.
+10. About this website
+
+Support free content
+Support free tutorials
+Questions and discussion
+Questions and discussion
+Tutorial & code license
+License
+Get source code
+Source Code
+
+11. Links and Literature
+11.1. Rest Resources
+
+Jersey Homepage
+
+JSR 311
+
+IBM Article about Rest with Tomcat and Jersey
+11.2. vogella GmbH training and consulting support

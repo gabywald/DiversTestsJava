@@ -1,0 +1,23 @@
+https://hc.apache.org/httpcomponents-client-ga/ -- 
+https://hc.apache.org/httpcomponents-client-ga/examples.html -- 
+https://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/org/apache/http/package-summary.html -- 
+
+https://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/constant-values.html#org.apache.http.HttpHeaders.ACCEPT_ENCODING
+
+https://hc.apache.org/httpcomponents-core-ga/examples.html
+
+https://docs.oracle.com/javaee/6/api/javax/ws/rs/core/MediaType.html -- 
+
+http://nikgrozev.com/2014/10/16/rest-with-embedded-jetty-and-jersey-in-a-single-jar-step-by-step/ -- 
+
+https://javarevisited.blogspot.com/2015/06/how-to-create-http-server-in-java-serversocket-example.html -- 
+https://www.programcreek.com/java-api-examples/?class=org.apache.http.HttpResponse&method=setStatusCode -- 
+
+https://blog.xebia.fr/2011/11/14/rest-java-serveur/ -- 
+https://stackoverflow.com/questions/31992461/how-to-run-jersey-server-webservice-server-without-using-tomcat -- 
+https://dzone.com/articles/restful-web-services-bootstrapping-with-jersey-imp -- 
+
+https://stackoverflow.com/questions/28270431/whats-the-right-way-to-bootstrap-jersey-2-with-jetty -- 
+https://crunchify.com/how-to-start-embedded-http-jersey-server-during-java-application-startup/ -- 
+https://crunchify.com/how-to-build-restful-service-with-java-using-jax-rs-and-jersey/ -- 
+

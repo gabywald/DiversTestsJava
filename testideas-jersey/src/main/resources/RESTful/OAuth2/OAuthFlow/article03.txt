@@ -1,0 +1,42 @@
+https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_understanding_username_password_oauth_flow.htm -- 
+
+Understanding the Username-Password OAuth Authentication Flow
+The username-password authentication flow can be used to authenticate when the consumer already has the user’s credentials.
+In this flow, the user’s credentials are used by the application to request an access token as shown in the following steps.
+Warning
+
+This OAuth authentication flow involves passing the user’s credentials back and forth. Use this authentication flow only when necessary. No refresh token will be issued.
+Username-password OAuth authentication flow
+
+    The application uses the user’s username and password to request an access token. This is done via an out-of-band POST request to the appropriate Salesforce token request endpoint, such as https://login.salesforce.com/services/oauth2/token. The following request fields are required:
+    Parameter	Description
+    grant_type	Must be password for this authentication flow.
+    client_id	The Consumer Key from the connected app definition.
+    client_secret	The Consumer Secret from the connected app definition.
+    username	End-user’s username.
+    password	End-user’s password.
+   	Note
+		You must append the user’s security token to their password A security token is an automatically-generated key from Salesforce. For example, if a user's password is mypassword, and their security token is XXXXXXXXXX, then the value provided for this parmeter must be mypasswordXXXXXXXXXX. For more information on security tokens see “Reset Your Security Token” in the online help.
+    An example request body might look something like the following:
+    1	grant_type=password&client_id=3MVG9lKcPoNINVBIPJjdw1J9LLM82Hn
+    2	FVVX19KY1uA5mu0QqEWhqKpoW3svG3XHrXDiCQjK1mdgAvhCscA9GE&client_secret=
+    3	1955279925675241571&username=testuser%40salesforce.com&password=mypassword123456
+    Salesforce verifies the user credentials, and if successful, sends a response to the application with the access token. This response contains the following values:
+    Parameters	Description
+    access_token	Access token that acts as a session ID that the application uses for making requests. This token should be protected as though it were user credentials.
+    instance_url	Identifies the Salesforce instance to which API calls should be sent.
+    id	Identity URL that can be used to both identify the user as well as query for more information about the user. Can be used in an HTTP request to get more information about the end user.
+    issued_at	When the signature was created, represented as the number of seconds since the Unix epoch (00:00:00 UTC on 1 January 1970).
+    signature	Base64-encoded HMAC-SHA256 signature signed with the consumer's private key containing the concatenated ID and issued_at value. The signature can be used to verify that the identity URL wasn’t modified because it was sent by the server.
+    An example response body might look something like:
+    1	{"id":"https://login.salesforce.com/id/00Dx0000000BV7z/005x00000012Q9P",
+    2	"issued_at":"1278448832702","instance_url":"https://na1.salesforce.com",
+    3	"signature":"0CmxinZir53Yex7nE0TD+zMpvIWYGb/bdJh6XfOH6EQ=","access_token":
+    4	"00Dx0000000BV7z!AR8AQAxo9UfVkh8AlV0Gomt9Czx9LjHnSSpwBMmbRcgKFmxOtvxjTrKW1
+    5	9ye6PE3Ds1eQz3z8jr3W7_VbWmEu4Q8TVGSTHxs"}
+    The application uses the provided access token to access protected user data.
+
+	Keep the following considerations in mind when using the user-agent OAuth flow:
+
+    Since the user is never redirected to login at Salesforce in this flow, the user can’t directly authorize the application, so no refresh tokens can be used. If your application requires refresh tokens, you should consider using the Web server or user-agent OAuth flow.
+

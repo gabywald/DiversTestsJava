@@ -1,0 +1,466 @@
+https://fr.wikipedia.org/wiki/Authentification_HTTP -- 
+Authentification HTTP
+
+L'authentification HTTP ou identification HTTP (spécifiée par [RFC 2617]) permet de s'identifier auprès d'un serveur HTTP en lui montrant que l'on connaît le nom d'un utilisateur et son mot de passe, afin d'accéder aux ressources à accès restreint de celui-ci.
+
+Sommaire
+ [masquer] 
+
+    1 Fonctionnement général
+    2 Méthodes
+        2.1 Méthode « Basic »
+        2.2 Méthode « Digest »
+            2.2.1 Demande d'identification
+            2.2.2 Identification du client
+            2.2.3 Réponse du serveur
+    3 Identification sur serveur mandataire (Proxy)
+    4 Voir aussi
+        4.1 Articles connexes
+        4.2 Liens externes
+
+Fonctionnement général
+
+Lorsqu'un client HTTP demande une ressource protégée au serveur, celui-ci répond de différente façon selon la requête :
+
+    soit la requête ne contient pas d'en-tête HTTP d'identification, dans ce cas le serveur répond avec le code HTTP 401 (Unauthorized : non autorisé) et envoie les en-têtes d'information sur l'identification demandée,
+    soit la requête contient les en-têtes HTTP d'identification, dans ce cas, après vérification du nom et du mot de passe, si l'identification échoue, le serveur répond par le code 401 comme dans le cas précédent, sinon il répond de manière normale (code 200 OK).
+
+Méthodes
+
+Il existe deux méthodes définies par la spécification [RFC 2617] :
+
+    la méthode « Basic »,
+    la méthode « Digest ».
+
+Méthode « Basic »
+
+Cette méthode est la plus simple, mais également la moins sécurisée car elle transmet le mot de passe en clair (ou presque). Elle n'est recommandée qu'avec une connexion chiffrée (protocole HTTPS).
+
+Le serveur ne recevant pas d'en-tête d'identification correcte envoie ce genre d'en-tête HTTP :
+
+ WWW-Authenticate: Basic realm="WallyWorld"
+
+Le serveur indique la méthode requise (Basic), suivie des paramètres. La méthode « Basic » ne requiert que le paramètre « realm » identifiant le domaine de protection.
+
+Le client HTTP peut alors réessayer la requête en spécifiant l'en-tête HTTP « Authorization ». Celui-ci doit contenir la méthode utilisée (Basic) suivi de la représentation en Base64 du nom de l'utilisateur et du mot de passe séparés par le caractère « : » (deux-points).
+
+Par exemple, pour authentifier l'utilisateur « Aladdin » avec le mot de passe « open sesame », le client envoie :
+
+ Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+
+Base64("Aladdin:open sesame") = "QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+Méthode « Digest »
+
+Cette méthode ne transmet pas le mot de passe en clair, mais impose de stocker celui-ci (ou son hachage SHA1, qui suffit pour s'identifier et peut donc être considéré comme un mot de passe) en clair. Même si cette méthode est plus sûre que la méthode « Basic », elle reste tout de même sensible aux attaques (interception de communication…), et plus sensible encore à certaines attaques (vol de fichier de mots de passe).
+
+La méthode « Digest » est plus complexe et emploie plus de paramètres.
+Demande d'identification
+
+Le serveur peut envoyer une demande d'identification du genre :
+
+ WWW-Authenticate: Digest realm="testrealm@host.com",
+   qop="auth, auth-int",
+   nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093",
+   opaque="5ccc069c403ebaf9f0171e9517f40e41"
+
+Les paramètres sont séparés par une virgule et sont les suivants :
+
+realm
+    Ce paramètre est affiché à l'utilisateur pour qu'il sache quel nom et mot de passe il peut utiliser. La chaîne doit au moins contenir le nom de la machine et le nom du groupe d'utilisateurs requis.
+domain
+    (optionnel) Contient une liste d'URI séparés par le caractère espace, définissant le domaine de protection. Ce paramètre donne la liste des URI pour lesquels l'utilisateur demandé est valable.
+nonce
+    Chaîne générée par le serveur à chaque réponse 401. Il est conseillé que cette chaîne utilise les caractères Base64 ou hexadécimaux. Ce paramètre est utilisé dans le calcul de la réponse du client.
+opaque
+    (optionnel) Chaîne générée par le serveur que le client doit retourner telle quelle.
+stale
+    (optionnel) Ce paramètre a 2 valeurs possibles : true ou false. Il vaut true si la demande d'identification précédente a été rejetée seulement à cause de l'utilisation d'une ancienne valeur du paramètre « nonce », false sinon. La valeur true indique que le client doit retenter la requête en utilisant la nouvelle valeur de nonce fournie par le serveur sans redemander un nom et un mot de passe à l'utilisateur.
+algorithm
+    (optionnel) Indique l'algorithme à utiliser pour les fonctions de hashages. Deux valeurs sont définies dans [RFC 2617] : MD5 ou MD5-sess.
+qop
+    (optionnel) (Quality Of Protection) Ce paramètre indique les niveaux de protection supportés : auth ou auth-int.
+
+Identification du client
+
+Le client s'identifiant avec la méthode « Digest » utilise deux fonctions pour calculer certains paramètres :
+
+ H(data) = MD5(data)
+
+La fonction H retourne sous la forme d'une chaîne de caractères (format hexadécimal, en minuscule) le résultat de la fonction de hashage MD5. Elle peut également utiliser un autre algorithme de hashage (SHA par exemple). L'algorithme employé est spécifié dans le paramètre « algorithm ».
+
+ KD(secret, data) = H(secret:data)
+
+La fonction KD appelle la fonction H avec comme argument la concaténation des deux paramètres secret et data séparés par le signe deux-points.
+
+Le client envoie donc l'en-tête « Authorization » contenant le nom de la méthode « Digest » suivi des paramètres :
+
+username
+    Nom de l'utilisateur.
+realm
+    Même valeur que celle de la réponse du serveur.
+nonce
+    Même valeur que celle de la réponse du serveur.
+algorithm
+    Même valeur que celle de la réponse du serveur.
+opaque
+    Même valeur que celle de la réponse du serveur.
+uri
+    URI de la ressource protégée demandée (dupliquée ici car certains proxy peuvent modifier l'URI originale).
+response
+    Ce paramètre contenant 32 chiffres hexadécimaux représentant la valeur calculée par le client prouvant qu'il connaît le mot de passe.
+qop
+    (optionnel) (Quality Of Protection) Ce paramètre indique le niveau de protection appliqué. Il doit correspondre à l'une des valeurs retournées par le serveur.
+cnonce
+    (si qop est présent) Chaîne générée par le client.
+nc
+    (si qop est présent) (Nonce Count) 8 chiffres hexadécmaux représentant le nombre de fois que la valeur du paramètre « nonce » retournée par le serveur a été utilisée par le client. nc=00000001 la première fois.
+
+Le calcul de la valeur du paramètre response est effectué de la manière suivante :
+
+Si qop est spécifié :
+
+ response = KD( H(A1), nonce:nc:cnonce:qop:H(A2) )
+
+Sinon :
+
+ response = KD( H(A1), nonce:H(A2) )
+
+Si algorithm vaut MD5 ou n'est pas spécifié :
+
+ A1 = username:realm:password
+
+si algorithm vaut MD5-sess :
+
+ A1 = H(username:realm:password):nonce:cnonce
+
+Si qop vaut auth ou n'est pas spécifié :
+
+ A2 = http-method:uri
+
+si qop vaut auth-int :
+
+ A2 = http-method:uri:H(entity)
+
+
+Réponse du serveur
+
+Le serveur recalcule les mêmes valeurs que le client pour vérifier si l'identification est réussie.
+
+Dans le cas où le serveur répond positivement (utilisateur et mot de passe corrects), il envoie, dans la réponse, l'en-tête HTTP « Authentication-Info » contenant des informations sur l'identification réussie et la prochaine identification.
+
+Cet en-tête contient également une liste de paramètres séparés par une virgule :
+
+nextnonce
+    Valeur à utiliser pour les prochaines identifications dans ce domaine de protection.
+qop
+    (Optionnel) quality of protection appliquée à cette réponse. Ce paramètre doit avoir la même valeur que dans la requête du client.
+rspauth
+    (Si qop spécifié) Ce paramètre d'identification mutuel sert à prouver que le serveur connaît également l'utilisateur et son mot de passe. Il est calculé de la même manière que le paramètre response excepté pour la valeur de A2 où http-method est une chaîne vide.
+cnonce
+    (Si qop spécifié) Même valeur que dans la requête du client.
+nc
+    (Si qop spécifié) Même valeur que dans la requête du client.
+
+
+Identification sur serveur mandataire (Proxy)
+
+L'identification décrite ci-dessus se déroule entre l'utilisateur et le serveur d'origine:
+
+Il est également possible de s'identifier auprès des serveurs intermédiaires :
+
+    Utilisateur à proxy
+    Proxy à proxy
+    Proxy à serveur d'origine.
+
+Pour cela, les en-têtes HTTP Proxy-Authenticate et Proxy-Authorization sont utilisés à la place des en-têtes WWW-Authenticate et Authorization. Le code d'état HTTP 407 est utilisé au lieu du code 401.
+
+L'en-tête Proxy-Authentication-Info a le même rôle que l'en-tête Authentication-Info.
+
+Un client peut devoir s'identifier à la fois à un proxy et au serveur d'origine, mais pas dans la même réponse.
+
+L'identification ne peut être utilisée dans le cas d'un proxy transparent
+Voir aussi
+Articles connexes
+
+    Hypertext Transfer Protocol
+    Vulnérabilité des services d'authentification web
+
+    
+https://en.wikipedia.org/wiki/Digest_access_authentication -- 
+Digest access authentication
+From Wikipedia, the free encyclopedia
+
+Digest access authentication is one of the agreed-upon methods a web server can use to negotiate credentials, such as username or password, with a user's web browser. This can be used to confirm the identity of a user before sending sensitive information, such as online banking transaction history. It applies a hash function to a password before sending it over the network, which is safer than basic access authentication, which sends plaintext.
+
+Technically, digest authentication is an application of MD5 cryptographic hashing with usage of nonce values to prevent replay attacks. It uses the HTTP protocol.
+
+Contents
+ [hide] 
+
+    1 Overview
+    2 Impact of MD5 security on digest authentication
+    3 HTTP digest authentication considerations
+        3.1 Advantages
+        3.2 Disadvantages
+        3.3 Alternative authentication protocols
+    4 Example with explanation
+    5 The .htdigest file
+    6 SIP digest authentication
+    7 Browser implementation
+    8 See also
+    9 Notes
+    10 References
+    11 External links
+
+Overview
+
+Digest access authentication was originally specified by RFC 2069 (An Extension to HTTP: Digest Access Authentication). RFC 2069 specifies roughly a traditional digest authentication scheme with security maintained by a server-generated nonce value. The authentication response is formed as follows (where HA1 and HA2 are names of string variables):
+
+    HA1=MD5(username:realm:password)
+    HA2=MD5(method:digestURI)
+    response=MD5(HA1:nonce:HA2)
+
+RFC 2069 was later replaced by RFC 2617 (HTTP Authentication: Basic and Digest Access Authentication). RFC 2617 introduced a number of optional security enhancements to digest authentication; "quality of protection" (qop), nonce counter incremented by client, and a client-generated random nonce. These enhancements are designed to protect against, for example, chosen-plaintext attack cryptanalysis.
+
+If the algorithm directive's value is "MD5" or unspecified, then HA1 is
+
+    HA1=MD5(username:realm:password)
+
+If the algorithm directive's value is "MD5-sess", then HA1 is
+
+    HA1=MD5(MD5(username:realm:password):nonce:cnonce)
+
+If the qop directive's value is "auth" or is unspecified, then HA2 is
+
+    HA2=MD5(method:digestURI)
+
+If the qop directive's value is "auth-int", then HA2 is
+
+    HA2=MD5(method:digestURI:MD5(entityBody))
+
+If the qop directive's value is "auth" or "auth-int", then compute the response as follows:
+
+    response=MD5(HA1:nonce:nonceCount:clientNonce:qop:HA2)
+
+If the qop directive is unspecified, then compute the response as follows:
+
+    response=MD5(HA1:nonce:HA2)
+
+The above shows that when qop is not specified, the simpler RFC 2069 standard is followed.
+Impact of MD5 security on digest authentication
+
+The MD5 calculations used in HTTP digest authentication is intended to be "one way", meaning that it should be difficult to determine the original input when only the output is known. If the password itself is too simple, however, then it may be possible to test all possible inputs and find a matching output (a brute-force attack) – perhaps aided by a dictionary or suitable look-up list.
+
+The HTTP scheme was designed by Phillip Hallam-Baker at CERN in 1993 and does not incorporate subsequent improvements in authentication systems, such as the development of keyed-hash message authentication code (HMAC). Although the cryptographic construction that is used is based on the MD5 hash function, collision attacks were in 2004 generally believed to not affect applications where the plaintext (i.e. password) is not known.[1][better source needed] However, claims in 2006[2] cause some doubt over other MD5 applications as well. So far, however, MD5 collision attacks have not been shown to pose a threat to digest authentication[citation needed], and the RFC 2617 allows servers to implement mechanisms to detect some collision and replay attacks.
+HTTP digest authentication considerations
+Advantages
+
+HTTP digest authentication is designed to be more secure than traditional digest authentication schemes, for example "significantly stronger than (e.g.) CRAM-MD5 ..." (RFC 2617).
+
+Some of the security strengths of HTTP digest authentication are:
+
+    The password is not used directly in the digest, but rather HA1 = MD5(username:realm:password). This allows some implementations (e.g. JBoss[3]) to store HA1 rather than the cleartext password
+    Client nonce was introduced in RFC 2617, which allows the client to prevent chosen-plaintext attacks, such as rainbow tables that could otherwise threaten digest authentication schemes
+    Server nonce is allowed to contain timestamps. Therefore, the server may inspect nonce attributes submitted by clients, to prevent replay attacks
+    Server is also allowed to maintain a list of recently issued or used server nonce values to prevent reuse
+
+Disadvantages
+
+Digest access authentication is intended as a security trade-off. It is intended to replace unencrypted HTTP basic access authentication. It is not, however, intended to replace strong authentication protocols, such as public-key or Kerberos authentication.
+
+In terms of security, there are several drawbacks with digest access authentication:
+
+    Many of the security options in RFC 2617 are optional. If quality-of-protection (qop) is not specified by the server, the client will operate in a security-reduced legacy RFC 2069 mode
+    Digest access authentication is vulnerable to a man-in-the-middle (MitM) attack. For example, a MitM attacker could tell clients to use basic access authentication or legacy RFC2069 digest access authentication mode. To extend this further, digest access authentication provides no mechanism for clients to verify the server's identity
+    Some servers require passwords to be stored using reversible encryption. However, it is possible to instead store the digested value of the username, realm, and password[4]
+    It prevents the use of a strong password hash (such as bcrypt) when storing passwords (since either the password, or the digested username, realm and password must be recoverable)
+
+Also, since the MD5 algorithm is not allowed in FIPS, HTTP Digest authentication will not work with FIPS-certified[note 1] crypto modules.
+Alternative authentication protocols
+
+Some strong authentication protocols for web-based applications include:
+
+    Public key authentication (usually implemented with a HTTPS / SSL client certificate)
+    Kerberos or SPNEGO authentication, employed for example by Microsoft IIS running configured for Integrated Windows Authentication (IWA)
+    Secure Remote Password protocol (preferably within the HTTPS / TLS layer)
+
+Weak cleartext protocols are also often in use:
+
+    Basic access authentication scheme
+    HTTP+HTML form-based authentication
+
+These weak cleartext protocols used together with HTTPS network encryption resolve many of the threats that digest access authentication is designed to prevent.
+Example with explanation
+
+The following example was originally given in RFC 2617 and is expanded here to show the full text expected for each request and response. Note that only the "auth" (authentication) quality of protection code is covered – as of April 2005, only the Opera and Konqueror web browsers are known to support "auth-int" (authentication with integrity protection). Although the specification mentions HTTP version 1.1, the scheme can be successfully added to a version 1.0 server, as shown here.
+
+This typical transaction consists of the following steps:
+
+    The client asks for a page that requires authentication but does not provide a username and password.[note 2] Typically this is because the user simply entered the address or followed a link to the page.
+    The server responds with the 401 "Unauthorized" response code, providing the authentication realm and a randomly generated, single-use value called a nonce.
+    At this point, the browser will present the authentication realm (typically a description of the computer or system being accessed) to the user and prompt for a username and password. The user may decide to cancel at this point.
+    Once a username and password have been supplied, the client re-sends the same request but adds an authentication header that includes the response code.
+    In this example, the server accepts the authentication and the page is returned. If the username is invalid and/or the password is incorrect, the server might return the "401" response code and the client would prompt the user again.
+
+Client request (no authentication)
+
+ GET /dir/index.html HTTP/1.0
+ Host: localhost
+
+(followed by a new line, in the form of a carriage return followed by a line feed).[5]
+
+Server response
+
+HTTP/1.0 401 Unauthorized
+Server: HTTPd/0.9
+Date: Sun, 10 Apr 2014 20:26:47 GMT
+WWW-Authenticate: Digest realm="testrealm@host.com",
+                        qop="auth,auth-int",
+                        nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093",
+                        opaque="5ccc069c403ebaf9f0171e9517f40e41"
+Content-Type: text/html
+Content-Length: 153
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Error</title>
+  </head>
+  <body>
+    <h1>401 Unauthorized.</h1>
+  </body>
+</html>
+
+Client request (username "Mufasa", password "Circle Of Life")
+
+GET /dir/index.html HTTP/1.0
+Host: localhost
+Authorization: Digest username="Mufasa",
+                     realm="testrealm@host.com",
+                     nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093",
+                     uri="/dir/index.html",
+                     qop=auth,
+                     nc=00000001,
+                     cnonce="0a4f113b",
+                     response="6629fae49393a05397450978507c4ef1",
+                     opaque="5ccc069c403ebaf9f0171e9517f40e41"
+
+(followed by a blank line, as before).
+
+Server response
+
+HTTP/1.0 200 OK
+Server: HTTPd/0.9
+Date: Sun, 10 Apr 2005 20:27:03 GMT
+Content-Type: text/html
+Content-Length: 7984
+
+(followed by a blank line and HTML text of the restricted page).
+
+The "response" value is calculated in three steps, as follows. Where values are combined, they are delimited by colons.
+
+    The MD5 hash of the combined username, authentication realm and password is calculated. The result is referred to as HA1.
+    The MD5 hash of the combined method and digest URI is calculated, e.g. of "GET" and "/dir/index.html". The result is referred to as HA2.
+    The MD5 hash of the combined HA1 result, server nonce (nonce), request counter (nc), client nonce (cnonce), quality of protection code (qop) and HA2 result is calculated. The result is the "response" value provided by the client.
+
+Since the server has the same information as the client, the response can be checked by performing the same calculation. In the example given above the result is formed as follows, where MD5() represents a function used to calculate an MD5 hash, backslashes represent a continuation and the quotes shown are not used in the calculation.
+
+Completing the example given in RFC 2617 gives the following results for each step.
+
+   HA1 = MD5( "Mufasa:testrealm@host.com:Circle Of Life" )
+       = 939e7578ed9e3c518a452acee763bce9
+
+   HA2 = MD5( "GET:/dir/index.html" )
+       = 39aff3a2bab6126f332b942af96d3366
+
+   Response = MD5( "939e7578ed9e3c518a452acee763bce9:\
+                    dcd98b7102dd2f0e8b11d0f600bfb0c093:\
+                    00000001:0a4f113b:auth:\
+                    39aff3a2bab6126f332b942af96d3366" )
+            = 6629fae49393a05397450978507c4ef1
+
+At this point the client may make another request, reusing the server nonce value (the server only issues a new nonce for each "401" response) but providing a new client nonce (cnonce). For subsequent requests, the hexadecimal request counter (nc) must be greater than the last value it used – otherwise an attacker could simply "replay" an old request with the same credentials. It is up to the server to ensure that the counter increases for each of the nonce values that it has issued, rejecting any bad requests appropriately. Obviously changing the method, URI and/or counter value will result in a different response value.
+
+The server should remember nonce values that it has recently generated. It may also remember when each nonce value was issued, expiring them after a certain amount of time. If an expired value is used, the server should respond with the "401" status code and add stale=TRUE to the authentication header, indicating that the client should re-send with the new nonce provided, without prompting the user for another username and password.
+
+The server does not need to keep any expired nonce values – it can simply assume that any unrecognised values have expired. It is also possible for the server to only allow each nonce value to be returned once, although this forces the client to repeat every request. Note that expiring a server nonce immediately will not work, as the client would never get a chance to use it.
+The .htdigest file
+
+.htdigest is a flat-file used to store usernames, realm and passwords for digest authentication of Apache HTTP Server. The name of the file is given in the .htaccess configuration, and can be anything, but ".htdigest" is the canonical name. The file name starts with a dot, because most Unix-like operating systems consider any file that begins with dot to be hidden. This file is often maintained with the shell command "htdigest" which can add, delete, and update users, and will properly encode the password for use.
+
+The "htdigest" command is found in the apache2-utils package on dpkg package management systems and the httpd-tools package on RPM package management systems.
+
+The syntax of the htdigest command:[6]
+
+htdigest [ -c ] passwdfile realm username
+
+The format of the .htdigest file:[6]
+
+user1:Realm:5ea41921c65387d904834f8403185412
+user2:Realm:734418f1e487083dc153890208b79379
+
+SIP digest authentication
+
+Session Initiation Protocol (SIP) uses basically the same digest authentication algorithm. It is specified by RFC 3261.
+Browser implementation
+
+Most browsers have substantially implemented the spec, some barring certain features such as auth-int checking or the MD5-sess algorithm. If the server requires that these optional features be handled, clients may not be able to authenticate (though note mod_auth_digest for Apache does not fully implement RFC 2617 either).
+
+    Amaya
+    Gecko-based: (not including auth-int[7])
+        Mozilla Application Suite
+        Mozilla Firefox
+        Netscape 7+
+    iCab 3.0.3+
+    KHTML- and WebKit-based: (not including auth-int[8])
+        iCab 4
+        Konqueror
+        Google Chrome
+        Safari
+    Tasman-based:
+        Internet Explorer for Mac
+    Trident-based:
+        Internet Explorer 5+[9] (not including auth-int)
+    Presto-based:
+        Opera
+        Opera Mobile
+        Opera Mini
+        Nintendo DS Browser
+        Nokia 770 Browser
+        Sony Mylo 1's Browser
+        Wii Internet Channel Browser
+
+See also
+
+    AKA (security)
+    Basic access authentication
+
+Notes
+
+    The following is a list of FIPS approved algorithms: "Annex A: Approved Security Functions for FIPS PUB 140-2, Security Requirements for Cryptographic Modules" (PDF). National Institute of Standards and Technology. January 31, 2014.
+    A client may already have the required username and password without needing to prompt the user, e.g. if they have previously been stored by a web browser.
+
+References
+
+    "Hash Collision Q&A". Cryptography Research. 2005-02-16. Archived from the original on 2010-03-06.
+    Jongsung Kim, Alex Biryukov, Bart Preneel, Seokhie Hong. "On the Security of HMAC and NMAC Based on HAVAL, MD4, MD5, SHA-0 and SHA-1" (PDF). IACR.
+    Scott Stark (2005-10-08). "DIGEST Authentication (4.0.4+)". JBoss.
+    "HTTP Authentication: Basic and Digest Access Authentication: Storing passwords". IETF. June 1999.
+    Tim Berners-Lee, Roy Fielding, Henrik Frystyk Nielsen (1996-02-19). "Hypertext Transfer Protocol -- HTTP/1.0: Request". W3C.
+    "htdigest - manage user files for digest authentication". apache.org.
+    Emanuel Corthay (2002-09-16). "Bug 168942 - Digest authentication with integrity protection". Mozilla.
+    Timothy D. Morgan (2010-01-05). "HTTP Digest Integrity: Another look, in light of recent attacks" (PDF). vsecurity.com.
+    "TechNet Digest Authentication". August 2013.
+
+External links
+
+    RFC 2617
+    RFC 2069 (obsolete)
+
+Retrieved from "https://en.wikipedia.org/w/index.php?title=Digest_access_authentication&oldid=676647755"
+Categories:
+
+    Cryptographic protocols
+    Hypertext Transfer Protocol
+    Request for Comments
