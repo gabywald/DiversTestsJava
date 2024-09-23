@@ -13,14 +13,12 @@
 	<artifactId>testideas-rest</artifactId>
 
 	<properties>
-		<org.glassfish.jersey.version>2.44</org.glassfish.jersey.version>
+		<org.glassfish.jersey.version>2.45</org.glassfish.jersey.version>
 		<org.json.version>20240303</org.json.version>
 		<com.auth0.version>4.4.0</com.auth0.version>
 		
 		<apache.http.client.version>4.5.13</apache.http.client.version>
 		<apache.http.version>4.4.10</apache.http.version>
-		
-		
 	</properties>
 
 	<dependencies>
