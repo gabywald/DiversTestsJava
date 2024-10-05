@@ -9,7 +9,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 /**
  * https://www.codeproject.com/tips/1040097/create-simple-http-server-in-java
- * @author gchandesris (20180727)
+ * @author Gabriel Chandesris (20180727)
  */
 public class RootHandler implements HttpHandler {
 

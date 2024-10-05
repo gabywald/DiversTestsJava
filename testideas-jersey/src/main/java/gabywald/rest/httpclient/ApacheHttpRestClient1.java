@@ -20,9 +20,11 @@ import org.apache.http.util.EntityUtils;
  * Apache HttpClient: http://hc.apache.org/httpclient-3.x/
  *
  */
+@SuppressWarnings("deprecation")
 public class ApacheHttpRestClient1 {
 
 	public static void main(String[] args) {
+		@SuppressWarnings("resource")
 		DefaultHttpClient httpclient = new DefaultHttpClient();
 		try {
 			// specify the host, protocol, and port
