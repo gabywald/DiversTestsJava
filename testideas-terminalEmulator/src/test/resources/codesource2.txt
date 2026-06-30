@@ -1,0 +1,6281 @@
+/*
+ * ============================================================================
+ * TERMINAL EMULATOR - JAVA 8 / SWING
+ * ============================================================================
+ * 
+ * Projet complet d'émulation de terminal Unix/Linux avec interface graphique.
+ * 
+ * STRUCTURE DU PROJET :
+ * --------------------
+ * 
+ * com.terminal.emulator/
+ * ├── Main.java                    - Point d'entrée principal
+ * ├── gui/
+ * │   ├── TerminalFrame.java       - Fenêtre principale Swing
+ * │   ├── TerminalPanel.java       - Panel du terminal
+ * │   └── TerminalOutput.java      - Gestion de l'affichage
+ * ├── filesystem/
+ * │   ├── FileSystem.java          - Système de fichiers virtuel
+ * │   ├── FileNode.java            - Nœud de base (fichier/dossier)
+ * │   ├── Directory.java           - Répertoire
+ * │   └── TerminalFile.java        - Fichier texte
+ * ├── commands/
+ * │   ├── Command.java             - Interface Command
+ * │   ├── CommandParser.java       - Parseur de commandes
+ * │   ├── CommandFactory.java      - Factory de commandes
+ * │   ├── LsCommand.java           - Commande 'ls'
+ * │   ├── CdCommand.java           - Commande 'cd'
+ * │   ├── PwdCommand.java          - Commande 'pwd'
+ * │   ├── CatCommand.java          - Commande 'cat'
+ * │   ├── EchoCommand.java         - Commande 'echo'
+ * │   ├── TouchCommand.java        - Commande 'touch'
+ * │   ├── MkdirCommand.java        - Commande 'mkdir'
+ * │   ├── RmCommand.java           - Commande 'rm'
+ * │   ├── RmdirCommand.java        - Commande 'rmdir'
+ * │   ├── CpCommand.java           - Commande 'cp'
+ * │   ├── MvCommand.java           - Commande 'mv'
+ * │   ├── ClearCommand.java        - Commande 'clear'
+ * │   ├── HelpCommand.java         - Commande 'help'
+ * │   └── ExitCommand.java         - Commande 'exit'
+ * ├── script/
+ * │   ├── ScriptEngine.java        - Moteur de script minimaliste
+ * │   ├── ScriptParser.java        - Parseur de scripts
+ * │   └── ScriptContext.java       - Contexte d'exécution
+ * └── TerminalState.java           - État du terminal
+ * 
+ * tests/
+ * ├── filesystem/
+ * │   ├── FileSystemTest.java
+ * │   └── DirectoryTest.java
+ * ├── commands/
+ * │   ├── CommandParserTest.java
+ * │   ├── LsCommandTest.java
+ * │   ├── CdCommandTest.java
+ * │   └── ... (tests pour chaque commande)
+ * └── script/
+ *     └── ScriptEngineTest.java
+ * 
+ * DOCUMENTATION :
+ * ---------------
+ * Voir la documentation complète dans chaque classe et les fichiers README.md
+ * 
+ * AUTEUR : Gabriel Chandesris
+ * DATE : 30 Juin 2026
+ * VERSION : 1.0.0
+ * JAVA VERSION : 1.8+
+ * 
+ * ============================================================================
+ */
+
+// ============================================================================
+// FICHIER : Main.java
+// DESCRIPTION : Point d'entrée principal de l'application
+// ============================================================================
+package com.terminal.emulator;
+
+import com.terminal.emulator.gui.TerminalFrame;
+
+/**
+ * Point d'entrée principal de l'émulateur de terminal.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class Main {
+    
+    /**
+     * Méthode principale pour lancer l'application.
+     * 
+     * @param args Arguments de la ligne de commande (non utilisés)
+     */
+    public static void main(String[] args) {
+        // Création et affichage de la fenêtre du terminal
+        TerminalFrame frame = new TerminalFrame();
+        frame.setVisible(true);
+    }
+}
+
+
+// ============================================================================
+// FICHIER : TerminalState.java
+// DESCRIPTION : État global du terminal (répertoire courant, historique, etc.)
+// ============================================================================
+package com.terminal.emulator;
+
+import com.terminal.emulator.filesystem.Directory;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Classe représentant l'état global du terminal.
+ * Contient le répertoire courant, l'historique des commandes, etc.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class TerminalState {
+    
+    private Directory currentDirectory;
+    private Directory rootDirectory;
+    private List<String> commandHistory;
+    private int historyIndex;
+    private String prompt;
+    
+    /**
+     * Constructeur par défaut.
+     * Initialise le système de fichiers avec un répertoire racine.
+     */
+    public TerminalState() {
+        this.rootDirectory = new Directory("/", null);
+        this.currentDirectory = rootDirectory;
+        this.commandHistory = new ArrayList<>();
+        this.historyIndex = -1;
+        this.prompt = "user@terminal:~$";
+    }
+    
+    /**
+     * Constructeur avec un répertoire racine personnalisé.
+     * 
+     * @param root Répertoire racine du système de fichiers
+     */
+    public TerminalState(Directory root) {
+        this.rootDirectory = root;
+        this.currentDirectory = root;
+        this.commandHistory = new ArrayList<>();
+        this.historyIndex = -1;
+        this.prompt = "user@terminal:~$";
+    }
+    
+    // Getters et Setters
+    
+    /**
+     * @return Le répertoire courant
+     */
+    public Directory getCurrentDirectory() {
+        return currentDirectory;
+    }
+    
+    /**
+     * Définit le répertoire courant.
+     * 
+     * @param currentDirectory Nouveau répertoire courant
+     */
+    public void setCurrentDirectory(Directory currentDirectory) {
+        this.currentDirectory = currentDirectory;
+        updatePrompt();
+    }
+    
+    /**
+     * @return Le répertoire racine
+     */
+    public Directory getRootDirectory() {
+        return rootDirectory;
+    }
+    
+    /**
+     * @return L'historique des commandes
+     */
+    public List<String> getCommandHistory() {
+        return new ArrayList<>(commandHistory);
+    }
+    
+    /**
+     * Ajoute une commande à l'historique.
+     * 
+     * @param command Commande à ajouter
+     */
+    public void addToHistory(String command) {
+        if (command != null && !command.trim().isEmpty()) {
+            commandHistory.add(command);
+            historyIndex = commandHistory.size();
+        }
+    }
+    
+    /**
+     * @return L'index courant dans l'historique
+     */
+    public int getHistoryIndex() {
+        return historyIndex;
+    }
+    
+    /**
+     * Définit l'index de l'historique.
+     * 
+     * @param historyIndex Nouveau index
+     */
+    public void setHistoryIndex(int historyIndex) {
+        this.historyIndex = historyIndex;
+    }
+    
+    /**
+     * @return Le prompt actuel
+     */
+    public String getPrompt() {
+        return prompt;
+    }
+    
+    /**
+     * Met à jour le prompt en fonction du répertoire courant.
+     */
+    private void updatePrompt() {
+        String path = currentDirectory.getPath();
+        if ("/".equals(path)) {
+            prompt = "user@terminal:~$";
+        } else {
+            prompt = "user@terminal:" + path + "$";
+        }
+    }
+    
+    /**
+     * Récupère la commande précédente dans l'historique.
+     * 
+     * @return Commande précédente ou null
+     */
+    public String getPreviousCommand() {
+        if (commandHistory.isEmpty()) {
+            return null;
+        }
+        
+        if (historyIndex > 0) {
+            historyIndex--;
+            return commandHistory.get(historyIndex);
+        } else if (historyIndex == 0) {
+            return commandHistory.get(0);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Récupère la commande suivante dans l'historique.
+     * 
+     * @return Commande suivante ou null
+     */
+    public String getNextCommand() {
+        if (commandHistory.isEmpty()) {
+            return null;
+        }
+        
+        if (historyIndex < commandHistory.size() - 1) {
+            historyIndex++;
+            return commandHistory.get(historyIndex);
+        } else if (historyIndex == commandHistory.size() - 1) {
+            historyIndex = commandHistory.size();
+            return "";
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Réinitialise l'index de l'historique.
+     */
+    public void resetHistoryIndex() {
+        historyIndex = commandHistory.size();
+    }
+}
+
+
+// ============================================================================
+// PACKAGE : filesystem
+// ============================================================================
+
+// ============================================================================
+// FICHIER : FileNode.java
+// DESCRIPTION : Classe de base pour les nœuds du système de fichiers
+// ============================================================================
+package com.terminal.emulator.filesystem;
+
+import java.time.LocalDateTime;
+
+/**
+ * Classe abstraite représentant un nœud dans le système de fichiers.
+ * Peut être un fichier ou un répertoire.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public abstract class FileNode {
+    
+    protected String name;
+    protected Directory parent;
+    protected LocalDateTime createdAt;
+    protected LocalDateTime modifiedAt;
+    
+    /**
+     * Constructeur principal.
+     * 
+     * @param name Nom du nœud
+     * @param parent Répertoire parent
+     */
+    public FileNode(String name, Directory parent) {
+        this.name = name;
+        this.parent = parent;
+        this.createdAt = LocalDateTime.now();
+        this.modifiedAt = LocalDateTime.now();
+    }
+    
+    /**
+     * @return Le nom du nœud
+     */
+    public String getName() {
+        return name;
+    }
+    
+    /**
+     * Définit le nom du nœud.
+     * 
+     * @param name Nouveau nom
+     */
+    public void setName(String name) {
+        this.name = name;
+        this.modifiedAt = LocalDateTime.now();
+    }
+    
+    /**
+     * @return Le répertoire parent
+     */
+    public Directory getParent() {
+        return parent;
+    }
+    
+    /**
+     * Définit le répertoire parent.
+     * 
+     * @param parent Nouveau parent
+     */
+    public void setParent(Directory parent) {
+        this.parent = parent;
+        this.modifiedAt = LocalDateTime.now();
+    }
+    
+    /**
+     * @return La date de création
+     */
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    
+    /**
+     * @return La date de dernière modification
+     */
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
+    }
+    
+    /**
+     * @return Le chemin absolu du nœud
+     */
+    public abstract String getPath();
+    
+    /**
+     * @return True si c'est un répertoire
+     */
+    public abstract boolean isDirectory();
+    
+    /**
+     * @return True si c'est un fichier
+     */
+    public abstract boolean isFile();
+    
+    /**
+     * @return La taille du nœud (0 pour un répertoire)
+     */
+    public abstract long getSize();
+    
+    /**
+     * Supprime ce nœud.
+     * 
+     * @return True si la suppression a réussi
+     */
+    public abstract boolean delete();
+    
+    /**
+     * @return Une représentation textuelle du nœud
+     */
+    @Override
+    public String toString() {
+        return name;
+    }
+    
+    /**
+     * Compare deux nœuds par nom.
+     * 
+     * @param other Autre nœud
+     * @return Résultat de la comparaison
+     */
+    @Override
+    public int compareTo(FileNode other) {
+        return this.name.compareTo(other.name);
+    }
+    
+    /**
+     * Vérifie l'égalité avec un autre objet.
+     * 
+     * @param obj Objet à comparer
+     * @return True si égal
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        FileNode fileNode = (FileNode) obj;
+        return name.equals(fileNode.name) && 
+               (parent == null ? fileNode.parent == null : parent.equals(fileNode.parent));
+    }
+    
+    /**
+     * @return Code de hachage
+     */
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + (parent != null ? parent.hashCode() : 0);
+        return result;
+    }
+}
+
+
+// ============================================================================
+// FICHIER : Directory.java
+// DESCRIPTION : Classe représentant un répertoire
+// ============================================================================
+package com.terminal.emulator.filesystem;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Classe représentant un répertoire dans le système de fichiers.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class Directory extends FileNode implements Comparable<FileNode> {
+    
+    private List<FileNode> children;
+    
+    /**
+     * Constructeur principal.
+     * 
+     * @param name Nom du répertoire
+     * @param parent Répertoire parent
+     */
+    public Directory(String name, Directory parent) {
+        super(name, parent);
+        this.children = new ArrayList<>();
+    }
+    
+    /**
+     * @return La liste des enfants (fichiers et sous-répertoires)
+     */
+    public List<FileNode> getChildren() {
+        return Collections.unmodifiableList(children);
+    }
+    
+    /**
+     * Ajoute un enfant à ce répertoire.
+     * 
+     * @param child Nœud à ajouter
+     * @return True si l'ajout a réussi
+     */
+    public boolean addChild(FileNode child) {
+        if (child == null) return false;
+        
+        // Vérifier si un enfant avec le même nom existe déjà
+        for (FileNode existing : children) {
+            if (existing.getName().equals(child.getName())) {
+                return false;
+            }
+        }
+        
+        child.setParent(this);
+        children.add(child);
+        this.modifiedAt = java.time.LocalDateTime.now();
+        return true;
+    }
+    
+    /**
+     * Supprime un enfant de ce répertoire.
+     * 
+     * @param child Nœud à supprimer
+     * @return True si la suppression a réussi
+     */
+    public boolean removeChild(FileNode child) {
+        if (child == null) return false;
+        
+        boolean removed = children.remove(child);
+        if (removed) {
+            child.setParent(null);
+            this.modifiedAt = java.time.LocalDateTime.now();
+        }
+        return removed;
+    }
+    
+    /**
+     * Supprime un enfant par son nom.
+     * 
+     * @param name Nom du nœud à supprimer
+     * @return True si la suppression a réussi
+     */
+    public boolean removeChildByName(String name) {
+        FileNode toRemove = getChild(name);
+        if (toRemove != null) {
+            return removeChild(toRemove);
+        }
+        return false;
+    }
+    
+    /**
+     * Récupère un enfant par son nom.
+     * 
+     * @param name Nom du nœud
+     * @return Le nœud trouvé ou null
+     */
+    public FileNode getChild(String name) {
+        for (FileNode child : children) {
+            if (child.getName().equals(name)) {
+                return child;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Vérifie si un enfant avec le nom donné existe.
+     * 
+     * @param name Nom à vérifier
+     * @return True si existe
+     */
+    public boolean hasChild(String name) {
+        return getChild(name) != null;
+    }
+    
+    /**
+     * Récupère tous les sous-répertoires.
+     * 
+     * @return Liste des sous-répertoires
+     */
+    public List<Directory> getSubdirectories() {
+        return children.stream()
+                .filter(FileNode::isDirectory)
+                .map(node -> (Directory) node)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Récupère tous les fichiers.
+     * 
+     * @return Liste des fichiers
+     */
+    public List<TerminalFile> getFiles() {
+        return children.stream()
+                .filter(FileNode::isFile)
+                .map(node -> (TerminalFile) node)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * @return Le chemin absolu du répertoire
+     */
+    @Override
+    public String getPath() {
+        if (parent == null) {
+            return "/";
+        }
+        
+        String parentPath = parent.getPath();
+        if ("/".equals(parentPath)) {
+            return "/" + name;
+        }
+        return parentPath + "/" + name;
+    }
+    
+    /**
+     * @return True (c'est un répertoire)
+     */
+    @Override
+    public boolean isDirectory() {
+        return true;
+    }
+    
+    /**
+     * @return False (ce n'est pas un fichier)
+     */
+    @Override
+    public boolean isFile() {
+        return false;
+    }
+    
+    /**
+     * @return 0 (un répertoire n'a pas de taille)
+     */
+    @Override
+    public long getSize() {
+        return 0;
+    }
+    
+    /**
+     * Supprime ce répertoire et tout son contenu.
+     * 
+     * @return True si la suppression a réussi
+     */
+    @Override
+    public boolean delete() {
+        if (parent != null) {
+            return parent.removeChild(this);
+        }
+        return false;
+    }
+    
+    /**
+     * Supprime tout le contenu du répertoire.
+     */
+    public void clear() {
+        children.clear();
+        this.modifiedAt = java.time.LocalDateTime.now();
+    }
+    
+    /**
+     * @return Le nombre d'enfants
+     */
+    public int getChildCount() {
+        return children.size();
+    }
+    
+    /**
+     * @return True si le répertoire est vide
+     */
+    public boolean isEmpty() {
+        return children.isEmpty();
+    }
+    
+    /**
+     * Crée un sous-répertoire.
+     * 
+     * @param name Nom du sous-répertoire
+     * @return Le nouveau répertoire ou null si déjà existe
+     */
+    public Directory createDirectory(String name) {
+        if (hasChild(name)) {
+            return null;
+        }
+        
+        Directory dir = new Directory(name, this);
+        addChild(dir);
+        return dir;
+    }
+    
+    /**
+     * Crée un fichier.
+     * 
+     * @param name Nom du fichier
+     * @return Le nouveau fichier ou null si déjà existe
+     */
+    public TerminalFile createFile(String name) {
+        if (hasChild(name)) {
+            return null;
+        }
+        
+        TerminalFile file = new TerminalFile(name, this);
+        addChild(file);
+        return file;
+    }
+    
+    /**
+     * @return Une représentation textuelle détaillée
+     */
+    @Override
+    public String toString() {
+        return "[DIR] " + name + " (" + children.size() + " items)";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : TerminalFile.java
+// DESCRIPTION : Classe représentant un fichier texte
+// ============================================================================
+package com.terminal.emulator.filesystem;
+
+/**
+ * Classe représentant un fichier texte dans le système de fichiers.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class TerminalFile extends FileNode implements Comparable<FileNode> {
+    
+    private String content;
+    
+    /**
+     * Constructeur principal.
+     * 
+     * @param name Nom du fichier
+     * @param parent Répertoire parent
+     */
+    public TerminalFile(String name, Directory parent) {
+        super(name, parent);
+        this.content = "";
+    }
+    
+    /**
+     * Constructeur avec contenu initial.
+     * 
+     * @param name Nom du fichier
+     * @param parent Répertoire parent
+     * @param content Contenu initial
+     */
+    public TerminalFile(String name, Directory parent, String content) {
+        super(name, parent);
+        this.content = content != null ? content : "";
+    }
+    
+    /**
+     * @return Le contenu du fichier
+     */
+    public String getContent() {
+        return content;
+    }
+    
+    /**
+     * Définit le contenu du fichier.
+     * 
+     * @param content Nouveau contenu
+     */
+    public void setContent(String content) {
+        this.content = content != null ? content : "";
+        this.modifiedAt = java.time.LocalDateTime.now();
+    }
+    
+    /**
+     * Ajoute du contenu au fichier.
+     * 
+     * @param text Texte à ajouter
+     */
+    public void appendContent(String text) {
+        if (text != null) {
+            this.content += text;
+            this.modifiedAt = java.time.LocalDateTime.now();
+        }
+    }
+    
+    /**
+     * @return Le chemin absolu du fichier
+     */
+    @Override
+    public String getPath() {
+        if (parent == null) {
+            return "/" + name;
+        }
+        
+        String parentPath = parent.getPath();
+        if ("/".equals(parentPath)) {
+            return "/" + name;
+        }
+        return parentPath + "/" + name;
+    }
+    
+    /**
+     * @return False (ce n'est pas un répertoire)
+     */
+    @Override
+    public boolean isDirectory() {
+        return false;
+    }
+    
+    /**
+     * @return True (c'est un fichier)
+     */
+    @Override
+    public boolean isFile() {
+        return true;
+    }
+    
+    /**
+     * @return La taille du fichier en octets
+     */
+    @Override
+    public long getSize() {
+        return content.getBytes().length;
+    }
+    
+    /**
+     * Supprime ce fichier.
+     * 
+     * @return True si la suppression a réussi
+     */
+    @Override
+    public boolean delete() {
+        if (parent != null) {
+            return parent.removeChild(this);
+        }
+        return false;
+    }
+    
+    /**
+     * Vide le contenu du fichier.
+     */
+    public void clear() {
+        this.content = "";
+        this.modifiedAt = java.time.LocalDateTime.now();
+    }
+    
+    /**
+     * @return True si le fichier est vide
+     */
+    public boolean isEmpty() {
+        return content.isEmpty();
+    }
+    
+    /**
+     * @return Une représentation textuelle détaillée
+     */
+    @Override
+    public String toString() {
+        return "[FILE] " + name + " (" + getSize() + " bytes)";
+    }
+}
+
+
+// ============================================================================
+// PACKAGE : commands
+// ============================================================================
+
+// ============================================================================
+// FICHIER : Command.java
+// DESCRIPTION : Interface de base pour toutes les commandes
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+
+/**
+ * Interface représentant une commande exécutable dans le terminal.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public interface Command {
+    
+    /**
+     * Exécute la commande avec les arguments fournis.
+     * 
+     * @param state État du terminal
+     * @param args Arguments de la commande
+     * @return Résultat de l'exécution (message à afficher)
+     */
+    String execute(TerminalState state, String[] args);
+    
+    /**
+     * @return Le nom de la commande
+     */
+    String getName();
+    
+    /**
+     * @return La description de la commande
+     */
+    String getDescription();
+    
+    /**
+     * @return L'usage de la commande
+     */
+    String getUsage();
+}
+
+
+// ============================================================================
+// FICHIER : CommandParser.java
+// DESCRIPTION : Parseur de commandes pour extraire le nom et les arguments
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Parseur de commandes pour extraire le nom et les arguments.
+ * Gère les guillemets et les espaces dans les arguments.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class CommandParser {
+    
+    private static final Pattern QUOTED_ARG_PATTERN = Pattern.compile("\"([^\"]*)\"");
+    private static final Pattern SIMPLE_ARG_PATTERN = Pattern.compile("[^\\s\\"]+");
+    
+    /**
+     * Parse une ligne de commande complète.
+     * 
+     * @param input Ligne de commande
+     * @return Tableau avec [nom_commande, arg1, arg2, ...]
+     */
+    public static String[] parse(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return new String[0];
+        }
+        
+        String trimmed = input.trim();
+        List<String> tokens = new ArrayList<>();
+        
+        // Utiliser un parseur manuel pour gérer les guillemets
+        boolean inQuotes = false;
+        StringBuilder current = new StringBuilder();
+        
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (Character.isWhitespace(c) && !inQuotes) {
+                if (current.length() > 0) {
+                    tokens.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+        
+        if (current.length() > 0) {
+            tokens.add(current.toString());
+        }
+        
+        return tokens.toArray(new String[0]);
+    }
+    
+    /**
+     * Extrait le nom de la commande.
+     * 
+     * @param input Ligne de commande
+     * @return Nom de la commande
+     */
+    public static String getCommandName(String input) {
+        String[] parts = parse(input);
+        if (parts.length > 0) {
+            return parts[0];
+        }
+        return "";
+    }
+    
+    /**
+     * Extrait les arguments de la commande.
+     * 
+     * @param input Ligne de commande
+     * @return Tableau d'arguments
+     */
+    public static String[] getArguments(String input) {
+        String[] parts = parse(input);
+        if (parts.length > 1) {
+            String[] args = new String[parts.length - 1];
+            System.arraycopy(parts, 1, args, 0, args.length);
+            return args;
+        }
+        return new String[0];
+    }
+    
+    /**
+     * Vérifie si la commande a des arguments.
+     * 
+     * @param input Ligne de commande
+     * @return True si des arguments sont présents
+     */
+    public static boolean hasArguments(String input) {
+        return getArguments(input).length > 0;
+    }
+    
+    /**
+     * Nettoie un argument en supprimant les guillemets.
+     * 
+     * @param arg Argument à nettoyer
+     * @return Argument nettoyé
+     */
+    public static String cleanArgument(String arg) {
+        if (arg == null) return "";
+        return arg.replaceAll("^\"|"$", "");
+    }
+}
+
+
+// ============================================================================
+// FICHIER : CommandFactory.java
+// DESCRIPTION : Factory pour créer les commandes
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Factory pour créer et enregistrer les commandes disponibles.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class CommandFactory {
+    
+    private static final Map<String, Command> commands = new HashMap<>();
+    
+    static {
+        // Enregistrer toutes les commandes disponibles
+        registerCommand(new LsCommand());
+        registerCommand(new CdCommand());
+        registerCommand(new PwdCommand());
+        registerCommand(new CatCommand());
+        registerCommand(new EchoCommand());
+        registerCommand(new TouchCommand());
+        registerCommand(new MkdirCommand());
+        registerCommand(new RmCommand());
+        registerCommand(new RmdirCommand());
+        registerCommand(new CpCommand());
+        registerCommand(new MvCommand());
+        registerCommand(new ClearCommand());
+        registerCommand(new HelpCommand());
+        registerCommand(new ExitCommand());
+    }
+    
+    /**
+     * Enregistre une nouvelle commande.
+     * 
+     * @param command Commande à enregistrer
+     */
+    public static void registerCommand(Command command) {
+        if (command != null) {
+            commands.put(command.getName().toLowerCase(), command);
+        }
+    }
+    
+    /**
+     * Récupère une commande par son nom.
+     * 
+     * @param name Nom de la commande
+     * @return La commande ou null si non trouvée
+     */
+    public static Command getCommand(String name) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+        return commands.get(name.toLowerCase());
+    }
+    
+    /**
+     * Vérifie si une commande existe.
+     * 
+     * @param name Nom de la commande
+     * @return True si la commande existe
+     */
+    public static boolean hasCommand(String name) {
+        return getCommand(name) != null;
+    }
+    
+    /**
+     * @return Map de toutes les commandes enregistrées
+     */
+    public static Map<String, Command> getAllCommands() {
+        return new HashMap<>(commands);
+    }
+    
+    /**
+     * @return Liste des noms de toutes les commandes
+     */
+    public static String[] getCommandNames() {
+        return commands.keySet().toArray(new String[0]);
+    }
+}
+
+
+// ============================================================================
+// FICHIER : LsCommand.java
+// DESCRIPTION : Commande 'ls' - Lister les fichiers et répertoires
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+import com.terminal.emulator.filesystem.TerminalFile;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Commande 'ls' pour lister le contenu d'un répertoire.
+ * 
+ * Options supportées:
+ * - -l : Format long (détails)
+ * - -a : Afficher les fichiers cachés
+ * - -r : Inverser l'ordre
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class LsCommand implements Command {
+    
+    private static final DateTimeFormatter DATE_FORMATTER = 
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    
+    /**
+     * Exécute la commande ls.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (options et chemin)
+     * @return Résultat de la commande
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        boolean longFormat = false;
+        boolean showHidden = false;
+        boolean reverseOrder = false;
+        String targetPath = ".";
+        
+        // Parser les arguments
+        List<String> paths = new ArrayList<>();
+        for (String arg : args) {
+            if (arg.startsWith("-")) {
+                if (arg.contains("l")) longFormat = true;
+                if (arg.contains("a")) showHidden = true;
+                if (arg.contains("r")) reverseOrder = true;
+            } else if (!arg.isEmpty()) {
+                paths.add(arg);
+            }
+        }
+        
+        // Si des chemins sont spécifiés, utiliser le premier
+        if (!paths.isEmpty()) {
+            targetPath = paths.get(0);
+        }
+        
+        // Résoudre le chemin
+        Directory targetDir = resolveDirectory(state, targetPath);
+        if (targetDir == null) {
+            return "ls: cannot access '" + targetPath + "': No such file or directory";
+        }
+        
+        // Récupérer les enfants
+        List<FileNode> children = new ArrayList<>(targetDir.getChildren());
+        
+        // Filtrer les fichiers cachés si nécessaire
+        if (!showHidden) {
+            children.removeIf(node -> node.getName().startsWith("."));
+        }
+        
+        // Trier
+        Collections.sort(children, (n1, n2) -> {
+            int result = n1.getName().compareTo(n2.getName());
+            return reverseOrder ? -result : result;
+        });
+        
+        // Formater la sortie
+        StringBuilder output = new StringBuilder();
+        
+        if (longFormat) {
+            output.append("total ").append(children.size()).append("\n");
+            for (FileNode node : children) {
+                output.append(formatLong(node));
+            }
+        } else {
+            for (int i = 0; i < children.size(); i++) {
+                if (i > 0) output.append("  ");
+                output.append(children.get(i).getName());
+            }
+            if (!children.isEmpty()) output.append("\n");
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Résout un chemin en répertoire.
+     * 
+     * @param state État du terminal
+     * @param path Chemin à résoudre
+     * @return Répertoire ou null
+     */
+    private Directory resolveDirectory(TerminalState state, String path) {
+        if (".".equals(path) || "".equals(path)) {
+            return state.getCurrentDirectory();
+        }
+        
+        if ("/".equals(path)) {
+            return state.getRootDirectory();
+        }
+        
+        if (path.startsWith("/")) {
+            // Chemin absolu
+            return resolveAbsolutePath(state.getRootDirectory(), path);
+        } else {
+            // Chemin relatif
+            return resolveRelativePath(state.getCurrentDirectory(), path);
+        }
+    }
+    
+    /**
+     * Résout un chemin absolu.
+     */
+    private Directory resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif.
+     */
+    private Directory resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (String part : parts) {
+            if (part.isEmpty() || ".".equals(part)) continue;
+            if ("..".equals(part)) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(part);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Formate un nœud en format long.
+     */
+    private String formatLong(FileNode node) {
+        String type = node.isDirectory() ? "d" : "-";
+        String permissions = node.isDirectory() ? "rwxr-xr-x" : "rw-r--r--";
+        String size = node.isDirectory() ? "4096" : String.valueOf(node.getSize());
+        String date = node.getModifiedAt().format(DATE_FORMATTER);
+        
+        return String.format("%s %s 1 user group %8s %s %s\n", 
+                type, permissions, size, date, node.getName());
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "ls";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "List directory contents";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "ls [OPTION]... [FILE]...";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : CdCommand.java
+// DESCRIPTION : Commande 'cd' - Changer de répertoire
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+
+/**
+ * Commande 'cd' pour changer de répertoire.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class CdCommand implements Command {
+    
+    /**
+     * Exécute la commande cd.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (chemin)
+     * @return Résultat de la commande
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            // cd sans argument : aller au répertoire home (racine dans notre cas)
+            state.setCurrentDirectory(state.getRootDirectory());
+            return "";
+        }
+        
+        String path = args[0];
+        Directory newDir = resolveDirectory(state, path);
+        
+        if (newDir == null) {
+            return "cd: no such file or directory: " + path;
+        }
+        
+        state.setCurrentDirectory(newDir);
+        return "";
+    }
+    
+    /**
+     * Résout un chemin en répertoire.
+     */
+    private Directory resolveDirectory(TerminalState state, String path) {
+        if (".".equals(path) || "".equals(path)) {
+            return state.getCurrentDirectory();
+        }
+        
+        if ("/".equals(path)) {
+            return state.getRootDirectory();
+        }
+        
+        if (path.startsWith("/")) {
+            return resolveAbsolutePath(state.getRootDirectory(), path);
+        } else {
+            return resolveRelativePath(state.getCurrentDirectory(), path);
+        }
+    }
+    
+    /**
+     * Résout un chemin absolu.
+     */
+    private Directory resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif.
+     */
+    private Directory resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (String part : parts) {
+            if (part.isEmpty() || ".".equals(part)) continue;
+            if ("..".equals(part)) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(part);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "cd";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Change the current directory";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "cd [DIR]";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : PwdCommand.java
+// DESCRIPTION : Commande 'pwd' - Afficher le chemin du répertoire courant
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+
+/**
+ * Commande 'pwd' pour afficher le chemin du répertoire courant.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class PwdCommand implements Command {
+    
+    /**
+     * Exécute la commande pwd.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (non utilisés)
+     * @return Chemin du répertoire courant
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        return state.getCurrentDirectory().getPath();
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "pwd";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Print the current working directory";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "pwd";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : CatCommand.java
+// DESCRIPTION : Commande 'cat' - Afficher le contenu d'un fichier
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+import com.terminal.emulator.filesystem.TerminalFile;
+
+/**
+ * Commande 'cat' pour afficher le contenu d'un ou plusieurs fichiers.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class CatCommand implements Command {
+    
+    /**
+     * Exécute la commande cat.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (noms de fichiers)
+     * @return Contenu des fichiers ou message d'erreur
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            return "cat: missing operand";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        
+        for (String fileName : args) {
+            FileNode node = resolveFile(state, fileName);
+            
+            if (node == null) {
+                output.append("cat: ").append(fileName).append(": No such file or directory\n");
+                continue;
+            }
+            
+            if (!node.isFile()) {
+                output.append("cat: ").append(fileName).append(": Is a directory\n");
+                continue;
+            }
+            
+            TerminalFile file = (TerminalFile) node;
+            output.append(file.getContent());
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Résout un nom de fichier en nœud FileNode.
+     */
+    private FileNode resolveFile(TerminalState state, String fileName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (fileName.startsWith("/")) {
+            // Chemin absolu
+            return resolveAbsolutePath(state.getRootDirectory(), fileName);
+        } else {
+            // Chemin relatif
+            return resolveRelativePath(current, fileName);
+        }
+    }
+    
+    /**
+     * Résout un chemin absolu.
+     */
+    private FileNode resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif.
+     */
+    private FileNode resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "cat";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Concatenate and print files";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "cat [FILE]...";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : EchoCommand.java
+// DESCRIPTION : Commande 'echo' - Afficher du texte
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+
+/**
+ * Commande 'echo' pour afficher du texte.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class EchoCommand implements Command {
+    
+    /**
+     * Exécute la commande echo.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (texte à afficher)
+     * @return Texte à afficher
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            return "";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < args.length; i++) {
+            if (i > 0) output.append(" ");
+            output.append(args[i]);
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "echo";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Display a line of text";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "echo [STRING]...";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : TouchCommand.java
+// DESCRIPTION : Commande 'touch' - Créer un fichier vide ou mettre à jour la date
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+import com.terminal.emulator.filesystem.TerminalFile;
+
+/**
+ * Commande 'touch' pour créer un fichier vide ou mettre à jour sa date de modification.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class TouchCommand implements Command {
+    
+    /**
+     * Exécute la commande touch.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (noms de fichiers)
+     * @return Message de résultat
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            return "touch: missing file operand";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        
+        for (String fileName : args) {
+            FileNode existing = resolveFile(state, fileName);
+            
+            if (existing != null && existing.isDirectory()) {
+                output.append("touch: cannot touch '").append(fileName).append("': Is a directory\n");
+                continue;
+            }
+            
+            Directory parentDir = getParentDirectory(state, fileName);
+            if (parentDir == null) {
+                output.append("touch: cannot touch '").append(fileName).append("': No such file or directory\n");
+                continue;
+            }
+            
+            String simpleName = getSimpleName(fileName);
+            
+            if (existing != null && existing.isFile()) {
+                // Mettre à jour la date de modification
+                ((TerminalFile) existing).setContent(existing.getContent());
+            } else {
+                // Créer un nouveau fichier
+                parentDir.createFile(simpleName);
+            }
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Résout un nom de fichier en nœud FileNode.
+     */
+    private FileNode resolveFile(TerminalState state, String fileName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (fileName.startsWith("/")) {
+            return resolveAbsolutePath(state.getRootDirectory(), fileName);
+        } else {
+            return resolveRelativePath(current, fileName);
+        }
+    }
+    
+    /**
+     * Récupère le répertoire parent pour un chemin.
+     */
+    private Directory getParentDirectory(TerminalState state, String path) {
+        if (path.startsWith("/")) {
+            return getParentFromAbsolutePath(state.getRootDirectory(), path);
+        } else {
+            return getParentFromRelativePath(state.getCurrentDirectory(), path);
+        }
+    }
+    
+    /**
+     * Extrait le nom simple du fichier (sans chemin).
+     */
+    private String getSimpleName(String path) {
+        String[] parts = path.split("/");
+        return parts[parts.length - 1];
+    }
+    
+    /**
+     * Résout le répertoire parent d'un chemin absolu.
+     */
+    private Directory getParentFromAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length - 1; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout le répertoire parent d'un chemin relatif.
+     */
+    private Directory getParentFromRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length - 1; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin absolu en FileNode.
+     */
+    private FileNode resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif en FileNode.
+     */
+    private FileNode resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "touch";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Create empty files or update timestamp";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "touch FILE...";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : MkdirCommand.java
+// DESCRIPTION : Commande 'mkdir' - Créer un répertoire
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+
+/**
+ * Commande 'mkdir' pour créer un ou plusieurs répertoires.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class MkdirCommand implements Command {
+    
+    /**
+     * Exécute la commande mkdir.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (noms de répertoires)
+     * @return Message de résultat
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            return "mkdir: missing operand";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        
+        for (String dirName : args) {
+            Directory parentDir = getParentDirectory(state, dirName);
+            if (parentDir == null) {
+                output.append("mkdir: cannot create directory '").append(dirName).append("': No such file or directory\n");
+                continue;
+            }
+            
+            String simpleName = getSimpleName(dirName);
+            
+            if (parentDir.hasChild(simpleName)) {
+                output.append("mkdir: cannot create directory '").append(dirName).append("': File exists\n");
+                continue;
+            }
+            
+            parentDir.createDirectory(simpleName);
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Récupère le répertoire parent pour un chemin.
+     */
+    private Directory getParentDirectory(TerminalState state, String path) {
+        if (path.startsWith("/")) {
+            return getParentFromAbsolutePath(state.getRootDirectory(), path);
+        } else {
+            return getParentFromRelativePath(state.getCurrentDirectory(), path);
+        }
+    }
+    
+    /**
+     * Extrait le nom simple du répertoire (sans chemin).
+     */
+    private String getSimpleName(String path) {
+        String[] parts = path.split("/");
+        return parts[parts.length - 1];
+    }
+    
+    /**
+     * Résout le répertoire parent d'un chemin absolu.
+     */
+    private Directory getParentFromAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length - 1; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout le répertoire parent d'un chemin relatif.
+     */
+    private Directory getParentFromRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length - 1; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "mkdir";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Create directories";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "mkdir DIRECTORY...";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : RmCommand.java
+// DESCRIPTION : Commande 'rm' - Supprimer des fichiers
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+
+/**
+ * Commande 'rm' pour supprimer des fichiers.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class RmCommand implements Command {
+    
+    /**
+     * Exécute la commande rm.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (noms de fichiers)
+     * @return Message de résultat
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            return "rm: missing operand";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        
+        for (String fileName : args) {
+            FileNode node = resolveFile(state, fileName);
+            
+            if (node == null) {
+                output.append("rm: cannot remove '").append(fileName).append("': No such file or directory\n");
+                continue;
+            }
+            
+            if (node.isDirectory()) {
+                output.append("rm: cannot remove '").append(fileName).append("': Is a directory\n");
+                continue;
+            }
+            
+            if (!node.delete()) {
+                output.append("rm: cannot remove '").append(fileName).append("': Operation not permitted\n");
+            }
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Résout un nom de fichier en FileNode.
+     */
+    private FileNode resolveFile(TerminalState state, String fileName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (fileName.startsWith("/")) {
+            return resolveAbsolutePath(state.getRootDirectory(), fileName);
+        } else {
+            return resolveRelativePath(current, fileName);
+        }
+    }
+    
+    /**
+     * Résout un chemin absolu.
+     */
+    private FileNode resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif.
+     */
+    private FileNode resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "rm";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Remove files";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "rm FILE...";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : RmdirCommand.java
+// DESCRIPTION : Commande 'rmdir' - Supprimer des répertoires vides
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+
+/**
+ * Commande 'rmdir' pour supprimer des répertoires vides.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class RmdirCommand implements Command {
+    
+    /**
+     * Exécute la commande rmdir.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (noms de répertoires)
+     * @return Message de résultat
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            return "rmdir: missing operand";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        
+        for (String dirName : args) {
+            FileNode node = resolveDirectory(state, dirName);
+            
+            if (node == null) {
+                output.append("rmdir: failed to remove '").append(dirName).append("': No such file or directory\n");
+                continue;
+            }
+            
+            if (!node.isDirectory()) {
+                output.append("rmdir: failed to remove '").append(dirName).append("': Not a directory\n");
+                continue;
+            }
+            
+            Directory dir = (Directory) node;
+            if (!dir.isEmpty()) {
+                output.append("rmdir: failed to remove '").append(dirName).append("': Directory not empty\n");
+                continue;
+            }
+            
+            if (!dir.delete()) {
+                output.append("rmdir: failed to remove '").append(dirName).append("': Operation not permitted\n");
+            }
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Résout un nom de répertoire en Directory.
+     */
+    private Directory resolveDirectory(TerminalState state, String dirName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (dirName.startsWith("/")) {
+            return resolveAbsolutePath(state.getRootDirectory(), dirName);
+        } else {
+            return resolveRelativePath(current, dirName);
+        }
+    }
+    
+    /**
+     * Résout un chemin absolu.
+     */
+    private Directory resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif.
+     */
+    private Directory resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (String part : parts) {
+            if (part.isEmpty() || ".".equals(part)) continue;
+            if ("..".equals(part)) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(part);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "rmdir";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Remove empty directories";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "rmdir DIRECTORY...";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : CpCommand.java
+// DESCRIPTION : Commande 'cp' - Copier des fichiers
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+import com.terminal.emulator.filesystem.TerminalFile;
+
+/**
+ * Commande 'cp' pour copier des fichiers.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class CpCommand implements Command {
+    
+    /**
+     * Exécute la commande cp.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (source et destination)
+     * @return Message de résultat
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length < 2) {
+            return "cp: missing destination file operand after '" + 
+                   (args.length > 0 ? args[args.length - 1] : "") + "'\n" +
+                   "Try 'cp --help' for more information.";
+        }
+        
+        // Cas simple : cp source destination
+        if (args.length == 2) {
+            return copyFile(state, args[0], args[1]);
+        }
+        
+        // Cas multiple : cp source1 source2 ... destination_directory
+        String destination = args[args.length - 1];
+        Directory destDir = resolveDirectory(state, destination);
+        
+        if (destDir == null || !destDir.isDirectory()) {
+            return "cp: target '" + destination + "' is not a directory";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < args.length - 1; i++) {
+            String result = copyFile(state, args[i], destination + "/" + getSimpleName(args[i]));
+            if (!result.isEmpty()) {
+                output.append(result).append("\n");
+            }
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Copie un fichier vers une destination.
+     */
+    private String copyFile(TerminalState state, String sourcePath, String destPath) {
+        FileNode source = resolveFile(state, sourcePath);
+        
+        if (source == null) {
+            return "cp: cannot stat '" + sourcePath + "': No such file or directory";
+        }
+        
+        if (source.isDirectory()) {
+            return "cp: -r not specified; omitting directory '" + sourcePath + "'";
+        }
+        
+        Directory destParent = getParentDirectory(state, destPath);
+        if (destParent == null) {
+            return "cp: cannot create '" + destPath + "': No such file or directory";
+        }
+        
+        String destName = getSimpleName(destPath);
+        
+        if (destParent.hasChild(destName)) {
+            FileNode existing = destParent.getChild(destName);
+            if (existing.isDirectory()) {
+                return "cp: cannot overwrite directory '" + destPath + "' with '" + sourcePath + "'";
+            }
+            // Écraser le fichier existant
+            TerminalFile sourceFile = (TerminalFile) source;
+            ((TerminalFile) existing).setContent(sourceFile.getContent());
+        } else {
+            // Créer un nouveau fichier
+            TerminalFile sourceFile = (TerminalFile) source;
+            TerminalFile newFile = new TerminalFile(destName, destParent, sourceFile.getContent());
+            destParent.addChild(newFile);
+        }
+        
+        return "";
+    }
+    
+    /**
+     * Résout un nom de fichier en FileNode.
+     */
+    private FileNode resolveFile(TerminalState state, String fileName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (fileName.startsWith("/")) {
+            return resolveAbsolutePath(state.getRootDirectory(), fileName);
+        } else {
+            return resolveRelativePath(current, fileName);
+        }
+    }
+    
+    /**
+     * Résout un nom de répertoire en Directory.
+     */
+    private Directory resolveDirectory(TerminalState state, String dirName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (dirName.startsWith("/")) {
+            return resolveAbsoluteDirectory(state.getRootDirectory(), dirName);
+        } else {
+            return resolveRelativeDirectory(current, dirName);
+        }
+    }
+    
+    /**
+     * Récupère le répertoire parent pour un chemin.
+     */
+    private Directory getParentDirectory(TerminalState state, String path) {
+        if (path.startsWith("/")) {
+            return getParentFromAbsolutePath(state.getRootDirectory(), path);
+        } else {
+            return getParentFromRelativePath(state.getCurrentDirectory(), path);
+        }
+    }
+    
+    /**
+     * Extrait le nom simple (sans chemin).
+     */
+    private String getSimpleName(String path) {
+        String[] parts = path.split("/");
+        return parts[parts.length - 1];
+    }
+    
+    /**
+     * Résout un chemin absolu en FileNode.
+     */
+    private FileNode resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif en FileNode.
+     */
+    private FileNode resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin absolu en Directory.
+     */
+    private Directory resolveAbsoluteDirectory(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif en Directory.
+     */
+    private Directory resolveRelativeDirectory(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (String part : parts) {
+            if (part.isEmpty() || ".".equals(part)) continue;
+            if ("..".equals(part)) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(part);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout le répertoire parent d'un chemin absolu.
+     */
+    private Directory getParentFromAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length - 1; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout le répertoire parent d'un chemin relatif.
+     */
+    private Directory getParentFromRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length - 1; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "cp";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Copy files and directories";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "cp [OPTION] SOURCE DEST\n       cp [OPTION] SOURCE... DIRECTORY";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : MvCommand.java
+// DESCRIPTION : Commande 'mv' - Déplacer/renommer des fichiers
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+import com.terminal.emulator.filesystem.TerminalFile;
+
+/**
+ * Commande 'mv' pour déplacer ou renommer des fichiers.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class MvCommand implements Command {
+    
+    /**
+     * Exécute la commande mv.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (source et destination)
+     * @return Message de résultat
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length < 2) {
+            return "mv: missing destination file operand after '" + 
+                   (args.length > 0 ? args[args.length - 1] : "") + "'\n" +
+                   "Try 'mv --help' for more information.";
+        }
+        
+        // Cas simple : mv source destination
+        if (args.length == 2) {
+            return moveFile(state, args[0], args[1]);
+        }
+        
+        // Cas multiple : mv source1 source2 ... destination_directory
+        String destination = args[args.length - 1];
+        Directory destDir = resolveDirectory(state, destination);
+        
+        if (destDir == null || !destDir.isDirectory()) {
+            return "mv: target '" + destination + "' is not a directory";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < args.length - 1; i++) {
+            String result = moveFile(state, args[i], destination + "/" + getSimpleName(args[i]));
+            if (!result.isEmpty()) {
+                output.append(result).append("\n");
+            }
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Déplace un fichier vers une destination.
+     */
+    private String moveFile(TerminalState state, String sourcePath, String destPath) {
+        FileNode source = resolveFile(state, sourcePath);
+        
+        if (source == null) {
+            return "mv: cannot stat '" + sourcePath + "': No such file or directory";
+        }
+        
+        Directory destParent = getParentDirectory(state, destPath);
+        if (destParent == null) {
+            return "mv: cannot move '" + sourcePath + "' to '" + destPath + "': No such file or directory";
+        }
+        
+        String destName = getSimpleName(destPath);
+        
+        if (destParent.hasChild(destName)) {
+            FileNode existing = destParent.getChild(destName);
+            if (existing.isDirectory()) {
+                return "mv: cannot overwrite directory '" + destPath + "' with '" + sourcePath + "'";
+            }
+            // Écraser le fichier existant
+            if (source.isFile()) {
+                ((TerminalFile) existing).setContent(((TerminalFile) source).getContent());
+            }
+            source.delete();
+        } else {
+            // Déplacer le fichier
+            source.setName(destName);
+            source.getParent().removeChild(source);
+            destParent.addChild(source);
+        }
+        
+        return "";
+    }
+    
+    /**
+     * Résout un nom de fichier en FileNode.
+     */
+    private FileNode resolveFile(TerminalState state, String fileName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (fileName.startsWith("/")) {
+            return resolveAbsolutePath(state.getRootDirectory(), fileName);
+        } else {
+            return resolveRelativePath(current, fileName);
+        }
+    }
+    
+    /**
+     * Résout un nom de répertoire en Directory.
+     */
+    private Directory resolveDirectory(TerminalState state, String dirName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (dirName.startsWith("/")) {
+            return resolveAbsoluteDirectory(state.getRootDirectory(), dirName);
+        } else {
+            return resolveRelativeDirectory(current, dirName);
+        }
+    }
+    
+    /**
+     * Récupère le répertoire parent pour un chemin.
+     */
+    private Directory getParentDirectory(TerminalState state, String path) {
+        if (path.startsWith("/")) {
+            return getParentFromAbsolutePath(state.getRootDirectory(), path);
+        } else {
+            return getParentFromRelativePath(state.getCurrentDirectory(), path);
+        }
+    }
+    
+    /**
+     * Extrait le nom simple (sans chemin).
+     */
+    private String getSimpleName(String path) {
+        String[] parts = path.split("/");
+        return parts[parts.length - 1];
+    }
+    
+    /**
+     * Résout un chemin absolu en FileNode.
+     */
+    private FileNode resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif en FileNode.
+     */
+    private FileNode resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin absolu en Directory.
+     */
+    private Directory resolveAbsoluteDirectory(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif en Directory.
+     */
+    private Directory resolveRelativeDirectory(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (String part : parts) {
+            if (part.isEmpty() || ".".equals(part)) continue;
+            if ("..".equals(part)) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(part);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout le répertoire parent d'un chemin absolu.
+     */
+    private Directory getParentFromAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length - 1; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout le répertoire parent d'un chemin relatif.
+     */
+    private Directory getParentFromRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length - 1; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "mv";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Move or rename files";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "mv [OPTION] SOURCE DEST\n       mv [OPTION] SOURCE... DIRECTORY";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : ClearCommand.java
+// DESCRIPTION : Commande 'clear' - Effacer l'écran du terminal
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+
+/**
+ * Commande 'clear' pour effacer l'écran du terminal.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class ClearCommand implements Command {
+    
+    /**
+     * Exécute la commande clear.
+     * Retourne un code spécial pour indiquer à l'interface de nettoyer l'écran.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (non utilisés)
+     * @return Code spécial pour le nettoyage
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        // Retourne un code spécial qui sera interprété par l'interface
+        return "\033[H\033[2J"; // Codes ANSI pour effacer l'écran
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "clear";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Clear the terminal screen";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "clear";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : HelpCommand.java
+// DESCRIPTION : Commande 'help' - Afficher l'aide
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+import java.util.Map;
+
+/**
+ * Commande 'help' pour afficher l'aide sur les commandes disponibles.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class HelpCommand implements Command {
+    
+    /**
+     * Exécute la commande help.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (nom de commande spécifique ou vide pour l'aide générale)
+     * @return Texte d'aide
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            return getGeneralHelp();
+        } else {
+            return getCommandHelp(args[0]);
+        }
+    }
+    
+    /**
+     * Retourne l'aide générale.
+     */
+    private String getGeneralHelp() {
+        StringBuilder help = new StringBuilder();
+        help.append("Available commands:\n\n");
+        
+        Map<String, Command> commands = CommandFactory.getAllCommands();
+        for (Map.Entry<String, Command> entry : commands.entrySet()) {
+            Command cmd = entry.getValue();
+            help.append(String.format("  %-15s %s\n", cmd.getName(), cmd.getDescription()));
+        }
+        
+        help.append("\nType 'help <command>' for more information about a specific command.\n");
+        return help.toString();
+    }
+    
+    /**
+     * Retourne l'aide pour une commande spécifique.
+     */
+    private String getCommandHelp(String commandName) {
+        Command cmd = CommandFactory.getCommand(commandName);
+        
+        if (cmd == null) {
+            return "help: no help topics match '" + commandName + "'.\n" +
+                   "Try 'help' for a list of available commands.";
+        }
+        
+        return String.format("Usage: %s\n\n%s\n", cmd.getUsage(), cmd.getDescription());
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "help";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Display help information";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "help [COMMAND]";
+    }
+}
+
+
+// ============================================================================
+// FICHIER : ExitCommand.java
+// DESCRIPTION : Commande 'exit' - Quitter le terminal
+// ============================================================================
+package com.terminal.emulator.commands;
+
+import com.terminal.emulator.TerminalState;
+
+/**
+ * Commande 'exit' pour quitter le terminal.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class ExitCommand implements Command {
+    
+    /**
+     * Exécute la commande exit.
+     * Retourne un code spécial pour indiquer à l'interface de se fermer.
+     * 
+     * @param state État du terminal
+     * @param args Arguments (non utilisés)
+     * @return Code spécial pour la fermeture
+     */
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        // Retourne un code spécial qui sera interprété par l'interface
+        return "EXIT";
+    }
+    
+    /**
+     * @return Le nom de la commande
+     */
+    @Override
+    public String getName() {
+        return "exit";
+    }
+    
+    /**
+     * @return La description de la commande
+     */
+    @Override
+    public String getDescription() {
+        return "Exit the terminal";
+    }
+    
+    /**
+     * @return L'usage de la commande
+     */
+    @Override
+    public String getUsage() {
+        return "exit";
+    }
+}
+
+
+// ============================================================================
+// PACKAGE : gui
+// ============================================================================
+
+// ============================================================================
+// FICHIER : TerminalFrame.java
+// DESCRIPTION : Fenêtre principale de l'interface Swing
+// ============================================================================
+package com.terminal.emulator.gui;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.commands.Command;
+import com.terminal.emulator.commands.CommandFactory;
+import com.terminal.emulator.commands.CommandParser;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+/**
+ * Fenêtre principale de l'émulateur de terminal.
+ * Gère l'interface utilisateur et l'exécution des commandes.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class TerminalFrame extends JFrame {
+    
+    private static final long serialVersionUID = 1L;
+    
+    private TerminalState state;
+    private JTextArea outputArea;
+    private JTextField inputField;
+    private JScrollPane scrollPane;
+    private JLabel promptLabel;
+    
+    /**
+     * Constructeur par défaut.
+     * Initialise la fenêtre et ses composants.
+     */
+    public TerminalFrame() {
+        this(new TerminalState());
+    }
+    
+    /**
+     * Constructeur avec un état personnalisé.
+     * 
+     * @param state État du terminal
+     */
+    public TerminalFrame(TerminalState state) {
+        this.state = state;
+        initializeUI();
+    }
+    
+    /**
+     * Initialise l'interface utilisateur.
+     */
+    private void initializeUI() {
+        // Configuration de la fenêtre
+        setTitle("Terminal Emulator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
+        setLocationRelativeTo(null);
+        
+        // Configuration du panneau principal
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        
+        // Zone de sortie (affichage du terminal)
+        outputArea = new JTextArea();
+        outputArea.setEditable(false);
+        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        outputArea.setBackground(Color.BLACK);
+        outputArea.setForeground(Color.WHITE);
+        outputArea.setCaretColor(Color.WHITE);
+        
+        // Scroll pane pour la zone de sortie
+        scrollPane = new JScrollPane(outputArea);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        // Panneau d'entrée (prompt + champ de saisie)
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+        
+        promptLabel = new JLabel(state.getPrompt() + " ", SwingConstants.RIGHT);
+        promptLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        promptLabel.setForeground(Color.WHITE);
+        promptLabel.setBackground(Color.BLACK);
+        promptLabel.setOpaque(true);
+        
+        inputField = new JTextField();
+        inputField.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        inputField.setBackground(Color.BLACK);
+        inputField.setForeground(Color.WHITE);
+        inputField.setCaretColor(Color.WHITE);
+        inputField.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        
+        // Ajout des écouteurs
+        inputField.addActionListener(new CommandActionListener());
+        inputField.addKeyListener(new HistoryKeyListener());
+        
+        inputPanel.add(promptLabel, BorderLayout.WEST);
+        inputPanel.add(inputField, BorderLayout.CENTER);
+        
+        mainPanel.add(inputPanel, BorderLayout.SOUTH);
+        
+        // Ajout du panneau principal à la fenêtre
+        add(mainPanel);
+        
+        // Message de bienvenue
+        printWelcomeMessage();
+        
+        // Focus sur le champ de saisie
+        inputField.requestFocusInWindow();
+    }
+    
+    /**
+     * Affiche le message de bienvenue.
+     */
+    private void printWelcomeMessage() {
+        appendOutput("=============================================\n");
+        appendOutput("   TERMINAL EMULATOR - Java 8 / Swing\n");
+        appendOutput("   Type 'help' for a list of available commands\n");
+        appendOutput("   Type 'exit' to quit\n");
+        appendOutput("=============================================\n");
+        appendOutput("\n");
+    }
+    
+    /**
+     * Ajoute du texte à la zone de sortie.
+     * 
+     * @param text Texte à ajouter
+     */
+    public void appendOutput(String text) {
+        outputArea.append(text);
+        // Faire défiler automatiquement vers le bas
+        outputArea.setCaretPosition(outputArea.getDocument().getLength());
+    }
+    
+    /**
+     * Nettoie l'écran du terminal.
+     */
+    public void clearScreen() {
+        outputArea.setText("");
+    }
+    
+    /**
+     * Efface la ligne courante (prompt + saisie).
+     */
+    private void clearInputLine() {
+        inputField.setText("");
+    }
+    
+    /**
+     * Met à jour le prompt.
+     */
+    private void updatePrompt() {
+        promptLabel.setText(state.getPrompt() + " ");
+    }
+    
+    /**
+     * Écouteur pour l'exécution des commandes.
+     */
+    private class CommandActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String command = inputField.getText().trim();
+            
+            if (command.isEmpty()) {
+                clearInputLine();
+                return;
+            }
+            
+            // Ajouter à l'historique
+            state.addToHistory(command);
+            state.resetHistoryIndex();
+            
+            // Afficher la commande dans la sortie
+            appendOutput(state.getPrompt() + " " + command + "\n");
+            
+            // Parser et exécuter la commande
+            String[] parts = CommandParser.parse(command);
+            if (parts.length == 0) {
+                clearInputLine();
+                return;
+            }
+            
+            String commandName = parts[0];
+            String[] args = new String[parts.length - 1];
+            System.arraycopy(parts, 1, args, 0, args.length);
+            
+            Command cmd = CommandFactory.getCommand(commandName);
+            
+            if (cmd == null) {
+                appendOutput(commandName + ": command not found\n");
+            } else {
+                String result = cmd.execute(state, args);
+                
+                // Gestion des codes spéciaux
+                if ("EXIT".equals(result)) {
+                    System.exit(0);
+                } else if (result.contains("\033[H\033[2J")) {
+                    // Code ANSI pour clear
+                    clearScreen();
+                    printWelcomeMessage();
+                } else {
+                    appendOutput(result + "\n");
+                }
+            }
+            
+            // Mettre à jour le prompt et effacer la saisie
+            updatePrompt();
+            clearInputLine();
+        }
+    }
+    
+    /**
+     * Écouteur pour la navigation dans l'historique des commandes.
+     */
+    private class HistoryKeyListener extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_UP) {
+                // Flèche haut : commande précédente
+                String prevCommand = state.getPreviousCommand();
+                if (prevCommand != null) {
+                    inputField.setText(prevCommand);
+                }
+                e.consume();
+            } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                // Flèche bas : commande suivante
+                String nextCommand = state.getNextCommand();
+                if (nextCommand != null) {
+                    inputField.setText(nextCommand);
+                }
+                e.consume();
+            } else if (e.getKeyCode() == KeyEvent.VK_TAB) {
+                // Tab : auto-complétion (simplifiée)
+                handleTabCompletion();
+                e.consume();
+            }
+        }
+        
+        /**
+         * Gère l'auto-complétion avec la touche Tab.
+         */
+        private void handleTabCompletion() {
+            String text = inputField.getText();
+            String[] parts = CommandParser.parse(text);
+            
+            if (parts.length == 0) {
+                return;
+            }
+            
+            // Complétion des commandes
+            if (parts.length == 1) {
+                String prefix = parts[0];
+                String[] commandNames = CommandFactory.getCommandNames();
+                
+                for (String cmdName : commandNames) {
+                    if (cmdName.startsWith(prefix)) {
+                        inputField.setText(cmdName + " ");
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * @return L'état du terminal
+     */
+    public TerminalState getState() {
+        return state;
+    }
+    
+    /**
+     * Définit l'état du terminal.
+     * 
+     * @param state Nouveau état
+     */
+    public void setState(TerminalState state) {
+        this.state = state;
+        updatePrompt();
+    }
+}
+
+
+// ============================================================================
+// FICHIER : TerminalPanel.java
+// DESCRIPTION : Panel du terminal avec gestion avancée de l'affichage
+// ============================================================================
+package com.terminal.emulator.gui;
+
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * Panel du terminal avec gestion avancée de l'affichage.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class TerminalPanel extends JPanel {
+    
+    private static final long serialVersionUID = 1L;
+    
+    private JTextArea outputArea;
+    private JScrollPane scrollPane;
+    
+    /**
+     * Constructeur par défaut.
+     */
+    public TerminalPanel() {
+        setLayout(new BorderLayout());
+        setBackground(Color.BLACK);
+        
+        outputArea = new JTextArea();
+        outputArea.setEditable(false);
+        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        outputArea.setBackground(Color.BLACK);
+        outputArea.setForeground(Color.WHITE);
+        outputArea.setCaretColor(Color.WHITE);
+        
+        scrollPane = new JScrollPane(outputArea);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        
+        add(scrollPane, BorderLayout.CENTER);
+    }
+    
+    /**
+     * Ajoute du texte à la zone de sortie.
+     * 
+     * @param text Texte à ajouter
+     */
+    public void appendOutput(String text) {
+        outputArea.append(text);
+        outputArea.setCaretPosition(outputArea.getDocument().getLength());
+    }
+    
+    /**
+     * Nettoie l'écran.
+     */
+    public void clearScreen() {
+        outputArea.setText("");
+    }
+    
+    /**
+     * Définit le texte de la zone de sortie.
+     * 
+     * @param text Nouveau texte
+     */
+    public void setOutputText(String text) {
+        outputArea.setText(text);
+    }
+    
+    /**
+     * @return Le texte actuel de la zone de sortie
+     */
+    public String getOutputText() {
+        return outputArea.getText();
+    }
+    
+    /**
+     * @return La zone de texte de sortie
+     */
+    public JTextArea getOutputArea() {
+        return outputArea;
+    }
+}
+
+
+// ============================================================================
+// FICHIER : TerminalOutput.java
+// DESCRIPTION : Gestion de l'affichage du terminal avec couleurs
+// ============================================================================
+package com.terminal.emulator.gui;
+
+import javax.swing.*;
+import javax.swing.text.*;
+import java.awt.*;
+
+/**
+ * Gestion de l'affichage du terminal avec support des couleurs.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class TerminalOutput {
+    
+    private JTextPane textPane;
+    private StyleContext styleContext;
+    private Style defaultStyle;
+    private Style errorStyle;
+    private Style successStyle;
+    private Style promptStyle;
+    private Style commandStyle;
+    
+    /**
+     * Constructeur par défaut.
+     */
+    public TerminalOutput() {
+        textPane = new JTextPane();
+        textPane.setEditable(false);
+        textPane.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        textPane.setBackground(Color.BLACK);
+        textPane.setCaretColor(Color.WHITE);
+        
+        // Configuration des styles
+        styleContext = new StyleContext();
+        
+        defaultStyle = styleContext.addStyle("default", null);
+        StyleConstants.setForeground(defaultStyle, Color.WHITE);
+        
+        errorStyle = styleContext.addStyle("error", null);
+        StyleConstants.setForeground(errorStyle, Color.RED);
+        
+        successStyle = styleContext.addStyle("success", null);
+        StyleConstants.setForeground(successStyle, Color.GREEN);
+        
+        promptStyle = styleContext.addStyle("prompt", null);
+        StyleConstants.setForeground(promptStyle, Color.CYAN);
+        
+        commandStyle = styleContext.addStyle("command", null);
+        StyleConstants.setForeground(commandStyle, Color.YELLOW);
+        
+        textPane.setDocument(new DefaultStyledDocument(styleContext));
+    }
+    
+    /**
+     * Ajoute du texte avec le style par défaut.
+     * 
+     * @param text Texte à ajouter
+     */
+    public void append(String text) {
+        append(text, defaultStyle);
+    }
+    
+    /**
+     * Ajoute du texte avec un style spécifique.
+     * 
+     * @param text Texte à ajouter
+     * @param style Style à appliquer
+     */
+    public void append(String text, Style style) {
+        try {
+            Document doc = textPane.getDocument();
+            doc.insertString(doc.getLength(), text, style);
+            textPane.setCaretPosition(doc.getLength());
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Ajoute une ligne avec le style par défaut.
+     * 
+     * @param text Texte à ajouter
+     */
+    public void appendLine(String text) {
+        append(text + "\n");
+    }
+    
+    /**
+     * Ajoute une ligne avec un style spécifique.
+     * 
+     * @param text Texte à ajouter
+     * @param style Style à appliquer
+     */
+    public void appendLine(String text, Style style) {
+        append(text + "\n", style);
+    }
+    
+    /**
+     * Ajoute un prompt.
+     * 
+     * @param prompt Texte du prompt
+     */
+    public void appendPrompt(String prompt) {
+        append(prompt + " ", promptStyle);
+    }
+    
+    /**
+     * Ajoute une commande.
+     * 
+     * @param command Texte de la commande
+     */
+    public void appendCommand(String command) {
+        append(command, commandStyle);
+    }
+    
+    /**
+     * Ajoute un message d'erreur.
+     * 
+     * @param error Message d'erreur
+     */
+    public void appendError(String error) {
+        appendLine(error, errorStyle);
+    }
+    
+    /**
+     * Ajoute un message de succès.
+     * 
+     * @param message Message de succès
+     */
+    public void appendSuccess(String message) {
+        appendLine(message, successStyle);
+    }
+    
+    /**
+     * Nettoie l'écran.
+     */
+    public void clearScreen() {
+        textPane.setText("");
+    }
+    
+    /**
+     * @return Le JTextPane
+     */
+    public JTextPane getTextPane() {
+        return textPane;
+    }
+    
+    /**
+     * @return Le style par défaut
+     */
+    public Style getDefaultStyle() {
+        return defaultStyle;
+    }
+    
+    /**
+     * @return Le style d'erreur
+     */
+    public Style getErrorStyle() {
+        return errorStyle;
+    }
+    
+    /**
+     * @return Le style de succès
+     */
+    public Style getSuccessStyle() {
+        return successStyle;
+    }
+    
+    /**
+     * @return Le style du prompt
+     */
+    public Style getPromptStyle() {
+        return promptStyle;
+    }
+    
+    /**
+     * @return Le style des commandes
+     */
+    public Style getCommandStyle() {
+        return commandStyle;
+    }
+}
+
+
+// ============================================================================
+// PACKAGE : script
+// ============================================================================
+
+// ============================================================================
+// FICHIER : ScriptEngine.java
+// DESCRIPTION : Moteur d'exécution de scripts minimalistes
+// ============================================================================
+package com.terminal.emulator.script;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.commands.Command;
+import com.terminal.emulator.commands.CommandFactory;
+import com.terminal.emulator.commands.CommandParser;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+import com.terminal.emulator.filesystem.TerminalFile;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Moteur d'exécution de scripts minimalistes.
+ * Supporte les variables, conditions, boucles et opérations basiques.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class ScriptEngine {
+    
+    private TerminalState state;
+    private ScriptContext context;
+    
+    /**
+     * Constructeur avec l'état du terminal.
+     * 
+     * @param state État du terminal
+     */
+    public ScriptEngine(TerminalState state) {
+        this.state = state;
+        this.context = new ScriptContext();
+    }
+    
+    /**
+     * Exécute un script à partir d'un fichier.
+     * 
+     * @param file Fichier contenant le script
+     * @return Résultat de l'exécution
+     */
+    public String executeFile(TerminalFile file) {
+        if (file == null) {
+            return "Script file not found";
+        }
+        return execute(file.getContent());
+    }
+    
+    /**
+     * Exécute un script à partir d'une chaîne de caractères.
+     * 
+     * @param script Contenu du script
+     * @return Résultat de l'exécution
+     */
+    public String execute(String script) {
+        if (script == null || script.trim().isEmpty()) {
+            return "";
+        }
+        
+        StringBuilder output = new StringBuilder();
+        String[] lines = script.split("\n");
+        
+        for (String line : lines) {
+            String trimmed = line.trim();
+            
+            // Ignorer les commentaires
+            if (trimmed.startsWith("#") || trimmed.isEmpty()) {
+                continue;
+            }
+            
+            // Exécuter la ligne
+            String result = executeLine(trimmed);
+            if (result != null && !result.isEmpty()) {
+                output.append(result).append("\n");
+            }
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * Exécute une seule ligne de script.
+     * 
+     * @param line Ligne à exécuter
+     * @return Résultat de l'exécution
+     */
+    private String executeLine(String line) {
+        // Vérifier les structures de contrôle
+        if (line.startsWith("if ")) {
+            return executeIf(line);
+        } else if (line.startsWith("while ")) {
+            return executeWhile(line);
+        } else if (line.startsWith("for ")) {
+            return executeFor(line);
+        } else if (line.equals("fi") || line.equals("done") || line.equals("end")) {
+            return null; // Fin de bloc, ne rien retourner
+        } else if (line.startsWith("set ")) {
+            return executeSet(line);
+        } else if (line.startsWith("echo ")) {
+            return executeScriptEcho(line);
+        } else if (line.startsWith("cd ")) {
+            return executeScriptCd(line);
+        } else if (line.startsWith("pwd")) {
+            return state.getCurrentDirectory().getPath();
+        } else if (line.startsWith("ls")) {
+            return executeLs(line);
+        } else if (line.startsWith("cat")) {
+            return executeCat(line);
+        }
+        
+        // Exécuter comme commande normale
+        String[] parts = CommandParser.parse(line);
+        if (parts.length > 0) {
+            Command cmd = CommandFactory.getCommand(parts[0]);
+            if (cmd != null) {
+                String[] args = new String[parts.length - 1];
+                System.arraycopy(parts, 1, args, 0, args.length);
+                return cmd.execute(state, args);
+            }
+        }
+        
+        return "Script error: unknown command '" + line.split(" ")[0] + "'";
+    }
+    
+    /**
+     * Exécute une instruction if.
+     */
+    private String executeIf(String line) {
+        // Format: if [ condition ]
+        String condition = line.substring(3, line.length() - 1).trim();
+        boolean result = evaluateCondition(condition);
+        
+        context.setInIfBlock(true);
+        context.setIfConditionResult(result);
+        context.setIfBlockDepth(1);
+        
+        return null;
+    }
+    
+    /**
+     * Exécute une boucle while.
+     */
+    private String executeWhile(String line) {
+        // Format: while [ condition ]
+        String condition = line.substring(6, line.length() - 1).trim();
+        boolean result = evaluateCondition(condition);
+        
+        context.setInWhileBlock(true);
+        context.setWhileCondition(condition);
+        context.setWhileConditionResult(result);
+        context.setWhileBlockDepth(1);
+        
+        return null;
+    }
+    
+    /**
+     * Exécute une boucle for.
+     */
+    private String executeFor(String line) {
+        // Format: for var in list
+        String[] parts = line.substring(4).trim().split(" in ");
+        if (parts.length != 2) {
+            return "Script error: invalid for syntax";
+        }
+        
+        String varName = parts[0].trim();
+        String[] values = parts[1].trim().split(" ");
+        
+        context.setInForBlock(true);
+        context.setForVariable(varName);
+        context.setForValues(values);
+        context.setForIndex(0);
+        context.setForBlockDepth(1);
+        
+        // Définir la première valeur
+        if (values.length > 0) {
+            context.getVariables().put(varName, values[0]);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Exécute une instruction set (définition de variable).
+     */
+    private String executeSet(String line) {
+        // Format: set var=value
+        String[] parts = line.substring(4).trim().split("=", 2);
+        if (parts.length != 2) {
+            return "Script error: invalid set syntax";
+        }
+        
+        String varName = parts[0].trim();
+        String value = parts[1].trim();
+        
+        // Remplacer les références de variables
+        value = replaceVariables(value);
+        
+        context.getVariables().put(varName, value);
+        return null;
+    }
+    
+    /**
+     * Exécute une instruction echo dans un script.
+     */
+    private String executeScriptEcho(String line) {
+        // Format: echo text
+        String text = line.substring(5).trim();
+        return replaceVariables(text);
+    }
+    
+    /**
+     * Exécute une instruction cd dans un script.
+     */
+    private String executeScriptCd(String line) {
+        String path = line.substring(3).trim();
+        
+        // Résoudre le chemin
+        Directory newDir = resolveDirectory(state, path);
+        if (newDir == null) {
+            return "cd: no such file or directory: " + path;
+        }
+        
+        state.setCurrentDirectory(newDir);
+        return null;
+    }
+    
+    /**
+     * Exécute une instruction ls dans un script.
+     */
+    private String executeLs(String line) {
+        String[] parts = CommandParser.parse(line);
+        String[] args = new String[parts.length - 1];
+        System.arraycopy(parts, 1, args, 0, args.length);
+        
+        Command cmd = CommandFactory.getCommand("ls");
+        if (cmd != null) {
+            return cmd.execute(state, args);
+        }
+        return "ls: command not available";
+    }
+    
+    /**
+     * Exécute une instruction cat dans un script.
+     */
+    private String executeCat(String line) {
+        String[] parts = CommandParser.parse(line);
+        String[] args = new String[parts.length - 1];
+        System.arraycopy(parts, 1, args, 0, args.length);
+        
+        Command cmd = CommandFactory.getCommand("cat");
+        if (cmd != null) {
+            return cmd.execute(state, args);
+        }
+        return "cat: command not available";
+    }
+    
+    /**
+     * Évalue une condition.
+     */
+    private boolean evaluateCondition(String condition) {
+        // Supporte: [ "$var" = "value" ], [ -f "file" ], [ -d "dir" ]
+        condition = condition.trim();
+        
+        if (condition.startsWith("$")) {
+            // Comparaison de variable
+            String[] parts = condition.split("=");
+            if (parts.length == 2) {
+                String varName = parts[0].trim();
+                String value = parts[1].trim().replaceAll("^\"|"$", "");
+                
+                String varValue = context.getVariables().getOrDefault(varName, "");
+                return varValue.equals(value);
+            }
+        } else if (condition.startsWith("-")) {
+            // Test de fichier
+            String[] parts = condition.split(" ");
+            if (parts.length == 2) {
+                String test = parts[0];
+                String path = parts[1].trim().replaceAll("^\"|"$", "");
+                
+                FileNode node = resolveFile(state, path);
+                
+                if ("-f".equals(test)) {
+                    return node != null && node.isFile();
+                } else if ("-d".equals(test)) {
+                    return node != null && node.isDirectory();
+                } else if ("-e".equals(test)) {
+                    return node != null;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Remplace les références de variables dans une chaîne.
+     */
+    private String replaceVariables(String text) {
+        String result = text;
+        
+        for (Map.Entry<String, String> entry : context.getVariables().entrySet()) {
+            result = result.replace("$" + entry.getKey(), entry.getValue());
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Résout un chemin en FileNode.
+     */
+    private FileNode resolveFile(TerminalState state, String fileName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (fileName.startsWith("/")) {
+            return resolveAbsolutePath(state.getRootDirectory(), fileName);
+        } else {
+            return resolveRelativePath(current, fileName);
+        }
+    }
+    
+    /**
+     * Résout un chemin en Directory.
+     */
+    private Directory resolveDirectory(TerminalState state, String dirName) {
+        Directory current = state.getCurrentDirectory();
+        
+        if (dirName.startsWith("/")) {
+            return resolveAbsoluteDirectory(state.getRootDirectory(), dirName);
+        } else {
+            return resolveRelativeDirectory(current, dirName);
+        }
+    }
+    
+    /**
+     * Résout un chemin absolu en FileNode.
+     */
+    private FileNode resolveAbsolutePath(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif en FileNode.
+     */
+    private FileNode resolveRelativePath(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null) {
+                    return null;
+                }
+                if (i == parts.length - 1) {
+                    return node;
+                }
+                if (!node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin absolu en Directory.
+     */
+    private Directory resolveAbsoluteDirectory(Directory root, String path) {
+        String[] parts = path.split("/");
+        Directory current = root;
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty() || ".".equals(parts[i])) continue;
+            if ("..".equals(parts[i])) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(parts[i]);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * Résout un chemin relatif en Directory.
+     */
+    private Directory resolveRelativeDirectory(Directory current, String path) {
+        String[] parts = path.split("/");
+        
+        for (String part : parts) {
+            if (part.isEmpty() || ".".equals(part)) continue;
+            if ("..".equals(part)) {
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+            } else {
+                FileNode node = current.getChild(part);
+                if (node == null || !node.isDirectory()) {
+                    return null;
+                }
+                current = (Directory) node;
+            }
+        }
+        
+        return current;
+    }
+    
+    /**
+     * @return Le contexte du script
+     */
+    public ScriptContext getContext() {
+        return context;
+    }
+    
+    /**
+     * @return L'état du terminal
+     */
+    public TerminalState getState() {
+        return state;
+    }
+    
+    /**
+     * Définit l'état du terminal.
+     * 
+     * @param state Nouveau état
+     */
+    public void setState(TerminalState state) {
+        this.state = state;
+    }
+}
+
+
+// ============================================================================
+// FICHIER : ScriptContext.java
+// DESCRIPTION : Contexte d'exécution des scripts
+// ============================================================================
+package com.terminal.emulator.script;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Contexte d'exécution des scripts.
+ * Contient les variables, l'état des blocs de contrôle, etc.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class ScriptContext {
+    
+    private Map<String, String> variables;
+    
+    // État des blocs if
+    private boolean inIfBlock;
+    private boolean ifConditionResult;
+    private int ifBlockDepth;
+    
+    // État des boucles while
+    private boolean inWhileBlock;
+    private String whileCondition;
+    private boolean whileConditionResult;
+    private int whileBlockDepth;
+    
+    // État des boucles for
+    private boolean inForBlock;
+    private String forVariable;
+    private String[] forValues;
+    private int forIndex;
+    private int forBlockDepth;
+    
+    /**
+     * Constructeur par défaut.
+     */
+    public ScriptContext() {
+        this.variables = new HashMap<>();
+        this.inIfBlock = false;
+        this.ifConditionResult = false;
+        this.ifBlockDepth = 0;
+        this.inWhileBlock = false;
+        this.whileCondition = "";
+        this.whileConditionResult = false;
+        this.whileBlockDepth = 0;
+        this.inForBlock = false;
+        this.forVariable = "";
+        this.forValues = new String[0];
+        this.forIndex = 0;
+        this.forBlockDepth = 0;
+    }
+    
+    // Getters et Setters
+    
+    /**
+     * @return La map des variables
+     */
+    public Map<String, String> getVariables() {
+        return variables;
+    }
+    
+    /**
+     * Définit la map des variables.
+     * 
+     * @param variables Nouvelle map de variables
+     */
+    public void setVariables(Map<String, String> variables) {
+        this.variables = variables;
+    }
+    
+    /**
+     * @return True si dans un bloc if
+     */
+    public boolean isInIfBlock() {
+        return inIfBlock;
+    }
+    
+    /**
+     * Définit si dans un bloc if.
+     * 
+     * @param inIfBlock État
+     */
+    public void setInIfBlock(boolean inIfBlock) {
+        this.inIfBlock = inIfBlock;
+    }
+    
+    /**
+     * @return Résultat de la condition if
+     */
+    public boolean isIfConditionResult() {
+        return ifConditionResult;
+    }
+    
+    /**
+     * Définit le résultat de la condition if.
+     * 
+     * @param ifConditionResult Résultat
+     */
+    public void setIfConditionResult(boolean ifConditionResult) {
+        this.ifConditionResult = ifConditionResult;
+    }
+    
+    /**
+     * @return Profondeur du bloc if
+     */
+    public int getIfBlockDepth() {
+        return ifBlockDepth;
+    }
+    
+    /**
+     * Définit la profondeur du bloc if.
+     * 
+     * @param ifBlockDepth Profondeur
+     */
+    public void setIfBlockDepth(int ifBlockDepth) {
+        this.ifBlockDepth = ifBlockDepth;
+    }
+    
+    /**
+     * @return True si dans un bloc while
+     */
+    public boolean isInWhileBlock() {
+        return inWhileBlock;
+    }
+    
+    /**
+     * Définit si dans un bloc while.
+     * 
+     * @param inWhileBlock État
+     */
+    public void setInWhileBlock(boolean inWhileBlock) {
+        this.inWhileBlock = inWhileBlock;
+    }
+    
+    /**
+     * @return Condition de la boucle while
+     */
+    public String getWhileCondition() {
+        return whileCondition;
+    }
+    
+    /**
+     * Définit la condition de la boucle while.
+     * 
+     * @param whileCondition Condition
+     */
+    public void setWhileCondition(String whileCondition) {
+        this.whileCondition = whileCondition;
+    }
+    
+    /**
+     * @return Résultat de la condition while
+     */
+    public boolean isWhileConditionResult() {
+        return whileConditionResult;
+    }
+    
+    /**
+     * Définit le résultat de la condition while.
+     * 
+     * @param whileConditionResult Résultat
+     */
+    public void setWhileConditionResult(boolean whileConditionResult) {
+        this.whileConditionResult = whileConditionResult;
+    }
+    
+    /**
+     * @return Profondeur du bloc while
+     */
+    public int getWhileBlockDepth() {
+        return whileBlockDepth;
+    }
+    
+    /**
+     * Définit la profondeur du bloc while.
+     * 
+     * @param whileBlockDepth Profondeur
+     */
+    public void setWhileBlockDepth(int whileBlockDepth) {
+        this.whileBlockDepth = whileBlockDepth;
+    }
+    
+    /**
+     * @return True si dans un bloc for
+     */
+    public boolean isInForBlock() {
+        return inForBlock;
+    }
+    
+    /**
+     * Définit si dans un bloc for.
+     * 
+     * @param inForBlock État
+     */
+    public void setInForBlock(boolean inForBlock) {
+        this.inForBlock = inForBlock;
+    }
+    
+    /**
+     * @return Variable de la boucle for
+     */
+    public String getForVariable() {
+        return forVariable;
+    }
+    
+    /**
+     * Définit la variable de la boucle for.
+     * 
+     * @param forVariable Variable
+     */
+    public void setForVariable(String forVariable) {
+        this.forVariable = forVariable;
+    }
+    
+    /**
+     * @return Valeurs de la boucle for
+     */
+    public String[] getForValues() {
+        return forValues;
+    }
+    
+    /**
+     * Définit les valeurs de la boucle for.
+     * 
+     * @param forValues Valeurs
+     */
+    public void setForValues(String[] forValues) {
+        this.forValues = forValues;
+    }
+    
+    /**
+     * @return Index courant de la boucle for
+     */
+    public int getForIndex() {
+        return forIndex;
+    }
+    
+    /**
+     * Définit l'index de la boucle for.
+     * 
+     * @param forIndex Index
+     */
+    public void setForIndex(int forIndex) {
+        this.forIndex = forIndex;
+    }
+    
+    /**
+     * @return Profondeur du bloc for
+     */
+    public int getForBlockDepth() {
+        return forBlockDepth;
+    }
+    
+    /**
+     * Définit la profondeur du bloc for.
+     * 
+     * @param forBlockDepth Profondeur
+     */
+    public void setForBlockDepth(int forBlockDepth) {
+        this.forBlockDepth = forBlockDepth;
+    }
+    
+    /**
+     * Réinitialise le contexte.
+     */
+    public void reset() {
+        variables.clear();
+        inIfBlock = false;
+        ifConditionResult = false;
+        ifBlockDepth = 0;
+        inWhileBlock = false;
+        whileCondition = "";
+        whileConditionResult = false;
+        whileBlockDepth = 0;
+        inForBlock = false;
+        forVariable = "";
+        forValues = new String[0];
+        forIndex = 0;
+        forBlockDepth = 0;
+    }
+    
+    /**
+     * @return Une représentation textuelle du contexte
+     */
+    @Override
+    public String toString() {
+        return "ScriptContext{" +
+                "variables=" + variables +
+                ", inIfBlock=" + inIfBlock +
+                ", ifConditionResult=" + ifConditionResult +
+                ", ifBlockDepth=" + ifBlockDepth +
+                ", inWhileBlock=" + inWhileBlock +
+                ", whileCondition='" + whileCondition + '\'' +
+                ", whileConditionResult=" + whileConditionResult +
+                ", whileBlockDepth=" + whileBlockDepth +
+                ", inForBlock=" + inForBlock +
+                ", forVariable='" + forVariable + '\'' +
+                ", forIndex=" + forIndex +
+                ", forBlockDepth=" + forBlockDepth +
+                '}';
+    }
+}
+
+
+// ============================================================================
+// FICHIER : ScriptParser.java
+// DESCRIPTION : Parseur de scripts pour l'analyse syntaxique
+// ============================================================================
+package com.terminal.emulator.script;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Parseur de scripts pour l'analyse syntaxique.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+public class ScriptParser {
+    
+    /**
+     * Parse un script et retourne les blocs de code.
+     * 
+     * @param script Contenu du script
+     * @return Liste de blocs de code
+     */
+    public static List<ScriptBlock> parse(String script) {
+        List<ScriptBlock> blocks = new ArrayList<>();
+        
+        if (script == null || script.trim().isEmpty()) {
+            return blocks;
+        }
+        
+        String[] lines = script.split("\n");
+        ScriptBlock currentBlock = new ScriptBlock(ScriptBlock.Type.NORMAL, 0);
+        int depth = 0;
+        
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i].trim();
+            
+            // Ignorer les commentaires et lignes vides
+            if (line.isEmpty() || line.startsWith("#")) {
+                if (currentBlock.getType() != ScriptBlock.Type.NORMAL) {
+                    currentBlock.addLine(line);
+                }
+                continue;
+            }
+            
+            // Détecter les blocs de contrôle
+            if (line.startsWith("if ")) {
+                if (currentBlock.getType() != ScriptBlock.Type.NORMAL) {
+                    blocks.add(currentBlock);
+                }
+                currentBlock = new ScriptBlock(ScriptBlock.Type.IF, i);
+                currentBlock.addLine(line);
+                depth++;
+            } else if (line.startsWith("while ")) {
+                if (currentBlock.getType() != ScriptBlock.Type.NORMAL) {
+                    blocks.add(currentBlock);
+                }
+                currentBlock = new ScriptBlock(ScriptBlock.Type.WHILE, i);
+                currentBlock.addLine(line);
+                depth++;
+            } else if (line.startsWith("for ")) {
+                if (currentBlock.getType() != ScriptBlock.Type.NORMAL) {
+                    blocks.add(currentBlock);
+                }
+                currentBlock = new ScriptBlock(ScriptBlock.Type.FOR, i);
+                currentBlock.addLine(line);
+                depth++;
+            } else if (line.equals("fi") || line.equals("done") || line.equals("end")) {
+                currentBlock.addLine(line);
+                blocks.add(currentBlock);
+                depth--;
+                if (depth >= 0) {
+                    currentBlock = new ScriptBlock(ScriptBlock.Type.NORMAL, i);
+                }
+            } else {
+                currentBlock.addLine(line);
+            }
+        }
+        
+        if (!currentBlock.getLines().isEmpty()) {
+            blocks.add(currentBlock);
+        }
+        
+        return blocks;
+    }
+    
+    /**
+     * Vérifie la syntaxe d'un script.
+     * 
+     * @param script Contenu du script
+     * @return True si la syntaxe est valide
+     */
+    public static boolean validateSyntax(String script) {
+        if (script == null) {
+            return false;
+        }
+        
+        String[] lines = script.split("\n");
+        int ifDepth = 0;
+        int whileDepth = 0;
+        int forDepth = 0;
+        
+        for (String line : lines) {
+            String trimmed = line.trim();
+            
+            if (trimmed.startsWith("if ")) {
+                ifDepth++;
+            } else if (trimmed.equals("fi")) {
+                ifDepth--;
+            } else if (trimmed.startsWith("while ")) {
+                whileDepth++;
+            } else if (trimmed.equals("done")) {
+                // 'done' peut terminer un while ou un for
+                if (whileDepth > 0) {
+                    whileDepth--;
+                } else if (forDepth > 0) {
+                    forDepth--;
+                }
+            } else if (trimmed.startsWith("for ")) {
+                forDepth++;
+            } else if (trimmed.equals("end")) {
+                forDepth--;
+            }
+        }
+        
+        return ifDepth == 0 && whileDepth == 0 && forDepth == 0;
+    }
+    
+    /**
+     * Classe représentant un bloc de script.
+     */
+    public static class ScriptBlock {
+        
+        public enum Type {
+            NORMAL, IF, WHILE, FOR
+        }
+        
+        private Type type;
+        private int startLine;
+        private List<String> lines;
+        
+        /**
+         * Constructeur.
+         * 
+         * @param type Type du bloc
+         * @param startLine Ligne de début
+         */
+        public ScriptBlock(Type type, int startLine) {
+            this.type = type;
+            this.startLine = startLine;
+            this.lines = new ArrayList<>();
+        }
+        
+        /**
+         * Ajoute une ligne au bloc.
+         * 
+         * @param line Ligne à ajouter
+         */
+        public void addLine(String line) {
+            lines.add(line);
+        }
+        
+        /**
+         * @return Le type du bloc
+         */
+        public Type getType() {
+            return type;
+        }
+        
+        /**
+         * @return La ligne de début
+         */
+        public int getStartLine() {
+            return startLine;
+        }
+        
+        /**
+         * @return La liste des lignes
+         */
+        public List<String> getLines() {
+            return lines;
+        }
+        
+        /**
+         * @return Le contenu du bloc
+         */
+        public String getContent() {
+            return String.join("\n", lines);
+        }
+        
+        /**
+         * @return Une représentation textuelle
+         */
+        @Override
+        public String toString() {
+            return "ScriptBlock{" +
+                    "type=" + type +
+                    ", startLine=" + startLine +
+                    ", lines=" + lines +
+                    '}';
+        }
+    }
+}
+
+
+// ============================================================================
+// PACKAGE : tests
+// ============================================================================
+
+// ============================================================================
+// FICHIER : FileSystemTest.java
+// DESCRIPTION : Tests unitaires pour le système de fichiers
+// ============================================================================
+package tests.filesystem;
+
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.FileNode;
+import com.terminal.emulator.filesystem.TerminalFile;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests unitaires pour le système de fichiers.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class FileSystemTest {
+    
+    private Directory root;
+    private Directory home;
+    private Directory documents;
+    private TerminalFile file1;
+    private TerminalFile file2;
+    
+    @BeforeEach
+    void setUp() {
+        root = new Directory("/", null);
+        home = root.createDirectory("home");
+        documents = home.createDirectory("documents");
+        file1 = home.createFile("file1.txt");
+        file2 = documents.createFile("file2.txt");
+        
+        file1.setContent("Hello World");
+        file2.setContent("Test content");
+    }
+    
+    @AfterEach
+    void tearDown() {
+        root = null;
+        home = null;
+        documents = null;
+        file1 = null;
+        file2 = null;
+    }
+    
+    @Test
+    void testDirectoryCreation() {
+        assertNotNull(root);
+        assertEquals("/", root.getName());
+        assertNull(root.getParent());
+        
+        assertNotNull(home);
+        assertEquals("home", home.getName());
+        assertEquals(root, home.getParent());
+    }
+    
+    @Test
+    void testFileCreation() {
+        assertNotNull(file1);
+        assertEquals("file1.txt", file1.getName());
+        assertEquals(home, file1.getParent());
+        assertTrue(file1.isFile());
+        assertFalse(file1.isDirectory());
+    }
+    
+    @Test
+    void testDirectoryPath() {
+        assertEquals("/", root.getPath());
+        assertEquals("/home", home.getPath());
+        assertEquals("/home/documents", documents.getPath());
+    }
+    
+    @Test
+    void testFilePath() {
+        assertEquals("/home/file1.txt", file1.getPath());
+        assertEquals("/home/documents/file2.txt", file2.getPath());
+    }
+    
+    @Test
+    void testDirectoryChildren() {
+        assertEquals(2, home.getChildCount());
+        assertTrue(home.hasChild("documents"));
+        assertTrue(home.hasChild("file1.txt"));
+        assertFalse(home.hasChild("nonexistent"));
+    }
+    
+    @Test
+    void testGetChild() {
+        FileNode child = home.getChild("file1.txt");
+        assertNotNull(child);
+        assertEquals("file1.txt", child.getName());
+        
+        FileNode nonexistent = home.getChild("nonexistent");
+        assertNull(nonexistent);
+    }
+    
+    @Test
+    void testAddAndRemoveChild() {
+        TerminalFile newFile = new TerminalFile("newfile.txt", home);
+        assertTrue(home.addChild(newFile));
+        assertEquals(3, home.getChildCount());
+        
+        assertTrue(home.removeChild(newFile));
+        assertEquals(2, home.getChildCount());
+    }
+    
+    @Test
+    void testFileContent() {
+        assertEquals("Hello World", file1.getContent());
+        assertEquals(11, file1.getSize());
+        
+        file1.appendContent("!");
+        assertEquals("Hello World!", file1.getContent());
+        assertEquals(12, file1.getSize());
+    }
+    
+    @Test
+    void testFileOperations() {
+        assertFalse(file1.isEmpty());
+        
+        file1.clear();
+        assertTrue(file1.isEmpty());
+        assertEquals(0, file1.getSize());
+    }
+    
+    @Test
+    void testDeleteFile() {
+        assertTrue(file1.delete());
+        assertEquals(1, home.getChildCount());
+        assertNull(home.getChild("file1.txt"));
+    }
+    
+    @Test
+    void testDeleteDirectory() {
+        assertTrue(documents.delete());
+        assertEquals(1, home.getChildCount());
+        assertNull(home.getChild("documents"));
+    }
+    
+    @Test
+    void testSubdirectories() {
+        assertEquals(1, home.getSubdirectories().size());
+        assertEquals("documents", home.getSubdirectories().get(0).getName());
+    }
+    
+    @Test
+    void testFiles() {
+        assertEquals(1, home.getFiles().size());
+        assertEquals("file1.txt", home.getFiles().get(0).getName());
+    }
+    
+    @Test
+    void testDirectoryComparison() {
+        Directory dir1 = new Directory("test1", root);
+        Directory dir2 = new Directory("test2", root);
+        Directory dir3 = new Directory("test1", root);
+        
+        assertNotEquals(dir1, dir2);
+        assertNotEquals(dir1, dir3); // Différentes instances
+        assertEquals(dir1.getName(), dir3.getName());
+    }
+    
+    @Test
+    void testFileComparison() {
+        TerminalFile f1 = new TerminalFile("a.txt", root);
+        TerminalFile f2 = new TerminalFile("b.txt", root);
+        
+        assertNotEquals(f1, f2);
+        assertEquals(0, f1.compareTo(f2)); // Comparaison par nom
+    }
+}
+
+
+// ============================================================================
+// FICHIER : DirectoryTest.java
+// DESCRIPTION : Tests unitaires pour la classe Directory
+// ============================================================================
+package tests.filesystem;
+
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.TerminalFile;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests unitaires pour la classe Directory.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class DirectoryTest {
+    
+    private Directory root;
+    private Directory dir1;
+    private Directory dir2;
+    
+    @BeforeEach
+    void setUp() {
+        root = new Directory("/", null);
+        dir1 = root.createDirectory("dir1");
+        dir2 = dir1.createDirectory("dir2");
+    }
+    
+    @AfterEach
+    void tearDown() {
+        root = null;
+        dir1 = null;
+        dir2 = null;
+    }
+    
+    @Test
+    void testCreateDirectory() {
+        Directory newDir = root.createDirectory("newdir");
+        assertNotNull(newDir);
+        assertEquals("newdir", newDir.getName());
+        assertEquals(root, newDir.getParent());
+        assertTrue(root.hasChild("newdir"));
+    }
+    
+    @Test
+    void testCreateDuplicateDirectory() {
+        Directory first = root.createDirectory("test");
+        assertNotNull(first);
+        
+        Directory second = root.createDirectory("test");
+        assertNull(second); // Ne peut pas créer un doublon
+    }
+    
+    @Test
+    void testCreateFile() {
+        TerminalFile file = root.createFile("test.txt");
+        assertNotNull(file);
+        assertEquals("test.txt", file.getName());
+        assertEquals(root, file.getParent());
+        assertTrue(root.hasChild("test.txt"));
+    }
+    
+    @Test
+    void testCreateDuplicateFile() {
+        TerminalFile first = root.createFile("test.txt");
+        assertNotNull(first);
+        
+        TerminalFile second = root.createFile("test.txt");
+        assertNull(second); // Ne peut pas créer un doublon
+    }
+    
+    @Test
+    void testIsEmpty() {
+        Directory emptyDir = root.createDirectory("empty");
+        assertTrue(emptyDir.isEmpty());
+        
+        emptyDir.createFile("file.txt");
+        assertFalse(emptyDir.isEmpty());
+    }
+    
+    @Test
+    void testClear() {
+        dir1.createFile("file1.txt");
+        dir1.createFile("file2.txt");
+        dir1.createDirectory("subdir");
+        
+        assertEquals(3, dir1.getChildCount());
+        
+        dir1.clear();
+        assertEquals(0, dir1.getChildCount());
+        assertTrue(dir1.isEmpty());
+    }
+    
+    @Test
+    void testRemoveChildByName() {
+        dir1.createFile("toRemove.txt");
+        assertTrue(dir1.hasChild("toRemove.txt"));
+        
+        assertTrue(dir1.removeChildByName("toRemove.txt"));
+        assertFalse(dir1.hasChild("toRemove.txt"));
+    }
+    
+    @Test
+    void testPathNavigation() {
+        assertEquals("/", root.getPath());
+        assertEquals("/dir1", dir1.getPath());
+        assertEquals("/dir1/dir2", dir2.getPath());
+    }
+    
+    @Test
+    void testParentNavigation() {
+        assertNull(root.getParent());
+        assertEquals(root, dir1.getParent());
+        assertEquals(dir1, dir2.getParent());
+    }
+}
+
+
+// ============================================================================
+// FICHIER : CommandParserTest.java
+// DESCRIPTION : Tests unitaires pour le parseur de commandes
+// ============================================================================
+package tests.commands;
+
+import com.terminal.emulator.commands.CommandParser;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests unitaires pour le parseur de commandes.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class CommandParserTest {
+    
+    @Test
+    void testParseEmpty() {
+        String[] result = CommandParser.parse("");
+        assertEquals(0, result.length);
+    }
+    
+    @Test
+    void testParseNull() {
+        String[] result = CommandParser.parse(null);
+        assertEquals(0, result.length);
+    }
+    
+    @Test
+    void testParseSimpleCommand() {
+        String[] result = CommandParser.parse("ls");
+        assertEquals(1, result.length);
+        assertEquals("ls", result[0]);
+    }
+    
+    @Test
+    void testParseCommandWithArgs() {
+        String[] result = CommandParser.parse("ls -l -a");
+        assertEquals(3, result.length);
+        assertEquals("ls", result[0]);
+        assertEquals("-l", result[1]);
+        assertEquals("-a", result[2]);
+    }
+    
+    @Test
+    void testParseCommandWithSpacesInArgs() {
+        String[] result = CommandParser.parse("echo \"Hello World\"");
+        assertEquals(2, result.length);
+        assertEquals("echo", result[0]);
+        assertEquals("Hello World", result[1]);
+    }
+    
+    @Test
+    void testParseCommandWithMixedArgs() {
+        String[] result = CommandParser.parse("cp file1.txt \"my file.txt\"");
+        assertEquals(3, result.length);
+        assertEquals("cp", result[0]);
+        assertEquals("file1.txt", result[1]);
+        assertEquals("my file.txt", result[2]);
+    }
+    
+    @Test
+    void testGetCommandName() {
+        assertEquals("ls", CommandParser.getCommandName("ls -l"));
+        assertEquals("echo", CommandParser.getCommandName("echo Hello"));
+        assertEquals("", CommandParser.getCommandName(""));
+    }
+    
+    @Test
+    void testGetArguments() {
+        String[] args = CommandParser.getArguments("ls -l -a");
+        assertEquals(2, args.length);
+        assertEquals("-l", args[0]);
+        assertEquals("-a", args[1]);
+    }
+    
+    @Test
+    void testHasArguments() {
+        assertTrue(CommandParser.hasArguments("ls -l"));
+        assertFalse(CommandParser.hasArguments("ls"));
+    }
+    
+    @Test
+    void testCleanArgument() {
+        assertEquals("test", CommandParser.cleanArgument("\"test\""));
+        assertEquals("hello world", CommandParser.cleanArgument("\"hello world\""));
+        assertEquals("test", CommandParser.cleanArgument("test"));
+    }
+}
+
+
+// ============================================================================
+// FICHIER : LsCommandTest.java
+// DESCRIPTION : Tests unitaires pour la commande 'ls'
+// ============================================================================
+package tests.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.commands.LsCommand;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.TerminalFile;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests unitaires pour la commande 'ls'.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class LsCommandTest {
+    
+    private TerminalState state;
+    private LsCommand lsCommand;
+    private Directory root;
+    private Directory home;
+    
+    @BeforeEach
+    void setUp() {
+        state = new TerminalState();
+        root = state.getRootDirectory();
+        home = root.createDirectory("home");
+        state.setCurrentDirectory(home);
+        
+        home.createFile("file1.txt");
+        home.createFile("file2.txt");
+        home.createDirectory("docs");
+        
+        lsCommand = new LsCommand();
+    }
+    
+    @AfterEach
+    void tearDown() {
+        state = null;
+        lsCommand = null;
+        root = null;
+        home = null;
+    }
+    
+    @Test
+    void testBasicLs() {
+        String result = lsCommand.execute(state, new String[0]);
+        assertNotNull(result);
+        assertTrue(result.contains("docs"));
+        assertTrue(result.contains("file1.txt"));
+        assertTrue(result.contains("file2.txt"));
+    }
+    
+    @Test
+    void testLsWithHiddenFiles() {
+        home.createFile(".hidden");
+        
+        // Sans -a, les fichiers cachés ne doivent pas apparaître
+        String result = lsCommand.execute(state, new String[0]);
+        assertFalse(result.contains(".hidden"));
+        
+        // Avec -a, les fichiers cachés doivent apparaître
+        result = lsCommand.execute(state, new String[]{"-a"});
+        assertTrue(result.contains(".hidden"));
+    }
+    
+    @Test
+    void testLsLongFormat() {
+        String result = lsCommand.execute(state, new String[]{"-l"});
+        assertTrue(result.contains("total"));
+        assertTrue(result.contains("drwx"));
+        assertTrue(result.contains("-rw-"));
+    }
+    
+    @Test
+    void testLsReverseOrder() {
+        String resultNormal = lsCommand.execute(state, new String[0]);
+        String resultReverse = lsCommand.execute(state, new String[]{"-r"});
+        
+        // Les résultats doivent être différents
+        assertNotEquals(resultNormal, resultReverse);
+    }
+    
+    @Test
+    void testLsSpecificDirectory() {
+        Directory docs = home.createDirectory("docs");
+        docs.createFile("readme.txt");
+        
+        String result = lsCommand.execute(state, new String[]{"docs"});
+        assertTrue(result.contains("readme.txt"));
+        assertFalse(result.contains("file1.txt"));
+    }
+    
+    @Test
+    void testLsNonExistentDirectory() {
+        String result = lsCommand.execute(state, new String[]{"nonexistent"});
+        assertTrue(result.contains("No such file or directory"));
+    }
+    
+    @Test
+    void testLsRootDirectory() {
+        String result = lsCommand.execute(state, new String[]{"/"});
+        assertTrue(result.contains("home"));
+    }
+}
+
+
+// ============================================================================
+// FICHIER : CdCommandTest.java
+// DESCRIPTION : Tests unitaires pour la commande 'cd'
+// ============================================================================
+package tests.commands;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.commands.CdCommand;
+import com.terminal.emulator.filesystem.Directory;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests unitaires pour la commande 'cd'.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class CdCommandTest {
+    
+    private TerminalState state;
+    private CdCommand cdCommand;
+    private Directory root;
+    private Directory home;
+    private Directory documents;
+    
+    @BeforeEach
+    void setUp() {
+        state = new TerminalState();
+        root = state.getRootDirectory();
+        home = root.createDirectory("home");
+        documents = home.createDirectory("documents");
+        state.setCurrentDirectory(home);
+        
+        cdCommand = new CdCommand();
+    }
+    
+    @AfterEach
+    void tearDown() {
+        state = null;
+        cdCommand = null;
+        root = null;
+        home = null;
+        documents = null;
+    }
+    
+    @Test
+    void testCdToRoot() {
+        cdCommand.execute(state, new String[]{"/"});
+        assertEquals(root, state.getCurrentDirectory());
+    }
+    
+    @Test
+    void testCdToHome() {
+        cdCommand.execute(state, new String[]{"home"});
+        // Déjà dans home, donc pas de changement
+        assertEquals(home, state.getCurrentDirectory());
+    }
+    
+    @Test
+    void testCdToSubdirectory() {
+        cdCommand.execute(state, new String[]{"documents"});
+        assertEquals(documents, state.getCurrentDirectory());
+    }
+    
+    @Test
+    void testCdToParent() {
+        cdCommand.execute(state, new String[]{"documents"});
+        cdCommand.execute(state, new String[]{".."});
+        assertEquals(home, state.getCurrentDirectory());
+    }
+    
+    @Test
+    void testCdToCurrent() {
+        cdCommand.execute(state, new String[]{"."});
+        assertEquals(home, state.getCurrentDirectory());
+    }
+    
+    @Test
+    void testCdNoArgs() {
+        cdCommand.execute(state, new String[0]);
+        assertEquals(root, state.getCurrentDirectory());
+    }
+    
+    @Test
+    void testCdNonExistent() {
+        String result = cdCommand.execute(state, new String[]{"nonexistent"});
+        assertTrue(result.contains("no such file or directory"));
+        assertEquals(home, state.getCurrentDirectory());
+    }
+    
+    @Test
+    void testCdAbsolutePath() {
+        cdCommand.execute(state, new String[]{"/home/documents"});
+        assertEquals(documents, state.getCurrentDirectory());
+    }
+    
+    @Test
+    void testCdRelativePath() {
+        cdCommand.execute(state, new String[]{"documents"});
+        assertEquals(documents, state.getCurrentDirectory());
+    }
+}
+
+
+// ============================================================================
+// FICHIER : CommandFactoryTest.java
+// DESCRIPTION : Tests unitaires pour la factory de commandes
+// ============================================================================
+package tests.commands;
+
+import com.terminal.emulator.commands.Command;
+import com.terminal.emulator.commands.CommandFactory;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests unitaires pour la factory de commandes.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class CommandFactoryTest {
+    
+    @Test
+    void testGetCommand() {
+        Command ls = CommandFactory.getCommand("ls");
+        assertNotNull(ls);
+        assertEquals("ls", ls.getName());
+        
+        Command cd = CommandFactory.getCommand("cd");
+        assertNotNull(cd);
+        assertEquals("cd", cd.getName());
+    }
+    
+    @Test
+    void testGetCommandCaseInsensitive() {
+        Command ls = CommandFactory.getCommand("LS");
+        assertNotNull(ls);
+        assertEquals("ls", ls.getName());
+    }
+    
+    @Test
+    void testHasCommand() {
+        assertTrue(CommandFactory.hasCommand("ls"));
+        assertTrue(CommandFactory.hasCommand("cd"));
+        assertFalse(CommandFactory.hasCommand("nonexistent"));
+    }
+    
+    @Test
+    void testGetAllCommands() {
+        assertFalse(CommandFactory.getAllCommands().isEmpty());
+        assertTrue(CommandFactory.getAllCommands().size() >= 10);
+    }
+    
+    @Test
+    void testGetCommandNames() {
+        String[] names = CommandFactory.getCommandNames();
+        assertNotNull(names);
+        assertTrue(names.length >= 10);
+        
+        // Vérifier que les commandes de base sont présentes
+        boolean hasLs = false;
+        boolean hasCd = false;
+        for (String name : names) {
+            if ("ls".equals(name)) hasLs = true;
+            if ("cd".equals(name)) hasCd = true;
+        }
+        assertTrue(hasLs);
+        assertTrue(hasCd);
+    }
+    
+    @Test
+    void testRegisterCommand() {
+        // Créer une commande personnalisée
+        Command custom = new Command() {
+            @Override
+            public String execute(com.terminal.emulator.TerminalState state, String[] args) {
+                return "custom command";
+            }
+            
+            @Override
+            public String getName() {
+                return "custom";
+            }
+            
+            @Override
+            public String getDescription() {
+                return "Custom test command";
+            }
+            
+            @Override
+            public String getUsage() {
+                return "custom";
+            }
+        };
+        
+        CommandFactory.registerCommand(custom);
+        assertTrue(CommandFactory.hasCommand("custom"));
+    }
+}
+
+
+// ============================================================================
+// FICHIER : TerminalStateTest.java
+// DESCRIPTION : Tests unitaires pour l'état du terminal
+// ============================================================================
+package tests;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests unitaires pour l'état du terminal.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class TerminalStateTest {
+    
+    private TerminalState state;
+    private Directory root;
+    
+    @BeforeEach
+    void setUp() {
+        state = new TerminalState();
+        root = state.getRootDirectory();
+    }
+    
+    @AfterEach
+    void tearDown() {
+        state = null;
+        root = null;
+    }
+    
+    @Test
+    void testInitialState() {
+        assertNotNull(state.getCurrentDirectory());
+        assertNotNull(state.getRootDirectory());
+        assertEquals(root, state.getCurrentDirectory());
+        assertEquals("/", state.getCurrentDirectory().getPath());
+    }
+    
+    @Test
+    void testSetCurrentDirectory() {
+        Directory home = root.createDirectory("home");
+        state.setCurrentDirectory(home);
+        assertEquals(home, state.getCurrentDirectory());
+        assertEquals("/home", state.getPrompt().replace("user@terminal:", "").replace("$", ""));
+    }
+    
+    @Test
+    void testCommandHistory() {
+        assertTrue(state.getCommandHistory().isEmpty());
+        
+        state.addToHistory("ls");
+        assertEquals(1, state.getCommandHistory().size());
+        assertEquals("ls", state.getCommandHistory().get(0));
+        
+        state.addToHistory("cd home");
+        assertEquals(2, state.getCommandHistory().size());
+    }
+    
+    @Test
+    void testHistoryNavigation() {
+        state.addToHistory("ls");
+        state.addToHistory("cd home");
+        state.addToHistory("pwd");
+        
+        state.resetHistoryIndex();
+        
+        String prev = state.getPreviousCommand();
+        assertEquals("pwd", prev);
+        
+        prev = state.getPreviousCommand();
+        assertEquals("cd home", prev);
+        
+        String next = state.getNextCommand();
+        assertEquals("pwd", next);
+    }
+    
+    @Test
+    void testPromptUpdate() {
+        assertTrue(state.getPrompt().contains("~$"));
+        
+        Directory home = root.createDirectory("home");
+        state.setCurrentDirectory(home);
+        assertTrue(state.getPrompt().contains("/home$"));
+    }
+    
+    @Test
+    void testEmptyHistory() {
+        assertNull(state.getPreviousCommand());
+        assertNull(state.getNextCommand());
+    }
+    
+    @Test
+    void testHistoryIndex() {
+        state.addToHistory("command1");
+        state.addToHistory("command2");
+        
+        state.setHistoryIndex(0);
+        assertEquals(0, state.getHistoryIndex());
+        
+        state.setHistoryIndex(1);
+        assertEquals(1, state.getHistoryIndex());
+    }
+}
+
+
+// ============================================================================
+// FICHIER : ScriptEngineTest.java
+// DESCRIPTION : Tests unitaires pour le moteur de scripts
+// ============================================================================
+package tests.script;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.TerminalFile;
+import com.terminal.emulator.script.ScriptEngine;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests unitaires pour le moteur de scripts.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class ScriptEngineTest {
+    
+    private TerminalState state;
+    private ScriptEngine engine;
+    private Directory root;
+    private Directory home;
+    
+    @BeforeEach
+    void setUp() {
+        state = new TerminalState();
+        root = state.getRootDirectory();
+        home = root.createDirectory("home");
+        state.setCurrentDirectory(home);
+        
+        engine = new ScriptEngine(state);
+    }
+    
+    @AfterEach
+    void tearDown() {
+        state = null;
+        engine = null;
+        root = null;
+        home = null;
+    }
+    
+    @Test
+    void testEmptyScript() {
+        String result = engine.execute("");
+        assertEquals("", result);
+    }
+    
+    @Test
+    void testNullScript() {
+        String result = engine.execute(null);
+        assertEquals("", result);
+    }
+    
+    @Test
+    void testCommentOnly() {
+        String result = engine.execute("# This is a comment");
+        assertEquals("", result);
+    }
+    
+    @Test
+    void testEchoCommand() {
+        String result = engine.execute("echo Hello World");
+        assertEquals("Hello World", result.trim());
+    }
+    
+    @Test
+    void testVariableSet() {
+        String script = "set name=John\necho Hello $name";
+        String result = engine.execute(script);
+        assertEquals("Hello John", result.trim());
+    }
+    
+    @Test
+    void testVariableMultiple() {
+        String script = "set first=Gabriel\nset last=Chandesris\necho $first $last";
+        String result = engine.execute(script);
+        assertEquals("Gabriel Chandesris", result.trim());
+    }
+    
+    @Test
+    void testCdCommand() {
+        home.createDirectory("documents");
+        
+        String result = engine.execute("cd documents");
+        assertEquals("", result);
+        assertEquals("/home/documents", state.getCurrentDirectory().getPath());
+    }
+    
+    @Test
+    void testPwdCommand() {
+        String result = engine.execute("pwd");
+        assertEquals("/home", result.trim());
+    }
+    
+    @Test
+    void testLsCommand() {
+        home.createFile("test.txt");
+        
+        String result = engine.execute("ls");
+        assertTrue(result.contains("test.txt"));
+    }
+    
+    @Test
+    void testFileCreation() {
+        String result = engine.execute("echo Test > test.txt");
+        // Cette syntaxe n'est pas encore supportée, mais on peut tester la création via touch
+        result = engine.execute("touch test.txt");
+        assertEquals("", result);
+        
+        TerminalFile file = (TerminalFile) home.getChild("test.txt");
+        assertNotNull(file);
+    }
+    
+    @Test
+    void testScriptFromFile() {
+        TerminalFile scriptFile = home.createFile("script.sh");
+        scriptFile.setContent("echo Script executed\necho From file");
+        
+        String result = engine.executeFile(scriptFile);
+        assertTrue(result.contains("Script executed"));
+        assertTrue(result.contains("From file"));
+    }
+    
+    @Test
+    void testIfConditionTrue() {
+        String script = "set var=test\nif [ "$var" = "test" ]\n  echo Condition true\nfi";
+        String result = engine.execute(script);
+        assertTrue(result.contains("Condition true"));
+    }
+    
+    @Test
+    void testIfConditionFalse() {
+        String script = "set var=other\nif [ "$var" = "test" ]\n  echo Condition true\nfi";
+        String result = engine.execute(script);
+        assertFalse(result.contains("Condition true"));
+    }
+    
+    @Test
+    void testFileExistenceTest() {
+        home.createFile("existing.txt");
+        
+        String script = "if [ -f "existing.txt" ]\n  echo File exists\nfi";
+        String result = engine.execute(script);
+        assertTrue(result.contains("File exists"));
+    }
+    
+    @Test
+    void testDirectoryExistenceTest() {
+        home.createDirectory("existing");
+        
+        String script = "if [ -d "existing" ]\n  echo Directory exists\nfi";
+        String result = engine.execute(script);
+        assertTrue(result.contains("Directory exists"));
+    }
+    
+    @Test
+    void testMultipleCommands() {
+        String script = "set name=Test\necho $name\ncd /\npwd";
+        String result = engine.execute(script);
+        assertTrue(result.contains("Test"));
+        assertTrue(result.contains("/"));
+    }
+}
+
+
+// ============================================================================
+// FICHIER : IntegrationTest.java
+// DESCRIPTION : Tests d'intégration pour l'émulateur de terminal complet
+// ============================================================================
+package tests;
+
+import com.terminal.emulator.TerminalState;
+import com.terminal.emulator.commands.*;
+import com.terminal.emulator.filesystem.Directory;
+import com.terminal.emulator.filesystem.TerminalFile;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Tests d'intégration pour l'émulateur de terminal complet.
+ * Teste l'interaction entre les différents composants.
+ * 
+ * @author Gabriel Chandesris
+ * @version 1.0.0
+ */
+class IntegrationTest {
+    
+    private TerminalState state;
+    private Directory root;
+    private Directory home;
+    
+    @BeforeEach
+    void setUp() {
+        state = new TerminalState();
+        root = state.getRootDirectory();
+        home = root.createDirectory("home");
+        state.setCurrentDirectory(home);
+        
+        // Créer une structure de fichiers de test
+        Directory docs = home.createDirectory("documents");
+        Directory images = home.createDirectory("images");
+        
+        TerminalFile readme = home.createFile("README.md");
+        readme.setContent("# Welcome to the Terminal Emulator");
+        
+        TerminalFile file1 = docs.createFile("file1.txt");
+        file1.setContent("Content of file 1");
+        
+        TerminalFile file2 = docs.createFile("file2.txt");
+        file2.setContent("Content of file 2");
+    }
+    
+    @AfterEach
+    void tearDown() {
+        state = null;
+        root = null;
+        home = null;
+    }
+    
+    @Test
+    void testCompleteWorkflow() {
+        // 1. Lister le répertoire home
+        Command ls = CommandFactory.getCommand("ls");
+        String result = ls.execute(state, new String[0]);
+        assertTrue(result.contains("README.md"));
+        assertTrue(result.contains("documents"));
+        assertTrue(result.contains("images"));
+        
+        // 2. Changer de répertoire
+        Command cd = CommandFactory.getCommand("cd");
+        result = cd.execute(state, new String[]{"documents"});
+        assertEquals("", result);
+        assertEquals("/home/documents", state.getCurrentDirectory().getPath());
+        
+        // 3. Lister le répertoire documents
+        result = ls.execute(state, new String[0]);
+        assertTrue(result.contains("file1.txt"));
+        assertTrue(result.contains("file2.txt"));
+        
+        // 4. Afficher le contenu d'un fichier
+        Command cat = CommandFactory.getCommand("cat");
+        result = cat.execute(state, new String[]{"file1.txt"});
+        assertEquals("Content of file 1", result);
+        
+        // 5. Retour au répertoire parent
+        result = cd.execute(state, new String[]{".."});
+        assertEquals("", result);
+        assertEquals("/home", state.getCurrentDirectory().getPath());
+    }
+    
+    @Test
+    void testFileOperationsWorkflow() {
+        // Créer un fichier
+        Command touch = CommandFactory.getCommand("touch");
+        String result = touch.execute(state, new String[]{"newfile.txt"});
+        assertEquals("", result);
+        
+        TerminalFile newFile = (TerminalFile) home.getChild("newfile.txt");
+        assertNotNull(newFile);
+        
+        // Écrire dans le fichier via echo (simulation)
+        Command echo = CommandFactory.getCommand("echo");
+        result = echo.execute(state, new String[]{"Hello"});
+        assertEquals("Hello", result);
+        
+        // Copier le fichier
+        Command cp = CommandFactory.getCommand("cp");
+        result = cp.execute(state, new String[]{"newfile.txt", "newfile_copy.txt"});
+        assertEquals("", result);
+        
+        TerminalFile copy = (TerminalFile) home.getChild("newfile_copy.txt");
+        assertNotNull(copy);
+        
+        // Déplacer le fichier
+        Command mv = CommandFactory.getCommand("mv");
+        result = mv.execute(state, new String[]{"newfile.txt", "moved.txt"});
+        assertEquals("", result);
+        
+        assertNull(home.getChild("newfile.txt"));
+        assertNotNull(home.getChild("moved.txt"));
+        
+        // Supprimer le fichier
+        Command rm = CommandFactory.getCommand("rm");
+        result = rm.execute(state, new String[]{"moved.txt"});
+        assertEquals("", result);
+        
+        assertNull(home.getChild("moved.txt"));
+    }
+    
+    @Test
+    void testDirectoryOperationsWorkflow() {
+        // Créer un répertoire
+        Command mkdir = CommandFactory.getCommand("mkdir");
+        String result = mkdir.execute(state, new String[]{"newdir"});
+        assertEquals("", result);
+        
+        Directory newDir = (Directory) home.getChild("newdir");
+        assertNotNull(newDir);
+        
+        // Changer vers le nouveau répertoire
+        Command cd = CommandFactory.getCommand("cd");
+        result = cd.execute(state, new String[]{"newdir"});
+        assertEquals("", result);
+        assertEquals("/home/newdir", state.getCurrentDirectory().getPath());
+        
+        // Créer un fichier dans le nouveau répertoire
+        Command touch = CommandFactory.getCommand("touch");
+        result = touch.execute(state, new String[]{"test.txt"});
+        assertEquals("", result);
+        
+        // Retour au répertoire parent
+        result = cd.execute(state, new String[]{".."});
+        assertEquals("", result);
+        assertEquals("/home", state.getCurrentDirectory().getPath());
+        
+        // Supprimer le répertoire (doit être vide)
+        Command rmdir = CommandFactory.getCommand("rmdir");
+        result = rmdir.execute(state, new String[]{"newdir"});
+        assertEquals("", result);
+        
+        assertNull(home.getChild("newdir"));
+    }
+    
+    @Test
+    void testCommandHistoryIntegration() {
+        // Exécuter plusieurs commandes
+        Command ls = CommandFactory.getCommand("ls");
+        ls.execute(state, new String[0]);
+        
+        Command cd = CommandFactory.getCommand("cd");
+        cd.execute(state, new String[]{"documents"});
+        
+        Command pwd = CommandFactory.getCommand("pwd");
+        pwd.execute(state, new String[0]);
+        
+        // Vérifier l'historique
+        assertEquals(3, state.getCommandHistory().size());
+        assertEquals("ls", state.getCommandHistory().get(0));
+        assertEquals("cd documents", state.getCommandHistory().get(1));
+        assertEquals("pwd", state.getCommandHistory().get(2));
+        
+        // Navigation dans l'historique
+        state.resetHistoryIndex();
+        String prev = state.getPreviousCommand();
+        assertEquals("pwd", prev);
+        
+        prev = state.getPreviousCommand();
+        assertEquals("cd documents", prev);
+    }
+    
+    @Test
+    void testErrorHandling() {
+        // Commande non existante
+        Command ls = CommandFactory.getCommand("ls");
+        String result = ls.execute(state, new String[]{"nonexistent"});
+        assertTrue(result.contains("No such file or directory"));
+        
+        // Changer vers un répertoire non existant
+        Command cd = CommandFactory.getCommand("cd");
+        result = cd.execute(state, new String[]{"nonexistent"});
+        assertTrue(result.contains("no such file or directory"));
+        
+        // Supprimer un fichier non existant
+        Command rm = CommandFactory.getCommand("rm");
+        result = rm.execute(state, new String[]{"nonexistent.txt"});
+        assertTrue(result.contains("No such file or directory"));
+    }
+    
+    @Test
+    void testPathResolution() {
+        // Chemin absolu
+        Command cd = CommandFactory.getCommand("cd");
+        String result = cd.execute(state, new String[]{"/home/documents"});
+        assertEquals("", result);
+        assertEquals("/home/documents", state.getCurrentDirectory().getPath());
+        
+        // Chemin relatif
+        result = cd.execute(state, new String[]{".."});
+        assertEquals("", result);
+        assertEquals("/home", state.getCurrentDirectory().getPath());
+        
+        // Chemin avec ..
+        result = cd.execute(state, new String[]{"documents/../images"});
+        assertEquals("", result);
+        assertEquals("/home/images", state.getCurrentDirectory().getPath());
+    }
+}
+
+
+// ============================================================================
+// DOCUMENTATION TECHNIQUE
+// ============================================================================
+
+/*
+ * DOCUMENTATION TECHNIQUE COMPLÈTE
+ * ==================================
+ * 
+ * 1. ARCHITECTURE DU PROJET
+ * -------------------------
+ * 
+ * Le projet est organisé en plusieurs packages principaux :
+ * 
+ * - com.terminal.emulator : Package racine contenant la classe Main et TerminalState
+ * - com.terminal.emulator.gui : Interface graphique Swing
+ * - com.terminal.emulator.filesystem : Système de fichiers virtuel
+ * - com.terminal.emulator.commands : Commandes du terminal
+ * - com.terminal.emulator.script : Moteur de scripts minimaliste
+ * - tests : Tests unitaires et d'intégration
+ * 
+ * 2. SYSTÈME DE FICHIERS VIRTUEL
+ * ------------------------------
+ * 
+ * Le système de fichiers est implémenté avec une structure arborescente :
+ * 
+ * - FileNode : Classe abstraite de base pour tous les nœuds
+ * - Directory : Répertoire, peut contenir d'autres FileNode
+ * - TerminalFile : Fichier texte avec contenu
+ * 
+ * Chaque nœud a :
+ * - Un nom
+ * - Un parent (sauf la racine)
+ * - Une date de création
+ * - Une date de modification
+ * - Un chemin absolu
+ * 
+ * 3. COMMANDES IMPLÉMENTÉES
+ * -------------------------
+ * 
+ * Commandes de base :
+ * - ls : Lister les fichiers (options : -l, -a, -r)
+ * - cd : Changer de répertoire
+ * - pwd : Afficher le répertoire courant
+ * - cat : Afficher le contenu d'un fichier
+ * - echo : Afficher du texte
+ * - touch : Créer un fichier ou mettre à jour sa date
+ * - mkdir : Créer un répertoire
+ * - rm : Supprimer un fichier
+ * - rmdir : Supprimer un répertoire vide
+ * - cp : Copier un fichier
+ * - mv : Déplacer/renommer un fichier
+ * - clear : Effacer l'écran
+ * - help : Afficher l'aide
+ * - exit : Quitter le terminal
+ * 
+ * 4. MOTEUR DE SCRIPTS MINIMALISTE
+ * --------------------------------
+ * 
+ * Le langage de script supporte :
+ * 
+ * - Variables : set var=value, $var
+ * - Conditions : if [ condition ]; fi
+ *   * Comparaison : [ "$var" = "value" ]
+ *   * Tests de fichiers : [ -f file ], [ -d dir ], [ -e path ]
+ * - Boucles : while [ condition ]; done
+ * - Boucles for : for var in list; do ... done
+ * - Commentaires : # commentaire
+ * - Commandes : toutes les commandes du terminal
+ * 
+ * 5. INTERFACE GRAPHIQUE
+ * ----------------------
+ * 
+ * Composants principaux :
+ * - TerminalFrame : Fenêtre principale
+ * - TerminalPanel : Panel du terminal
+ * - TerminalOutput : Gestion de l'affichage avec couleurs
+ * 
+ * Fonctionnalités :
+ * - Affichage du terminal avec couleurs
+ * - Historique des commandes (flèches haut/bas)
+ * - Auto-complétion (Tab)
+ * - Défilement automatique
+ * 
+ * 6. TESTS
+ * -------
+ * 
+ * Tests unitaires (JUnit 5) :
+ * - FileSystemTest : Tests du système de fichiers
+ * - DirectoryTest : Tests de la classe Directory
+ * - CommandParserTest : Tests du parseur de commandes
+ * - LsCommandTest : Tests de la commande ls
+ * - CdCommandTest : Tests de la commande cd
+ * - CommandFactoryTest : Tests de la factory de commandes
+ * - TerminalStateTest : Tests de l'état du terminal
+ * - ScriptEngineTest : Tests du moteur de scripts
+ * 
+ * Tests d'intégration :
+ * - IntegrationTest : Tests de l'interaction entre composants
+ * 
+ * 7. PATTERNS UTILISÉS
+ * --------------------
+ * 
+ * - Command : Pour les commandes du terminal
+ * - Factory : Pour la création des commandes (CommandFactory)
+ * - Composite : Pour la structure du système de fichiers
+ * - State : Pour l'état du terminal (TerminalState)
+ * - Strategy : Pour les différents styles d'affichage
+ * 
+ * 8. EXTENSIBILITÉ
+ * ---------------
+ * 
+ * Pour ajouter une nouvelle commande :
+ * 1. Créer une classe implémentant Command
+ * 2. L'enregistrer dans CommandFactory
+ * 
+ * Pour ajouter une nouvelle fonctionnalité au script :
+ * 1. Modifier ScriptEngine pour supporter la nouvelle syntaxe
+ * 2. Ajouter les méthodes nécessaires
+ * 
+ * Pour modifier l'interface graphique :
+ * 1. Modifier les classes dans le package gui
+ * 2. Respecter le pattern MVC
+ * 
+ * 9. PERFORMANCES
+ * --------------
+ * 
+ * Le système est optimisé pour :
+ * - La navigation rapide dans le système de fichiers
+ * - L'exécution efficace des commandes
+ * - La gestion mémoire des fichiers
+ * - Le rendu fluide de l'interface
+ * 
+ * 10. LIMITATIONS ET AMÉLIORATIONS POSSIBLES
+ * ----------------------------------------
+ * 
+ * Limitations actuelles :
+ * - Pas de support des permissions avancées
+ * - Pas de support des liens symboliques
+ * - Pas de support des tubes (pipes)
+ * - Pas de support des redirections avancées
+ * - Le script engine est basique
+ * 
+ * Améliorations possibles :
+ * - Ajouter plus de commandes Unix
+ * - Améliorer le parseur de scripts
+ * - Ajouter le support des couleurs ANSI
+ * - Ajouter le support des raccourcis clavier
+ * - Ajouter la persistance du système de fichiers
+ * - Ajouter le support des plugins
+ * 
+ * 11. EXEMPLES D'UTILISATION
+ * -------------------------
+ * 
+ * Exemple 1 : Navigation de base
+ * ```
+ * user@terminal:~$ ls
+ * user@terminal:~$ cd documents
+ * user@terminal:/home/documents$ pwd
+ * /home/documents
+ * ```
+ * 
+ * Exemple 2 : Manipulation de fichiers
+ * ```
+ * user@terminal:~$ touch test.txt
+ * user@terminal:~$ echo "Hello" > test.txt
+ * user@terminal:~$ cat test.txt
+ * Hello
+ * user@terminal:~$ cp test.txt test2.txt
+ * user@terminal:~$ mv test.txt renamed.txt
+ * user@terminal:~$ rm renamed.txt
+ * ```
+ * 
+ * Exemple 3 : Script simple
+ * ```
+ * #!/bin/sh
+ * set name=World
+ * echo Hello $name
+ * if [ -f "test.txt" ]
+ *   echo File exists
+ * fi
+ * ```
+ * 
+ * 12. COMPATIBILITÉ
+ * -----------------
+ * 
+ * - Java 8 ou supérieur
+ * - Swing (inclus dans Java SE)
+ * - JUnit 5 pour les tests
+ * 
+ * 13. DÉPENDANCES
+ * ---------------
+ * 
+ * Aucune dépendance externe n'est requise.
+ * Le projet utilise uniquement les bibliothèques standard de Java.
+ * 
+ * 14. COMPILATION ET EXÉCUTION
+ * -----------------------------
+ * 
+ * Compilation :
+ * ```bash
+ * javac -d bin src/com/terminal/emulator/**/*.java
+ * ```
+ * 
+ * Exécution :
+ * ```bash
+ * java -cp bin com.terminal.emulator.Main
+ * ```
+ * 
+ * Tests :
+ * ```bash
+ * javac -d bin -cp .:junit-jupiter-api-5.x.jar:junit-platform-console-standalone-1.x.jar src/**/*.java
+ * java -jar junit-platform-console-standalone-1.x.jar --class-path bin --scan-class-path
+ * ```
+ * 
+ * 15. STRUCTURE DES FICHIERS
+ * --------------------------
+ * 
+ * terminal-emulator/
+ * ├── src/
+ * │   └── com/
+ * │       └── terminal/
+ * │           └── emulator/
+ * │               ├── Main.java
+ * │               ├── TerminalState.java
+ * │               ├── gui/
+ * │               │   ├── TerminalFrame.java
+ * │               │   ├── TerminalPanel.java
+ * │               │   └── TerminalOutput.java
+ * │               ├── filesystem/
+ * │               │   ├── FileNode.java
+ * │               │   ├── Directory.java
+ * │               │   └── TerminalFile.java
+ * │               ├── commands/
+ * │               │   ├── Command.java
+ * │               │   ├── CommandParser.java
+ * │               │   ├── CommandFactory.java
+ * │               │   ├── LsCommand.java
+ * │               │   ├── CdCommand.java
+ * │               │   ├── PwdCommand.java
+ * │               │   ├── CatCommand.java
+ * │               │   ├── EchoCommand.java
+ * │               │   ├── TouchCommand.java
+ * │               │   ├── MkdirCommand.java
+ * │               │   ├── RmCommand.java
+ * │               │   ├── RmdirCommand.java
+ * │               │   ├── CpCommand.java
+ * │               │   ├── MvCommand.java
+ * │               │   ├── ClearCommand.java
+ * │               │   ├── HelpCommand.java
+ * │               │   └── ExitCommand.java
+ * │               └── script/
+ * │                   ├── ScriptEngine.java
+ * │                   ├── ScriptParser.java
+ * │                   └── ScriptContext.java
+ * └── tests/
+ *     ├── filesystem/
+ *     │   ├── FileSystemTest.java
+ *     │   └── DirectoryTest.java
+ *     ├── commands/
+ *     │   ├── CommandParserTest.java
+ *     │   ├── LsCommandTest.java
+ *     │   ├── CdCommandTest.java
+ *     │   └── CommandFactoryTest.java
+ *     ├── TerminalStateTest.java
+ *     ├── ScriptEngineTest.java
+ *     └── IntegrationTest.java
+ * 
+ * ============================================================================
+ */

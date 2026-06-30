@@ -1,0 +1,45 @@
+package gabywald.terminal.commands;
+
+import gabywald.terminal.TerminalState;
+import java.util.Map;
+
+/**
+ * help command - Display help information
+ */
+public class HelpCommand implements Command {
+    @Override
+    public String execute(TerminalState state, String[] args) {
+        if (args.length == 0) {
+            return getGeneralHelp();
+        } else {
+            return getCommandHelp(args[0]);
+        }
+    }
+    
+    private String getGeneralHelp() {
+        StringBuilder help = new StringBuilder();
+        help.append("Available commands:\n\n");
+        Map<String, Command> commands = CommandFactory.getAllCommands();
+        for (Map.Entry<String, Command> entry : commands.entrySet()) {
+            Command cmd = entry.getValue();
+            help.append(String.format("  %-15s %s\n", cmd.getName(), cmd.getDescription()));
+        }
+        help.append("\nType 'help <command>' for more information about a specific command.\n");
+        return help.toString();
+    }
+    
+    private String getCommandHelp(String commandName) {
+        Command cmd = CommandFactory.getCommand(commandName);
+        if (cmd == null) {
+            return "help: no help topics match '" + commandName + "'.\nTry 'help' for a list of available commands.";
+        }
+        return String.format("Usage: %s\n\n%s\n", cmd.getUsage(), cmd.getDescription());
+    }
+    
+    @Override
+    public String getName() { return "help"; }
+    @Override
+    public String getDescription() { return "Display help information"; }
+    @Override
+    public String getUsage() { return "help [COMMAND]"; }
+}
