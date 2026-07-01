@@ -9,6 +9,7 @@ import java.util.List;
  * @author Gabriel Chandesris (2026)
  */
 public class CommandParser {
+	
     public static String[] parse(String input) {
         if (input == null || input.trim().isEmpty()) return new String[0];
         
@@ -51,8 +52,10 @@ public class CommandParser {
     }
     
     public static boolean hasArguments(String input) { return getArguments(input).length > 0; }
+    
     public static String cleanArgument(String arg) {
         if (arg == null) { return ""; }
         return arg.replaceAll("^$", "").replaceAll("\"", ""); // NOTE "^\"|"$"
     }
+    
 }

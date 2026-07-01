@@ -4,6 +4,7 @@ import gabywald.terminal.TerminalState;
 
 /**
  * pwd command - Print working directory
+ * @author Gabriel Chandesris (2026)
  */
 public class PwdCommand implements Command {
     @Override

@@ -5,6 +5,7 @@ import java.util.Map;
 
 /**
  * Script execution context with variables and control flow state
+ * @author Gabriel Chandesris (2026)
  */
 public class ScriptContext {
     private Map<String, String> variables;
@@ -79,4 +80,5 @@ public class ScriptContext {
         forIndex = 0;
         forBlockDepth = 0;
     }
+    
 }

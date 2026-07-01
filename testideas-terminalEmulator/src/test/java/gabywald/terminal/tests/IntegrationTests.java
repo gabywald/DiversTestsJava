@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import gabywald.terminal.TerminalState;
 import gabywald.terminal.commands.Command;
 import gabywald.terminal.commands.CommandFactory;
-import gabywald.terminal.filesystem.Directory;
+import gabywald.terminal.filesystem.TerminalDirectory;
 import gabywald.terminal.filesystem.TerminalFile;
 
 /**
@@ -17,8 +17,8 @@ import gabywald.terminal.filesystem.TerminalFile;
  */
 class IntegrationTest {
     private TerminalState state;
-    private Directory root;
-    private Directory home;
+    private TerminalDirectory root;
+    private TerminalDirectory home;
     
     @BeforeEach
     void setUp() {
@@ -27,8 +27,8 @@ class IntegrationTest {
         this.home = root.createDirectory("home");
         this.state.setCurrentDirectory(this.home);
         
-        Directory docs = this.home.createDirectory("documents");
-        Directory images = this.home.createDirectory("images");
+        TerminalDirectory docs = this.home.createDirectory("documents");
+        TerminalDirectory images = this.home.createDirectory("images");
         Assertions.assertNotNull(images);
         
         TerminalFile readme = this.home.createFile("README.md");
@@ -103,7 +103,7 @@ class IntegrationTest {
         Command mkdir = CommandFactory.getCommand("mkdir");
         String result = mkdir.execute(state, new String[]{"newdir"});
         Assertions.assertEquals("", result);
-        Directory newDir = (Directory) this.home.getChild("newdir");
+        TerminalDirectory newDir = (TerminalDirectory) this.home.getChild("newdir");
         Assertions.assertNotNull(newDir);
         
         Command cd = CommandFactory.getCommand("cd");

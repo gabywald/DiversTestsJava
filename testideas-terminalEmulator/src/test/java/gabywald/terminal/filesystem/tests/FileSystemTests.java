@@ -1,21 +1,21 @@
 package gabywald.terminal.filesystem.tests;
 
-import gabywald.terminal.filesystem.Directory;
+import gabywald.terminal.filesystem.TerminalDirectory;
 import gabywald.terminal.filesystem.FileNode;
 import gabywald.terminal.filesystem.TerminalFile;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FileSystemTest {
-    private Directory root;
-    private Directory home;
-    private Directory documents;
+    private TerminalDirectory root;
+    private TerminalDirectory home;
+    private TerminalDirectory documents;
     private TerminalFile file1;
     private TerminalFile file2;
     
     @BeforeEach
     void setUp() {
-        root = new Directory("/", null);
+        root = new TerminalDirectory("/", null);
         home = root.createDirectory("home");
         documents = home.createDirectory("documents");
         file1 = home.createFile("file1.txt");
@@ -132,8 +132,8 @@ class FileSystemTest {
     
     @Test
     void testDirectoryComparison() {
-        Directory dir1 = new Directory("test1", root);
-        Directory dir2 = new Directory("test2", root);
+        TerminalDirectory dir1 = new TerminalDirectory("test1", root);
+        TerminalDirectory dir2 = new TerminalDirectory("test2", root);
         assertNotEquals(dir1, dir2);
     }
 }

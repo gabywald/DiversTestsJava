@@ -7,13 +7,12 @@ import java.util.Map;
  * help command - Display help information
  */
 public class HelpCommand implements Command {
+	
     @Override
     public String execute(TerminalState state, String[] args) {
-        if (args.length == 0) {
-            return getGeneralHelp();
-        } else {
-            return getCommandHelp(args[0]);
-        }
+        if (args.length == 0) 
+        	{ return this.getGeneralHelp(); } 
+        else { return this.getCommandHelp(args[0]); }
     }
     
     private String getGeneralHelp() {
@@ -30,9 +29,8 @@ public class HelpCommand implements Command {
     
     private String getCommandHelp(String commandName) {
         Command cmd = CommandFactory.getCommand(commandName);
-        if (cmd == null) {
-            return "help: no help topics match '" + commandName + "'.\nTry 'help' for a list of available commands.";
-        }
+        if (cmd == null) 
+        	{ return "help: no help topics match '" + commandName + "'.\nTry 'help' for a list of available commands."; }
         return String.format("Usage: %s\n\n%s\n", cmd.getUsage(), cmd.getDescription());
     }
     
@@ -42,4 +40,6 @@ public class HelpCommand implements Command {
     public String getDescription() { return "Display help information"; }
     @Override
     public String getUsage() { return "help [COMMAND]"; }
+    
 }
+ 

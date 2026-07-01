@@ -4,6 +4,7 @@ import gabywald.terminal.TerminalState;
 
 /**
  * clear command - Clear the terminal screen
+ * @author Gabriel Chandesris (2026)
  */
 public class ClearCommand implements Command {
     @Override

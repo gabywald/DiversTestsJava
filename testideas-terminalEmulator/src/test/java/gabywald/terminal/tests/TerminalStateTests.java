@@ -1,70 +1,77 @@
 package gabywald.terminal.tests;
 
-import gabywald.terminal.TerminalState;
-import gabywald.terminal.filesystem.Directory;
-import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import gabywald.terminal.TerminalState;
+import gabywald.terminal.filesystem.TerminalDirectory;
+
+/**
+ * @author Gabriel Chandesris (2026)
+ */
 class TerminalStateTest {
     private TerminalState state;
-    private Directory root;
+    private TerminalDirectory root;
     
     @BeforeEach
     void setUp() {
-        state = new TerminalState();
-        root = state.getRootDirectory();
+        this.state = new TerminalState();
+        this.root = state.getRootDirectory();
     }
     
     @AfterEach
     void tearDown() {
-        state = null; root = null;
+        this.state = null; root = null;
     }
     
     @Test
     void testInitialState() {
-        assertNotNull(state.getCurrentDirectory());
-        assertNotNull(state.getRootDirectory());
-        assertEquals(root, state.getCurrentDirectory());
-        assertEquals("/", state.getCurrentDirectory().getPath());
+        Assertions.assertNotNull(this.state.getCurrentDirectory());
+        Assertions.assertNotNull(this.state.getRootDirectory());
+        Assertions.assertEquals(root, this.state.getCurrentDirectory());
+        Assertions.assertEquals("/", this.state.getCurrentDirectory().getPath());
     }
     
     @Test
     void testSetCurrentDirectory() {
-        Directory home = root.createDirectory("home");
-        state.setCurrentDirectory(home);
-        assertEquals(home, state.getCurrentDirectory());
-        assertTrue(state.getPrompt().contains("/home$"));
+        TerminalDirectory home = root.createDirectory("home");
+        this.state.setCurrentDirectory(home);
+        Assertions.assertEquals(home, this.state.getCurrentDirectory());
+        Assertions.assertTrue(this.state.getPrompt().contains("/home$"));
     }
     
     @Test
     void testCommandHistory() {
-        assertTrue(state.getCommandHistory().isEmpty());
-        state.addToHistory("ls");
-        assertEquals(1, state.getCommandHistory().size());
-        assertEquals("ls", state.getCommandHistory().get(0));
-        state.addToHistory("cd home");
-        assertEquals(2, state.getCommandHistory().size());
+    	Assertions.assertTrue(this.state.getCommandHistory().isEmpty());
+        this.state.addToHistory("ls");
+        Assertions.assertEquals(1, this.state.getCommandHistory().size());
+        Assertions.assertEquals("ls", this.state.getCommandHistory().get(0));
+        this.state.addToHistory("cd home");
+        Assertions.assertEquals(2, this.state.getCommandHistory().size());
     }
     
     @Test
     void testHistoryNavigation() {
-        state.addToHistory("ls");
-        state.addToHistory("cd home");
-        state.addToHistory("pwd");
-        state.resetHistoryIndex();
-        String prev = state.getPreviousCommand();
-        assertEquals("pwd", prev);
-        prev = state.getPreviousCommand();
-        assertEquals("cd home", prev);
-        String next = state.getNextCommand();
-        assertEquals("pwd", next);
+    	this.state.addToHistory("ls");
+    	this.state.addToHistory("cd home");
+    	this.state.addToHistory("pwd");
+    	this.state.resetHistoryIndex();
+        String prev = this.state.getPreviousCommand();
+        Assertions.assertEquals("pwd", prev);
+        prev = this.state.getPreviousCommand();
+        Assertions.assertEquals("cd home", prev);
+        String next = this.state.getNextCommand();
+        Assertions.assertEquals("pwd", next);
     }
     
     @Test
     void testPromptUpdate() {
-        assertTrue(state.getPrompt().contains("~$"));
-        Directory home = root.createDirectory("home");
+    	Assertions.assertTrue(state.getPrompt().contains("~$"));
+        TerminalDirectory home = root.createDirectory("home");
         state.setCurrentDirectory(home);
-        assertTrue(state.getPrompt().contains("/home$"));
+        Assertions.assertTrue(state.getPrompt().contains("/home$"));
     }
+    
 }

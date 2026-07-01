@@ -1,10 +1,17 @@
 package gabywald.terminal.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /**
  * Terminal panel with output display
+ * @author Gabriel Chandesris (2026)
  */
 public class TerminalPanel extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -35,9 +42,10 @@ public class TerminalPanel extends JPanel {
         outputArea.setCaretPosition(outputArea.getDocument().getLength());
     }
     
-    public void clearScreen() { outputArea.setText(""); }
-    public void setOutputText(String text) { outputArea.setText(text); }
-    public String getOutputText() { return outputArea.getText(); }
-    public JTextArea getOutputArea() { return outputArea; }
+    public void clearScreen() 				{ outputArea.setText(""); }
+    public void setOutputText(String text)	{ outputArea.setText(text); }
+    public String getOutputText()			{ return outputArea.getText(); }
+    public JTextArea getOutputArea()		{ return outputArea; }
+    
 }
 

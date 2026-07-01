@@ -3,28 +3,28 @@ package gabywald.terminal;
 import java.util.ArrayList;
 import java.util.List;
 
-import gabywald.terminal.filesystem.Directory;
+import gabywald.terminal.filesystem.TerminalDirectory;
 
 /**
  * Global state of the terminal including current directory, history, etc.
  * @author Gabriel Chandesris (2026)
  */
 public class TerminalState {
-    private Directory currentDirectory;
-    private Directory rootDirectory;
+    private TerminalDirectory currentDirectory;
+    private TerminalDirectory rootDirectory;
     private List<String> commandHistory;
     private int historyIndex;
     private String prompt;
     
     public TerminalState() {
-        this.rootDirectory = new Directory("/", null);
+        this.rootDirectory = new TerminalDirectory("/", null);
         this.currentDirectory = this.rootDirectory;
         this.commandHistory = new ArrayList<>();
         this.historyIndex = -1;
         this.prompt = "user@terminal:~$";
     }
     
-    public TerminalState(Directory root) {
+    public TerminalState(TerminalDirectory root) {
         this.rootDirectory = root;
         this.currentDirectory = root;
         this.commandHistory = new ArrayList<>();
@@ -32,12 +32,12 @@ public class TerminalState {
         this.prompt = "user@terminal:~$";
     }
     
-    public Directory getCurrentDirectory() { return currentDirectory; }
-    public void setCurrentDirectory(Directory currentDirectory) {
+    public TerminalDirectory getCurrentDirectory() { return currentDirectory; }
+    public void setCurrentDirectory(TerminalDirectory currentDirectory) {
         this.currentDirectory = currentDirectory;
         updatePrompt();
     }
-    public Directory getRootDirectory()		{ return this.rootDirectory; }
+    public TerminalDirectory getRootDirectory()		{ return this.rootDirectory; }
     public List<String> getCommandHistory()	{ return new ArrayList<String>(commandHistory); }
     
     public void addToHistory(String command) {

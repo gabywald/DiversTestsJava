@@ -4,6 +4,7 @@ import gabywald.terminal.TerminalState;
 
 /**
  * echo command - Display a line of text
+ * @author Gabriel Chandesris (2026)
  */
 public class EchoCommand implements Command {
     @Override

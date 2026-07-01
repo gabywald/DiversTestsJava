@@ -1,6 +1,6 @@
 package gabywald.terminal.filesystem.tests;
 
-import gabywald.terminal.filesystem.Directory;
+import gabywald.terminal.filesystem.TerminalDirectory;
 import gabywald.terminal.filesystem.TerminalFile;
 import org.junit.jupiter.api.*;
 
@@ -8,13 +8,13 @@ import org.junit.jupiter.api.*;
  * @author Gabriel Chandesris (2026)
  */
 class DirectoryTest {
-    private Directory root;
-    private Directory dir1;
-    private Directory dir2;
+    private TerminalDirectory root;
+    private TerminalDirectory dir1;
+    private TerminalDirectory dir2;
     
     @BeforeEach
     void setUp() {
-        this.root = new Directory("/", null);
+        this.root = new TerminalDirectory("/", null);
         this.dir1 = this.root.createDirectory("dir1");
         this.dir2 = this.dir1.createDirectory("dir2");
     }
@@ -26,7 +26,7 @@ class DirectoryTest {
     
     @Test
     void testCreateDirectory() {
-        Directory newDir = this.root.createDirectory("newdir");
+        TerminalDirectory newDir = this.root.createDirectory("newdir");
         Assertions.assertNotNull(newDir);
         Assertions.assertEquals("newdir", newDir.getName());
         Assertions.assertEquals(this.root, newDir.getParent());
@@ -35,9 +35,9 @@ class DirectoryTest {
     
     @Test
     void testCreateDuplicateDirectory() {
-        Directory first = this.root.createDirectory("test");
+        TerminalDirectory first = this.root.createDirectory("test");
         Assertions.assertNotNull(first);
-        Directory second = this.root.createDirectory("test");
+        TerminalDirectory second = this.root.createDirectory("test");
         Assertions.assertNull(second);
     }
     
@@ -52,7 +52,7 @@ class DirectoryTest {
     
     @Test
     void testIsEmpty() {
-        Directory emptyDir = this.root.createDirectory("empty");
+        TerminalDirectory emptyDir = this.root.createDirectory("empty");
         Assertions.assertTrue(emptyDir.isEmpty());
         emptyDir.createFile("file.txt");
         Assertions.assertFalse(emptyDir.isEmpty());

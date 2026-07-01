@@ -2,7 +2,7 @@ package gabywald.terminal.commands.tests;
 
 import gabywald.terminal.TerminalState;
 import gabywald.terminal.commands.LsCommand;
-import gabywald.terminal.filesystem.Directory;
+import gabywald.terminal.filesystem.TerminalDirectory;
 import org.junit.jupiter.api.*;
 
 /**
@@ -11,8 +11,8 @@ import org.junit.jupiter.api.*;
 class LsCommandTest {
     private TerminalState state;
     private LsCommand lsCommand;
-    private Directory root;
-    private Directory home;
+    private TerminalDirectory root;
+    private TerminalDirectory home;
     
     @BeforeEach
     void setUp() {
@@ -66,9 +66,9 @@ class LsCommandTest {
     
     @Test
     void testLsSpecificDirectory() {
-        Directory docs = this.home.createDirectory("docs");
+        TerminalDirectory docs = this.home.createDirectory("docs");
         Assertions.assertNull(docs); // not created and null returned because already exists !
-        docs = (Directory) this.home.getChild("docs");
+        docs = (TerminalDirectory) this.home.getChild("docs");
         docs.createFile("readme.txt");
         String result = this.lsCommand.execute(this.state, new String[]{"docs"});
         Assertions.assertTrue(result.contains("readme.txt"));

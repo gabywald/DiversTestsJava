@@ -2,18 +2,19 @@ package gabywald.terminal.filesystem;
 
 /**
  * TerminalFile class representing a text file in the file system.
+ * @author Gabriel Chandesris (2026)
  */
 public class TerminalFile extends FileNode {
     private String content;
     
-    public TerminalFile(String name, Directory parent) {
+    public TerminalFile(String name, TerminalDirectory parent) {
         super(name, parent);
         this.content = "";
     }
     
-    public TerminalFile(String name, Directory parent, String content) {
+    public TerminalFile(String name, TerminalDirectory parent, String content) {
         super(name, parent);
-        this.content = content != null ? content : "";
+        this.content = ((content != null) ? content : "");
     }
     
     public String getContent() { return content; }
@@ -31,9 +32,9 @@ public class TerminalFile extends FileNode {
     
     @Override
     public String getPath() {
-        if (parent == null) return "/" + name;
+        if (parent == null) { return "/" + name; }
         String parentPath = parent.getPath();
-        if ("/".equals(parentPath)) return "/" + name;
+        if ("/".equals(parentPath)) { return "/" + name; }
         return parentPath + "/" + name;
     }
     
@@ -46,7 +47,7 @@ public class TerminalFile extends FileNode {
     
     @Override
     public boolean delete() {
-        if (parent != null) return parent.removeChild(this);
+        if (parent != null) { return parent.removeChild(this); }
         return false;
     }
     

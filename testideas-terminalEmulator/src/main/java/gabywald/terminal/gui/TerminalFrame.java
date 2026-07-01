@@ -1,17 +1,33 @@
 package gabywald.terminal.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
 import gabywald.terminal.TerminalState;
 import gabywald.terminal.commands.Command;
 import gabywald.terminal.commands.CommandFactory;
 import gabywald.terminal.commands.CommandParser;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
 
 /**
  * Main terminal window with Swing GUI
+ * @author Gabriel Chandesris (2026)
  */
 public class TerminalFrame extends JFrame {
+	
     private static final long serialVersionUID = 1L;
     
     private TerminalState state;

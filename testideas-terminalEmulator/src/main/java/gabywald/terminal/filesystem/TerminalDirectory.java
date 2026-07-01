@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
  * Directory class representing a folder in the file system.
  * @author Gabriel Chandesris (2026)
  */
-public class Directory extends FileNode {
+public class TerminalDirectory extends FileNode {
     private List<FileNode> children;
     
-    public Directory(String name, Directory parent) {
+    public TerminalDirectory(String name, TerminalDirectory parent) {
         super(name, parent);
         this.children = new ArrayList<FileNode>();
     }
@@ -57,10 +57,10 @@ public class Directory extends FileNode {
     
     public boolean hasChild(String name) { return getChild(name) != null; }
     
-    public List<Directory> getSubdirectories() {
+    public List<TerminalDirectory> getSubdirectories() {
         return this.children.stream()
                 .filter(FileNode::isDirectory)
-                .map(node -> (Directory) node)
+                .map(node -> (TerminalDirectory) node)
                 .collect(Collectors.toList());
     }
     
@@ -96,9 +96,9 @@ public class Directory extends FileNode {
     public int getChildCount()	{ return this.children.size(); }
     public boolean isEmpty()	{ return this.children.isEmpty(); }
     
-    public Directory createDirectory(String name) {
+    public TerminalDirectory createDirectory(String name) {
         if (this.hasChild(name)) { return null; }
-        Directory dir = new Directory(name, this);
+        TerminalDirectory dir = new TerminalDirectory(name, this);
         this.addChild(dir);
         return dir;
     }
