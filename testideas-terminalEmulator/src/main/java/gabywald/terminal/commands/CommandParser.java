@@ -6,6 +6,7 @@ import java.util.List;
 /**
  * Command parser for extracting command name and arguments.
  * Handles quoted arguments with spaces.
+ * @author Gabriel Chandesris (2026)
  */
 public class CommandParser {
     public static String[] parse(String input) {
@@ -51,7 +52,7 @@ public class CommandParser {
     
     public static boolean hasArguments(String input) { return getArguments(input).length > 0; }
     public static String cleanArgument(String arg) {
-        if (arg == null) return "";
-        return arg.replaceAll("^$", ""); // NOTE "^\"|"$"
+        if (arg == null) { return ""; }
+        return arg.replaceAll("^$", "").replaceAll("\"", ""); // NOTE "^\"|"$"
     }
 }

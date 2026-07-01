@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * ls command - List directory contents
+ * @author Gabriel Chandesris (2026)
  */
 public class LsCommand implements Command {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -103,7 +104,7 @@ public class LsCommand implements Command {
         String permissions = node.isDirectory() ? "rwxr-xr-x" : "rw-r--r--";
         String size = node.isDirectory() ? "4096" : String.valueOf(node.getSize());
         String date = node.getModifiedAt().format(DATE_FORMATTER);
-        return String.format("%s %s 1 user group %8s %s %s\n", type, permissions, size, date, node.getName());
+        return String.format("%s%s 1 user group %8s %s %s\n", type, permissions, size, date, node.getName());
     }
     
     @Override

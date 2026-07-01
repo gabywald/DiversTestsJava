@@ -7,31 +7,33 @@ import java.util.stream.Collectors;
 
 /**
  * Directory class representing a folder in the file system.
+ * @author Gabriel Chandesris (2026)
  */
 public class Directory extends FileNode {
     private List<FileNode> children;
     
     public Directory(String name, Directory parent) {
         super(name, parent);
-        this.children = new ArrayList<>();
+        this.children = new ArrayList<FileNode>();
     }
     
     public List<FileNode> getChildren() { return Collections.unmodifiableList(children); }
     
     public boolean addChild(FileNode child) {
-        if (child == null) return false;
+        if (child == null) { return false; }
         for (FileNode existing : children) {
-            if (existing.getName().equals(child.getName())) return false;
+            if (existing.getName().equals(child.getName())) 
+            	{ return false; }
         }
         child.setParent(this);
-        children.add(child);
+        this.children.add(child);
         this.modifiedAt = java.time.LocalDateTime.now();
         return true;
     }
     
     public boolean removeChild(FileNode child) {
-        if (child == null) return false;
-        boolean removed = children.remove(child);
+        if (child == null) { return false; }
+        boolean removed = this.children.remove(child);
         if (removed) {
             child.setParent(null);
             this.modifiedAt = java.time.LocalDateTime.now();
@@ -41,13 +43,14 @@ public class Directory extends FileNode {
     
     public boolean removeChildByName(String name) {
         FileNode toRemove = getChild(name);
-        if (toRemove != null) return removeChild(toRemove);
+        if (toRemove != null) { return removeChild(toRemove); }
         return false;
     }
     
     public FileNode getChild(String name) {
         for (FileNode child : children) {
-            if (child.getName().equals(name)) return child;
+            if (child.getName().equals(name)) 
+            	{ return child; }
         }
         return null;
     }
@@ -55,14 +58,14 @@ public class Directory extends FileNode {
     public boolean hasChild(String name) { return getChild(name) != null; }
     
     public List<Directory> getSubdirectories() {
-        return children.stream()
+        return this.children.stream()
                 .filter(FileNode::isDirectory)
                 .map(node -> (Directory) node)
                 .collect(Collectors.toList());
     }
     
     public List<TerminalFile> getFiles() {
-        return children.stream()
+        return this.children.stream()
                 .filter(FileNode::isFile)
                 .map(node -> (TerminalFile) node)
                 .collect(Collectors.toList());
@@ -70,10 +73,10 @@ public class Directory extends FileNode {
     
     @Override
     public String getPath() {
-        if (parent == null) return "/";
+        if (this.parent == null) { return "/"; }
         String parentPath = parent.getPath();
-        if ("/".equals(parentPath)) return "/" + name;
-        return parentPath + "/" + name;
+        if ("/".equals(parentPath)) return "/" + this.name;
+        return parentPath + "/" + this.name;
     }
     
     @Override
@@ -85,28 +88,28 @@ public class Directory extends FileNode {
     
     @Override
     public boolean delete() {
-        if (parent != null) return parent.removeChild(this);
+        if (this.parent != null) return this.parent.removeChild(this);
         return false;
     }
     
-    public void clear() { children.clear(); this.modifiedAt = java.time.LocalDateTime.now(); }
-    public int getChildCount() { return children.size(); }
-    public boolean isEmpty() { return children.isEmpty(); }
+    public void clear()			{ this.children.clear(); this.modifiedAt = java.time.LocalDateTime.now(); }
+    public int getChildCount()	{ return this.children.size(); }
+    public boolean isEmpty()	{ return this.children.isEmpty(); }
     
     public Directory createDirectory(String name) {
-        if (hasChild(name)) return null;
+        if (this.hasChild(name)) { return null; }
         Directory dir = new Directory(name, this);
-        addChild(dir);
+        this.addChild(dir);
         return dir;
     }
     
     public TerminalFile createFile(String name) {
-        if (hasChild(name)) return null;
+        if (this.hasChild(name)) { return null; }
         TerminalFile file = new TerminalFile(name, this);
-        addChild(file);
+        this.addChild(file);
         return file;
     }
     
     @Override
-    public String toString() { return "[DIR] " + name + " (" + children.size() + " items)"; }
+    public String toString() { return "[DIR] " + this.name + " (" + this.children.size() + " items)"; }
 }

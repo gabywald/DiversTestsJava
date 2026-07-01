@@ -7,6 +7,7 @@ import gabywald.terminal.filesystem.Directory;
 
 /**
  * Global state of the terminal including current directory, history, etc.
+ * @author Gabriel Chandesris (2026)
  */
 public class TerminalState {
     private Directory currentDirectory;
@@ -17,7 +18,7 @@ public class TerminalState {
     
     public TerminalState() {
         this.rootDirectory = new Directory("/", null);
-        this.currentDirectory = rootDirectory;
+        this.currentDirectory = this.rootDirectory;
         this.commandHistory = new ArrayList<>();
         this.historyIndex = -1;
         this.prompt = "user@terminal:~$";
@@ -36,51 +37,48 @@ public class TerminalState {
         this.currentDirectory = currentDirectory;
         updatePrompt();
     }
-    public Directory getRootDirectory() { return rootDirectory; }
-    public List<String> getCommandHistory() { return new ArrayList<>(commandHistory); }
+    public Directory getRootDirectory()		{ return this.rootDirectory; }
+    public List<String> getCommandHistory()	{ return new ArrayList<String>(commandHistory); }
     
     public void addToHistory(String command) {
         if (command != null && !command.trim().isEmpty()) {
-            commandHistory.add(command);
-            historyIndex = commandHistory.size();
+        	this.commandHistory.add(command);
+        	this.historyIndex = this.commandHistory.size();
         }
     }
     
-    public int getHistoryIndex() { return historyIndex; }
-    public void setHistoryIndex(int historyIndex) { this.historyIndex = historyIndex; }
-    public String getPrompt() { return prompt; }
+    public int getHistoryIndex()	{ return historyIndex; }
+    public void setHistoryIndex(int historyIndex)	{ this.historyIndex = historyIndex; }
+    public String getPrompt()	{ return this.prompt; }
     
     private void updatePrompt() {
-        String path = currentDirectory.getPath();
-        if ("/".equals(path)) {
-            prompt = "user@terminal:~$";
-        } else {
-            prompt = "user@terminal:" + path + "$";
-        }
+        String path = this.currentDirectory.getPath();
+        if ("/".equals(path)) { this.prompt = "user@terminal:~$"; }
+        else { this.prompt = "user@terminal:" + path + "$"; }
     }
     
     public String getPreviousCommand() {
-        if (commandHistory.isEmpty()) return null;
-        if (historyIndex > 0) {
-            historyIndex--;
-            return commandHistory.get(historyIndex);
-        } else if (historyIndex == 0) {
-            return commandHistory.get(0);
+        if (this.commandHistory.isEmpty()) return null;
+        if (this.historyIndex > 0) {
+        	this.historyIndex--;
+            return this.commandHistory.get(this.historyIndex);
+        } else if (this.historyIndex == 0) {
+            return this.commandHistory.get(0);
         }
         return null;
     }
     
     public String getNextCommand() {
-        if (commandHistory.isEmpty()) return null;
-        if (historyIndex < commandHistory.size() - 1) {
-            historyIndex++;
-            return commandHistory.get(historyIndex);
-        } else if (historyIndex == commandHistory.size() - 1) {
-            historyIndex = commandHistory.size();
+        if (this.commandHistory.isEmpty()) return null;
+        if (this.historyIndex < commandHistory.size() - 1) {
+        	this.historyIndex++;
+            return this.commandHistory.get(this.historyIndex);
+        } else if (this.historyIndex == this.commandHistory.size() - 1) {
+        	this.historyIndex = this.commandHistory.size();
             return "";
         }
         return null;
     }
     
-    public void resetHistoryIndex() { historyIndex = commandHistory.size(); }
+    public void resetHistoryIndex() { this.historyIndex = this.commandHistory.size(); }
 }

@@ -1,14 +1,19 @@
 package gabywald.terminal.tests;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import gabywald.terminal.TerminalState;
-import gabywald.terminal.commands.*;
+import gabywald.terminal.commands.Command;
+import gabywald.terminal.commands.CommandFactory;
 import gabywald.terminal.filesystem.Directory;
 import gabywald.terminal.filesystem.TerminalFile;
-import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for the complete terminal emulator
+ * @author Gabriel Chandesris (2026)
  */
 class IntegrationTest {
     private TerminalState state;
@@ -17,15 +22,16 @@ class IntegrationTest {
     
     @BeforeEach
     void setUp() {
-        state = new TerminalState();
-        root = state.getRootDirectory();
-        home = root.createDirectory("home");
-        state.setCurrentDirectory(home);
+        this.state = new TerminalState();
+        this.root = this.state.getRootDirectory();
+        this.home = root.createDirectory("home");
+        this.state.setCurrentDirectory(this.home);
         
-        Directory docs = home.createDirectory("documents");
-        Directory images = home.createDirectory("images");
+        Directory docs = this.home.createDirectory("documents");
+        Directory images = this.home.createDirectory("images");
+        Assertions.assertNotNull(images);
         
-        TerminalFile readme = home.createFile("README.md");
+        TerminalFile readme = this.home.createFile("README.md");
         readme.setContent("# Welcome to the Terminal Emulator");
         
         TerminalFile file1 = docs.createFile("file1.txt");
@@ -37,137 +43,144 @@ class IntegrationTest {
     
     @AfterEach
     void tearDown() {
-        state = null; root = null; home = null;
+    	this.state = null; this.root = null; this.home = null;
     }
     
     @Test
     void testCompleteWorkflow() {
         Command ls = CommandFactory.getCommand("ls");
-        String result = ls.execute(state, new String[0]);
-        assertTrue(result.contains("README.md"));
-        assertTrue(result.contains("documents"));
-        assertTrue(result.contains("images"));
+        String result = ls.execute(this.state, new String[0]);
+        Assertions.assertTrue(result.contains("README.md"));
+        Assertions.assertTrue(result.contains("documents"));
+        Assertions.assertTrue(result.contains("images"));
         
         Command cd = CommandFactory.getCommand("cd");
-        result = cd.execute(state, new String[]{"documents"});
-        assertEquals("", result);
-        assertEquals("/home/documents", state.getCurrentDirectory().getPath());
+        result = cd.execute(this.state, new String[]{"documents"});
+        Assertions.assertEquals("", result);
+        Assertions.assertEquals("/home/documents", this.state.getCurrentDirectory().getPath());
         
-        result = ls.execute(state, new String[0]);
-        assertTrue(result.contains("file1.txt"));
-        assertTrue(result.contains("file2.txt"));
+        result = ls.execute(this.state, new String[0]);
+        Assertions.assertTrue(result.contains("file1.txt"));
+        Assertions.assertTrue(result.contains("file2.txt"));
         
         Command cat = CommandFactory.getCommand("cat");
-        result = cat.execute(state, new String[]{"file1.txt"});
-        assertEquals("Content of file 1", result);
+        result = cat.execute(this.state, new String[]{"file1.txt"});
+        Assertions.assertEquals("Content of file 1", result);
         
-        result = cd.execute(state, new String[]{".."});
-        assertEquals("", result);
-        assertEquals("/home", state.getCurrentDirectory().getPath());
+        result = cd.execute(this.state, new String[]{".."});
+        Assertions.assertEquals("", result);
+        Assertions.assertEquals("/home", this.state.getCurrentDirectory().getPath());
     }
     
     @Test
     void testFileOperationsWorkflow() {
         Command touch = CommandFactory.getCommand("touch");
-        String result = touch.execute(state, new String[]{"newfile.txt"});
-        assertEquals("", result);
+        String result = touch.execute(this.state, new String[]{"newfile.txt"});
+        Assertions.assertEquals("", result);
         TerminalFile newFile = (TerminalFile) home.getChild("newfile.txt");
-        assertNotNull(newFile);
+        Assertions.assertNotNull(newFile);
         
         Command cp = CommandFactory.getCommand("cp");
-        result = cp.execute(state, new String[]{"newfile.txt", "newfile_copy.txt"});
-        assertEquals("", result);
+        result = cp.execute(this.state, new String[]{"newfile.txt", "newfile_copy.txt"});
+        Assertions.assertEquals("", result);
         TerminalFile copy = (TerminalFile) home.getChild("newfile_copy.txt");
-        assertNotNull(copy);
+        Assertions.assertNotNull(copy);
         
         Command mv = CommandFactory.getCommand("mv");
-        result = mv.execute(state, new String[]{"newfile.txt", "moved.txt"});
-        assertEquals("", result);
-        assertNull(home.getChild("newfile.txt"));
-        assertNotNull(home.getChild("moved.txt"));
+        result = mv.execute(this.state, new String[]{"newfile.txt", "moved.txt"});
+        Assertions.assertEquals("", result);
+        Assertions.assertNull(this.home.getChild("newfile.txt"));
+        Assertions.assertNotNull(this.home.getChild("moved.txt"));
         
         Command rm = CommandFactory.getCommand("rm");
         result = rm.execute(state, new String[]{"moved.txt"});
-        assertEquals("", result);
-        assertNull(home.getChild("moved.txt"));
+        Assertions.assertEquals("", result);
+        Assertions.assertNull(this.home.getChild("moved.txt"));
     }
     
     @Test
     void testDirectoryOperationsWorkflow() {
         Command mkdir = CommandFactory.getCommand("mkdir");
         String result = mkdir.execute(state, new String[]{"newdir"});
-        assertEquals("", result);
-        Directory newDir = (Directory) home.getChild("newdir");
-        assertNotNull(newDir);
+        Assertions.assertEquals("", result);
+        Directory newDir = (Directory) this.home.getChild("newdir");
+        Assertions.assertNotNull(newDir);
         
         Command cd = CommandFactory.getCommand("cd");
         result = cd.execute(state, new String[]{"newdir"});
-        assertEquals("", result);
-        assertEquals("/home/newdir", state.getCurrentDirectory().getPath());
+        Assertions.assertEquals("", result);
+        Assertions.assertEquals("/home/newdir", this.state.getCurrentDirectory().getPath());
         
         Command touch = CommandFactory.getCommand("touch");
-        result = touch.execute(state, new String[]{"test.txt"});
-        assertEquals("", result);
+        result = touch.execute(this.state, new String[]{"test.txt"});
+        Assertions.assertEquals("", result);
         
-        result = cd.execute(state, new String[]{".."});
-        assertEquals("", result);
-        assertEquals("/home", state.getCurrentDirectory().getPath());
+        result = cd.execute(this.state, new String[]{".."});
+        Assertions.assertEquals("", result);
+        Assertions.assertEquals("/home", this.state.getCurrentDirectory().getPath());
         
         Command rmdir = CommandFactory.getCommand("rmdir");
-        result = rmdir.execute(state, new String[]{"newdir"});
-        assertEquals("", result);
-        assertNull(home.getChild("newdir"));
+        result = rmdir.execute(this.state, new String[]{"newdir"});
+        // Assertions.assertEquals("", result);
+        // rmdir: failed to remove 'newdir': Directory not empty
+        Assertions.assertEquals("rmdir: failed to remove 'newdir': Directory not empty\n", result);
+        Assertions.assertNotNull(this.home.getChild("newdir"));
     }
     
     @Test
     void testCommandHistoryIntegration() {
         Command ls = CommandFactory.getCommand("ls");
-        ls.execute(state, new String[0]);
+        ls.execute(this.state, new String[0]);
+        this.state.addToHistory("ls");
         Command cd = CommandFactory.getCommand("cd");
-        cd.execute(state, new String[]{"documents"});
+        cd.execute(this.state, new String[]{"documents"});
+        this.state.addToHistory("cd documents");
         Command pwd = CommandFactory.getCommand("pwd");
-        pwd.execute(state, new String[0]);
+        pwd.execute(this.state, new String[0]);
+        this.state.addToHistory("pwd");
+        this.state.resetHistoryIndex();
+        // NOTE : here state about history of commands is note 'manually', beacause strongly linked to GUI. 
         
-        assertEquals(3, state.getCommandHistory().size());
-        assertEquals("ls", state.getCommandHistory().get(0));
-        assertEquals("cd documents", state.getCommandHistory().get(1));
-        assertEquals("pwd", state.getCommandHistory().get(2));
+        Assertions.assertEquals(3, this.state.getCommandHistory().size());
+        Assertions.assertEquals("ls", this.state.getCommandHistory().get(0));
+        Assertions.assertEquals("cd documents", this.state.getCommandHistory().get(1));
+        Assertions.assertEquals("pwd", this.state.getCommandHistory().get(2));
         
-        state.resetHistoryIndex();
-        String prev = state.getPreviousCommand();
-        assertEquals("pwd", prev);
-        prev = state.getPreviousCommand();
-        assertEquals("cd documents", prev);
+        this.state.resetHistoryIndex();
+        String prev = this.state.getPreviousCommand();
+        Assertions.assertEquals("pwd", prev);
+        prev = this.state.getPreviousCommand();
+        Assertions.assertEquals("cd documents", prev);
     }
     
     @Test
     void testErrorHandling() {
         Command ls = CommandFactory.getCommand("ls");
-        String result = ls.execute(state, new String[]{"nonexistent"});
-        assertTrue(result.contains("No such file or directory"));
+        String result = ls.execute(this.state, new String[]{"nonexistent"});
+        Assertions.assertTrue(result.contains("No such file or directory"));
         
         Command cd = CommandFactory.getCommand("cd");
-        result = cd.execute(state, new String[]{"nonexistent"});
-        assertTrue(result.contains("no such file or directory"));
+        result = cd.execute(this.state, new String[]{"nonexistent"});
+        Assertions.assertTrue(result.contains("no such file or directory"));
         
         Command rm = CommandFactory.getCommand("rm");
-        result = rm.execute(state, new String[]{"nonexistent.txt"});
-        assertTrue(result.contains("No such file or directory"));
+        result = rm.execute(this.state, new String[]{"nonexistent.txt"});
+        Assertions.assertTrue(result.contains("No such file or directory"));
     }
     
     @Test
     void testPathResolution() {
         Command cd = CommandFactory.getCommand("cd");
-        String result = cd.execute(state, new String[]{"/home/documents"});
-        assertEquals("", result);
-        assertEquals("/home/documents", state.getCurrentDirectory().getPath());
+        String result = cd.execute(this.state, new String[]{"/home/documents"});
+        Assertions.assertEquals("", result);
+        Assertions.assertEquals("/home/documents", this.state.getCurrentDirectory().getPath());
         
-        result = cd.execute(state, new String[]{".."});
-        assertEquals("", result);
-        assertEquals("/home", state.getCurrentDirectory().getPath());
+        result = cd.execute(this.state, new String[]{".."});
+        Assertions.assertEquals("", result);
+        Assertions.assertEquals("/home", this.state.getCurrentDirectory().getPath());
         
-        result = cd.execute(state, new String[]{"documents/../images"});
-        assertEquals("", result);
-        assertEquals("/home/images", state.getCurrentDirectory().getPath());
+        result = cd.execute(this.state, new String[]{"documents/../images"});
+        Assertions.assertEquals("", result);
+        Assertions.assertEquals("/home/images", this.state.getCurrentDirectory().getPath());
     }
 }

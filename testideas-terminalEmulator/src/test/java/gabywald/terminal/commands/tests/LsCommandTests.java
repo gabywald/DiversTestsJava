@@ -4,8 +4,10 @@ import gabywald.terminal.TerminalState;
 import gabywald.terminal.commands.LsCommand;
 import gabywald.terminal.filesystem.Directory;
 import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @author Gabriel Chandesris (2026)
+ */
 class LsCommandTest {
     private TerminalState state;
     private LsCommand lsCommand;
@@ -14,72 +16,74 @@ class LsCommandTest {
     
     @BeforeEach
     void setUp() {
-        state = new TerminalState();
-        root = state.getRootDirectory();
-        home = root.createDirectory("home");
-        state.setCurrentDirectory(home);
-        home.createFile("file1.txt");
-        home.createFile("file2.txt");
-        home.createDirectory("docs");
-        lsCommand = new LsCommand();
+        this.state = new TerminalState();
+        this.root = this.state.getRootDirectory();
+        this.home = this.root.createDirectory("home");
+        this.state.setCurrentDirectory(this.home);
+        this.home.createFile("file1.txt");
+        this.home.createFile("file2.txt");
+        this.home.createDirectory("docs");
+        this.lsCommand = new LsCommand();
     }
     
     @AfterEach
     void tearDown() {
-        state = null; lsCommand = null; root = null; home = null;
+    	this.state = null; this.lsCommand = null; this.root = null; this.home = null;
     }
     
     @Test
     void testBasicLs() {
-        String result = lsCommand.execute(state, new String[0]);
-        assertNotNull(result);
-        assertTrue(result.contains("docs"));
-        assertTrue(result.contains("file1.txt"));
-        assertTrue(result.contains("file2.txt"));
+        String result = this.lsCommand.execute(this.state, new String[0]);
+        Assertions.assertNotNull(result);
+        Assertions.assertTrue(result.contains("docs"));
+        Assertions.assertTrue(result.contains("file1.txt"));
+        Assertions.assertTrue(result.contains("file2.txt"));
     }
     
     @Test
     void testLsWithHiddenFiles() {
-        home.createFile(".hidden");
-        String result = lsCommand.execute(state, new String[0]);
-        assertFalse(result.contains(".hidden"));
-        result = lsCommand.execute(state, new String[]{"-a"});
-        assertTrue(result.contains(".hidden"));
+    	this.home.createFile(".hidden");
+        String result = this.lsCommand.execute(this.state, new String[0]);
+        Assertions.assertFalse(result.contains(".hidden"));
+        result = this.lsCommand.execute(this.state, new String[]{"-a"});
+        Assertions.assertTrue(result.contains(".hidden"));
     }
     
     @Test
     void testLsLongFormat() {
-        String result = lsCommand.execute(state, new String[]{"-l"});
-        assertTrue(result.contains("total"));
-        assertTrue(result.contains("drwx"));
-        assertTrue(result.contains("-rw-"));
+        String result = this.lsCommand.execute(this.state, new String[]{"-l"});
+        Assertions.assertTrue(result.contains("total"));
+        Assertions.assertTrue(result.contains("drwx"));
+        Assertions.assertTrue(result.contains("-rw-"));
     }
     
     @Test
     void testLsReverseOrder() {
-        String resultNormal = lsCommand.execute(state, new String[0]);
-        String resultReverse = lsCommand.execute(state, new String[]{"-r"});
-        assertNotEquals(resultNormal, resultReverse);
+        String resultNormal = this.lsCommand.execute(this.state, new String[0]);
+        String resultReverse = this.lsCommand.execute(this.state, new String[]{"-r"});
+        Assertions.assertNotEquals(resultNormal, resultReverse);
     }
     
     @Test
     void testLsSpecificDirectory() {
-        Directory docs = home.createDirectory("docs");
+        Directory docs = this.home.createDirectory("docs");
+        Assertions.assertNull(docs); // not created and null returned because already exists !
+        docs = (Directory) this.home.getChild("docs");
         docs.createFile("readme.txt");
-        String result = lsCommand.execute(state, new String[]{"docs"});
-        assertTrue(result.contains("readme.txt"));
-        assertFalse(result.contains("file1.txt"));
+        String result = this.lsCommand.execute(this.state, new String[]{"docs"});
+        Assertions.assertTrue(result.contains("readme.txt"));
+        Assertions.assertFalse(result.contains("file1.txt"));
     }
     
     @Test
     void testLsNonExistentDirectory() {
-        String result = lsCommand.execute(state, new String[]{"nonexistent"});
-        assertTrue(result.contains("No such file or directory"));
+        String result = this.lsCommand.execute(this.state, new String[]{"nonexistent"});
+        Assertions.assertTrue(result.contains("No such file or directory"));
     }
     
     @Test
     void testLsRootDirectory() {
-        String result = lsCommand.execute(state, new String[]{"/"});
-        assertTrue(result.contains("home"));
+        String result = this.lsCommand.execute(this.state, new String[]{"/"});
+        Assertions.assertTrue(result.contains("home"));
     }
 }
