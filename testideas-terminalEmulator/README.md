@@ -1,5 +1,8 @@
+Test Ideas : Terminal Emulator
 
-A complete Unix/Linux terminal emulator implemented in Java 8 with Swing GUI.
+A complete Unix/Linux terminal emulator implemented in Java 8 with Swing GUI. (2 versions !)
+
+## Version 1
 
 Features:
 - Virtual file system with directories and text files
@@ -17,7 +20,7 @@ Usage:
 4. Type 'exit' to quit
 
 Project Structure:
-com.terminal.emulator/
+com.terminal/
   - Main.java (entry point)
   - TerminalState.java (global state)
   - gui/ (Swing GUI classes)
@@ -32,6 +35,7 @@ tests/
   - ScriptEngineTest.java
   - IntegrationTest.java
 
+```
 Commands Available:
 ls [OPTIONS] [FILE...]    - List directory contents
 cd [DIR]                - Change directory
@@ -77,3 +81,10 @@ for item in a b c
 done
 
 Note: The scripting engine is minimal and does not support all Unix shell features.
+```
+
+## Version 2
+
+Adding rediretiuons, pipes, better scripting... !
+
+...

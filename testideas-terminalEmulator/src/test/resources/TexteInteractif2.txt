@@ -1,0 +1,2496 @@
+Voici **l'intégralité du code du projet**, organisée en **blocs prêts à copier-coller** par fichier et dossier.
+Chaque section est **autonome** et peut être copiée directement dans ton IDE (Eclipse, IntelliJ, etc.) ou dans des fichiers texte.
+
+---
+
+---
+
+---
+
+## **📁 Structure des Répertoires**
+```
+unix-terminal-emulator/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── fr/
+│   │   │       └── terminal/
+│   │   │           ├── Main.java
+│   │   │           ├── TerminalEmulator.java
+│   │   │           ├── FileSystem.java
+│   │   │           ├── CommandParser.java
+│   │   │           ├── Redirection.java
+│   │   │           ├── Pipe.java
+│   │   │           ├── commands/
+│   │   │           │   ├── Command.java
+│   │   │           │   ├── LsCommand.java
+│   │   │           │   ├── CdCommand.java
+│   │   │           │   ├── CatCommand.java
+│   │   │           │   ├── EchoCommand.java
+│   │   │           │   ├── MkdirCommand.java
+│   │   │           │   ├── TouchCommand.java
+│   │   │           │   ├── RmCommand.java
+│   │   │           │   ├── PwdCommand.java
+│   │   │           │   ├── HelpCommand.java
+│   │   │           │   ├── ClearCommand.java
+│   │   │           │   ├── EditCommand.java
+│   │   │           │   ├── RunCommand.java
+│   │   │           │   ├── GrepCommand.java
+│   │   │           │   ├── WcCommand.java
+│   │   │           │   ├── TrCommand.java
+│   │   │           │   └── SortCommand.java
+│   │   │           └── editors/
+│   │   │               ├── TextEditorSwing.java
+│   │   │               ├── NanoEditorSwing.java
+│   │   │               └── VimEditorSwing.java
+│   │   └── resources/
+│   └── test/
+│       └── java/
+│           └── fr/
+│               └── terminal/
+│                   ├── FileSystemTest.java
+│                   ├── CommandParserTest.java
+│                   ├── RedirectionTest.java
+│                   ├── PipeTest.java
+│                   ├── CommandsTest.java
+│                   └── TerminalEmulatorIntegrationTest.java
+└── pom.xml
+```
+
+---
+
+---
+
+---
+
+## **📄 1. Fichiers de Configuration (Racine du Projet)**
+
+---
+
+### **📜 `pom.xml`**
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>fr.terminal</groupId>
+    <artifactId>unix-terminal-emulator</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- JUnit 5 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+---
+
+---
+
+---
+
+## **📄 2. Code Principal (`src/main/java/fr/terminal/`)**
+
+---
+
+### **📜 `Main.java`**
+```java
+package fr.terminal;
+
+/**
+ * Classe principale pour lancer l'émulateur de terminal.
+ */
+public class Main {
+    public static void main(String[] args) {
+        new TerminalEmulator();
+    }
+}
+```
+
+---
+
+### **📜 `TerminalEmulator.java`**
+```java
+package fr.terminal;
+
+import fr.terminal.editors.NanoEditorSwing;
+import fr.terminal.editors.TextEditorSwing;
+import fr.terminal.editors.VimEditorSwing;
+import javax.swing.*;
+import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.*;
+
+/**
+ * Classe principale pour l'interface graphique de l'émulateur de terminal.
+ * Gère l'affichage, la saisie des commandes, et les modes d'édition.
+ */
+public class TerminalEmulator {
+    private JFrame frame;
+    private JTextPane outputArea;
+    private JTextField inputField;
+    private FileSystem fileSystem;
+    private CommandParser commandParser;
+    private String currentDirectory;
+
+    // Pour le mode édition
+    private TextEditorSwing currentEditor;
+    private String currentEditFile;
+    private boolean isEditing = false;
+
+    /**
+     * Constructeur : initialise l'interface graphique et le système de fichiers.
+     */
+    public TerminalEmulator() {
+        fileSystem = new FileSystem();
+        commandParser = new CommandParser(fileSystem);
+        currentDirectory = fileSystem.getRoot();
+        initializeUI();
+    }
+
+    /**
+     * Initialise l'interface utilisateur (UI).
+     */
+    private void initializeUI() {
+        frame = new JFrame("Terminal Emulator");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.setLayout(new BorderLayout());
+
+        // Zone de sortie (non éditable)
+        outputArea = new JTextPane();
+        outputArea.setEditable(false);
+        outputArea.setBackground(Color.BLACK);
+        outputArea.setForeground(Color.GREEN);
+        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        JScrollPane scrollPane = new JScrollPane(outputArea);
+        frame.add(scrollPane, BorderLayout.CENTER);
+
+        // Champ de saisie
+        inputField = new JTextField();
+        inputField.setBackground(Color.BLACK);
+        inputField.setForeground(Color.GREEN);
+        inputField.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        inputField.addActionListener(e -> executeCommand());
+        frame.add(inputField, BorderLayout.SOUTH);
+
+        // Afficher le prompt initial
+        printPrompt();
+
+        frame.setVisible(true);
+    }
+
+    /**
+     * Affiche le prompt dans la zone de sortie.
+     */
+    private void printPrompt() {
+        try {
+            StyledDocument doc = outputArea.getStyledDocument();
+            doc.insertString(doc.getLength(), currentDirectory + " > ", getPromptStyle());
+        } catch (BadLocationException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Retourne le style pour le prompt.
+     */
+    private Style getPromptStyle() {
+        StyleContext sc = StyleContext.getDefaultStyleContext();
+        Style style = sc.addStyle("PromptStyle", null);
+        StyleConstants.setForeground(style, Color.GREEN);
+        StyleConstants.setBold(style, true);
+        return style;
+    }
+
+    /**
+     * Exécute la commande saisie par l'utilisateur.
+     */
+    private void executeCommand() {
+        String command = inputField.getText().trim();
+        inputField.setText("");
+
+        if (command.isEmpty()) {
+            printPrompt();
+            return;
+        }
+
+        appendToOutput(command + "\n");
+
+        if (isEditing) {
+            handleEditorInput(command);
+            return;
+        }
+
+        if (command.startsWith("edit ")) {
+            startEditMode(command.substring(5).trim());
+            return;
+        }
+
+        String output = commandParser.execute(command, currentDirectory);
+        if (output.startsWith("MODE_EDIT:")) {
+            startEditMode(output.substring(10));
+        } else {
+            appendToOutput(output + "\n");
+        }
+
+        if (command.startsWith("cd ")) {
+            currentDirectory = fileSystem.getCurrentDirectory();
+        }
+
+        printPrompt();
+    }
+
+    /**
+     * Démarre le mode édition (nano ou vim).
+     */
+    private void startEditMode(String args) {
+        isEditing = true;
+        String[] editArgs = args.split("\\s+");
+        String editorType = "nano";
+        String fileName;
+
+        if (editArgs.length > 0 && (editArgs[0].equals("--nano") || editArgs[0].equals("--vim"))) {
+            editorType = editArgs[0].substring(2);
+            if (editArgs.length < 2) {
+                appendToOutput("Usage: edit [--nano|--vim] <filename>\n");
+                isEditing = false;
+                printPrompt();
+                return;
+            }
+            fileName = editArgs[1];
+        } else {
+            fileName = editArgs[0];
+        }
+
+        currentEditFile = fileName;
+
+        if (editorType.equals("nano")) {
+            currentEditor = new NanoEditorSwing(this, fileSystem, fileName);
+        } else {
+            currentEditor = new VimEditorSwing(this, fileSystem, fileName);
+        }
+
+        appendToOutput("--- Édition avec " + editorType + " ---\n");
+        currentEditor.start();
+    }
+
+    /**
+     * Gère les entrées en mode édition.
+     */
+    private void handleEditorInput(String input) {
+        String result = currentEditor.handleInput(input);
+        if (result != null) {
+            if (result.startsWith("SAVE:")) {
+                fileSystem.echo(currentEditFile, result.substring(5));
+                appendToOutput("Fichier '" + currentEditFile + "' sauvegardé.\n");
+            } else if (result.equals("CANCEL")) {
+                appendToOutput("Édition annulée.\n");
+            }
+            endEditMode();
+        } else {
+            appendToOutput(input + "\n");
+        }
+    }
+
+    /**
+     * Termine le mode édition.
+     */
+    private void endEditMode() {
+        isEditing = false;
+        currentEditor = null;
+        currentEditFile = null;
+        printPrompt();
+    }
+
+    /**
+     * Ajoute du texte à la zone de sortie.
+     */
+    public void appendToOutput(String text) {
+        try {
+            StyledDocument doc = outputArea.getStyledDocument();
+            doc.insertString(doc.getLength(), text, null);
+            outputArea.setCaretPosition(doc.getLength());
+        } catch (BadLocationException ex) {
+            ex.printStackTrace();
+        }
+    }
+}
+```
+
+---
+
+### **📜 `FileSystem.java`**
+```java
+package fr.terminal;
+
+import java.util.*;
+
+/**
+ * Classe représentant un système de fichiers simplifié pour l'émulateur de terminal.
+ * Gère les fichiers et répertoires sous forme de structure arborescente.
+ */
+public class FileSystem {
+    private static final String ROOT = "/";
+    private String currentDirectory;
+    private Map<String, Set<String>> directories;
+    private Map<String, String> files;
+
+    /**
+     * Constructeur : initialise le système de fichiers avec un répertoire racine.
+     */
+    public FileSystem() {
+        this.currentDirectory = ROOT;
+        this.directories = new HashMap<>();
+        this.files = new HashMap<>();
+        this.directories.put(ROOT, new HashSet<>());
+    }
+
+    /**
+     * Retourne le répertoire racine.
+     */
+    public String getRoot() {
+        return ROOT;
+    }
+
+    /**
+     * Retourne le répertoire courant.
+     */
+    public String getCurrentDirectory() {
+        return this.currentDirectory;
+    }
+
+    /**
+     * Change le répertoire courant.
+     * @param path Chemin absolu du nouveau répertoire courant.
+     * @throws IllegalArgumentException Si le répertoire n'existe pas.
+     */
+    public void setCurrentDirectory(String path) {
+        if (!this.directories.containsKey(path)) {
+            throw new IllegalArgumentException("Répertoire introuvable: " + path);
+        }
+        this.currentDirectory = path;
+    }
+
+    /**
+     * Crée un nouveau répertoire dans le répertoire courant.
+     * @param dirName Nom du répertoire à créer.
+     * @return true si le répertoire a été créé, false s'il existe déjà.
+     * @throws IllegalArgumentException Si dirName est vide ou null.
+     */
+    public boolean mkdir(String dirName) {
+        if (dirName == null || dirName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nom de répertoire invalide.");
+        }
+
+        String fullPath = getFullPath(dirName);
+
+        if (this.directories.containsKey(fullPath)) {
+            return false;
+        }
+
+        this.directories.put(fullPath, new HashSet<>());
+        this.directories.get(this.currentDirectory).add(dirName);
+        return true;
+    }
+
+    /**
+     * Supprime un fichier ou un répertoire (doit être vide).
+     * @param name Nom du fichier ou répertoire à supprimer.
+     * @return true si la suppression a réussi, false sinon.
+     */
+    public boolean rm(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
+
+        String fullPath = getFullPath(name);
+
+        if (this.files.containsKey(fullPath)) {
+            this.files.remove(fullPath);
+            this.directories.get(this.currentDirectory).remove(name);
+            return true;
+        } else if (this.directories.containsKey(fullPath)) {
+            Set<String> contents = this.directories.get(fullPath);
+            if (contents.isEmpty()) {
+                this.directories.remove(fullPath);
+                this.directories.get(this.currentDirectory).remove(name);
+                return true;
+            }
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Supprime un répertoire et tout son contenu (récursif).
+     * @param name Nom du répertoire à supprimer.
+     * @return true si la suppression a réussi, false sinon.
+     */
+    public boolean rmdir(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
+
+        String fullPath = getFullPath(name);
+
+        if (!this.directories.containsKey(fullPath)) {
+            return false;
+        }
+
+        Set<String> contents = new HashSet<>(this.directories.get(fullPath));
+        for (String item : contents) {
+            String itemPath = fullPath.equals(ROOT) ? ROOT + item : fullPath + "/" + item;
+            if (this.directories.containsKey(itemPath)) {
+                rmdir(item);
+            } else if (this.files.containsKey(itemPath)) {
+                this.files.remove(itemPath);
+            }
+        }
+
+        this.directories.remove(fullPath);
+        this.directories.get(this.currentDirectory).remove(name);
+        return true;
+    }
+
+    /**
+     * Liste le contenu du répertoire courant.
+     * @return Liste des noms de fichiers et répertoires (les répertoires se terminent par "/").
+     */
+    public List<String> ls() {
+        List<String> contents = new ArrayList<>();
+        Set<String> dirContents = this.directories.getOrDefault(this.currentDirectory, new HashSet<>());
+
+        for (String item : dirContents) {
+            String fullPath = getFullPath(item);
+            if (this.directories.containsKey(fullPath)) {
+                contents.add(item + "/");
+            } else if (this.files.containsKey(fullPath)) {
+                contents.add(item);
+            }
+        }
+
+        Collections.sort(contents);
+        return contents;
+    }
+
+    /**
+     * Liste le contenu d'un répertoire spécifique.
+     * @param dirPath Chemin du répertoire à lister.
+     * @return Liste des noms de fichiers et répertoires.
+     * @throws IllegalArgumentException Si le répertoire n'existe pas.
+     */
+    public List<String> ls(String dirPath) {
+        if (!this.directories.containsKey(dirPath)) {
+            throw new IllegalArgumentException("Répertoire introuvable: " + dirPath);
+        }
+
+        List<String> contents = new ArrayList<>();
+        Set<String> dirContents = this.directories.get(dirPath);
+
+        for (String item : dirContents) {
+            String fullPath = dirPath.equals(ROOT) ? ROOT + item : dirPath + "/" + item;
+            if (this.directories.containsKey(fullPath)) {
+                contents.add(item + "/");
+            } else if (this.files.containsKey(fullPath)) {
+                contents.add(item);
+            }
+        }
+
+        Collections.sort(contents);
+        return contents;
+    }
+
+    /**
+     * Crée un nouveau fichier vide.
+     * @param fileName Nom du fichier à créer.
+     * @return true si le fichier a été créé, false s'il existe déjà.
+     * @throws IllegalArgumentException Si fileName est vide ou null.
+     */
+    public boolean touch(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nom de fichier invalide.");
+        }
+
+        String fullPath = getFullPath(fileName);
+
+        if (this.files.containsKey(fullPath)) {
+            return false;
+        }
+
+        this.files.put(fullPath, "");
+        return true;
+    }
+
+    /**
+     * Lit le contenu d'un fichier.
+     * @param fileName Nom du fichier à lire.
+     * @return Contenu du fichier, ou un message d'erreur si le fichier n'existe pas.
+     */
+    public String cat(String fileName) {
+        String fullPath = getFullPath(fileName);
+        return this.files.getOrDefault(fullPath, "Fichier introuvable: " + fileName);
+    }
+
+    /**
+     * Écrit du contenu dans un fichier (écrasement).
+     * @param fileName Nom du fichier.
+     * @param content Contenu à écrire.
+     * @return true si l'écriture a réussi, false sinon.
+     */
+    public boolean echo(String fileName, String content) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return false;
+        }
+
+        String fullPath = getFullPath(fileName);
+        this.files.put(fullPath, content);
+        return true;
+    }
+
+    /**
+     * Ajoute du contenu à la fin d'un fichier.
+     * @param fileName Nom du fichier.
+     * @param content Contenu à ajouter.
+     * @return true si l'ajout a réussi, false sinon.
+     */
+    public boolean append(String fileName, String content) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return false;
+        }
+
+        String fullPath = getFullPath(fileName);
+        String existingContent = this.files.getOrDefault(fullPath, "");
+        this.files.put(fullPath, existingContent + content);
+        return true;
+    }
+
+    /**
+     * Construit le chemin absolu à partir d'un nom de fichier/répertoire.
+     * @param name Nom du fichier ou répertoire.
+     * @return Chemin absolu.
+     */
+    private String getFullPath(String name) {
+        if (this.currentDirectory.equals(ROOT)) {
+            return ROOT + name;
+        }
+        return this.currentDirectory + "/" + name;
+    }
+
+    /**
+     * Vérifie si un fichier ou répertoire existe.
+     * @param name Nom du fichier ou répertoire.
+     * @return true s'il existe, false sinon.
+     */
+    public boolean exists(String name) {
+        String fullPath = getFullPath(name);
+        return this.files.containsKey(fullPath) || this.directories.containsKey(fullPath);
+    }
+
+    /**
+     * Retourne le chemin absolu du répertoire parent.
+     * @param path Chemin dont on veut le parent.
+     * @return Chemin absolu du répertoire parent.
+     */
+    public String getParentDirectory(String path) {
+        if (path.equals(ROOT)) {
+            return ROOT;
+        }
+
+        String[] parts = path.split("/");
+        if (parts.length <= 2) {
+            return ROOT;
+        }
+
+        StringBuilder parentPath = new StringBuilder();
+        for (int i = 1; i < parts.length - 1; i++) {
+            parentPath.append("/").append(parts[i]);
+        }
+
+        return parentPath.length() == 0 ? ROOT : parentPath.toString();
+    }
+
+    /**
+     * Résout un chemin (relatif ou absolu) en chemin absolu.
+     * @param path Chemin à résoudre (peut être relatif ou absolu).
+     * @return Chemin absolu résolu.
+     */
+    public String resolvePath(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return this.currentDirectory;
+        }
+
+        path = path.trim();
+
+        if (path.startsWith(ROOT)) {
+            return normalizePath(path);
+        }
+
+        String resolvedPath = this.currentDirectory + "/" + path;
+        return normalizePath(resolvedPath);
+    }
+
+    /**
+     * Normalise un chemin (supprime les "/./" et résout les "/../").
+     * @param path Chemin à normaliser.
+     * @return Chemin normalisé.
+     */
+    private String normalizePath(String path) {
+        if (path.equals(ROOT)) {
+            return ROOT;
+        }
+
+        String[] parts = path.split("/");
+        List<String> normalizedParts = new ArrayList<>();
+
+        for (String part : parts) {
+            if (part.isEmpty() || part.equals(".")) {
+                continue;
+            } else if (part.equals("..")) {
+                if (!normalizedParts.isEmpty()) {
+                    normalizedParts.remove(normalizedParts.size() - 1);
+                }
+            } else {
+                normalizedParts.add(part);
+            }
+        }
+
+        if (normalizedParts.isEmpty()) {
+            return ROOT;
+        }
+
+        StringBuilder normalizedPath = new StringBuilder();
+        for (String part : normalizedParts) {
+            normalizedPath.append("/").append(part);
+        }
+
+        return normalizedPath.toString();
+    }
+
+    /**
+     * Vérifie si un chemin est un répertoire.
+     * @param path Chemin à vérifier.
+     * @return true si c'est un répertoire, false sinon.
+     */
+    public boolean isDirectory(String path) {
+        return this.directories.containsKey(path);
+    }
+
+    /**
+     * Vérifie si un chemin est un fichier.
+     * @param path Chemin à vérifier.
+     * @return true si c'est un fichier, false sinon.
+     */
+    public boolean isFile(String path) {
+        return this.files.containsKey(path);
+    }
+}
+```
+
+---
+
+### **📜 `CommandParser.java`**
+```java
+package fr.terminal;
+
+import fr.terminal.commands.*;
+import java.util.*;
+
+/**
+ * Classe responsable de l'analyse et de l'exécution des commandes.
+ * Supporte les redirections (>, >>, <) et les pipes (|).
+ */
+public class CommandParser {
+    private FileSystem fileSystem;
+    private Map<String, Command> commands;
+
+    /**
+     * Constructeur : initialise les commandes disponibles.
+     */
+    public CommandParser(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+        this.commands = new HashMap<>();
+        initializeCommands();
+    }
+
+    /**
+     * Initialise les commandes disponibles.
+     */
+    private void initializeCommands() {
+        commands.put("ls", new LsCommand(fileSystem));
+        commands.put("cd", new CdCommand(fileSystem));
+        commands.put("cat", new CatCommand(fileSystem));
+        commands.put("echo", new EchoCommand(fileSystem));
+        commands.put("mkdir", new MkdirCommand(fileSystem));
+        commands.put("touch", new TouchCommand(fileSystem));
+        commands.put("rm", new RmCommand(fileSystem));
+        commands.put("pwd", new PwdCommand(fileSystem));
+        commands.put("help", new HelpCommand());
+        commands.put("clear", new ClearCommand());
+        commands.put("edit", new EditCommand(fileSystem, this));
+        commands.put("run", new RunCommand(fileSystem, this));
+        commands.put("grep", new GrepCommand(fileSystem));
+        commands.put("wc", new WcCommand(fileSystem));
+        commands.put("tr", new TrCommand(fileSystem));
+        commands.put("sort", new SortCommand(fileSystem));
+    }
+
+    /**
+     * Exécute une commande avec gestion des redirections et pipes.
+     * @param input Commande complète (ex: "ls | grep txt").
+     * @param currentDirectory Répertoire courant.
+     * @return Résultat de l'exécution.
+     */
+    public String execute(String input, String currentDirectory) {
+        input = input.trim();
+        if (input.isEmpty()) {
+            return "";
+        }
+
+        if (input.contains("|")) {
+            return executePipe(input);
+        }
+
+        String[] args = input.split("\\s+");
+        List<Redirection> redirections = Redirection.parseRedirections(args);
+
+        if (redirections.isEmpty()) {
+            return executeCommand(args, currentDirectory, null);
+        } else {
+            return executeWithRedirections(redirections, currentDirectory);
+        }
+    }
+
+    /**
+     * Exécute une commande avec des redirections.
+     */
+    private String executeWithRedirections(List<Redirection> redirections, String currentDirectory) {
+        Redirection firstRedirection = redirections.get(0);
+        String[] args = firstRedirection.cleanedArgs;
+
+        if (args.length == 0) {
+            return "Commande invalide.";
+        }
+
+        String commandName = args[0];
+        Command command = commands.get(commandName);
+        if (command == null) {
+            return "Commande introuvable: " + commandName;
+        }
+
+        String stdin = null;
+        for (Redirection r : redirections) {
+            if (r.getType() == Redirection.Type.INPUT) {
+                if (fileSystem.exists(r.getFileName())) {
+                    stdin = fileSystem.cat(r.getFileName());
+                } else {
+                    return "Fichier introuvable pour l'entrée: " + r.getFileName();
+                }
+            }
+        }
+
+        String output = command.execute(args, stdin);
+
+        for (Redirection r : redirections) {
+            if (r.getType() == Redirection.Type.OUTPUT || r.getType() == Redirection.Type.APPEND) {
+                if (r.getType() == Redirection.Type.OUTPUT) {
+                    fileSystem.echo(r.getFileName(), output);
+                } else {
+                    String existingContent = fileSystem.exists(r.getFileName()) ?
+                        fileSystem.cat(r.getFileName()) : "";
+                    fileSystem.echo(r.getFileName(), existingContent + output);
+                }
+                return "";
+            }
+        }
+
+        return output;
+    }
+
+    /**
+     * Exécute une commande sans redirections.
+     */
+    private String executeCommand(String[] args, String currentDirectory, String stdin) {
+        if (args.length == 0) {
+            return "";
+        }
+
+        String commandName = args[0];
+        Command command = commands.get(commandName);
+        if (command == null) {
+            return "Commande introuvable: " + commandName;
+        }
+
+        return command.execute(args, stdin);
+    }
+
+    /**
+     * Exécute une chaîne de commandes avec pipes.
+     */
+    private String executePipe(String input) {
+        Pipe pipe = Pipe.parsePipe(input);
+        List<String[]> commandList = pipe.getCommands();
+
+        if (commandList.isEmpty()) {
+            return "";
+        }
+
+        String currentOutput = executeCommand(commandList.get(0), fileSystem.getCurrentDirectory(), null);
+
+        for (int i = 1; i < commandList.size(); i++) {
+            String[] args = commandList.get(i);
+            String commandName = args[0];
+            Command command = commands.get(commandName);
+            if (command == null) {
+                return "Commande introuvable dans le pipe: " + commandName;
+            }
+            currentOutput = command.execute(args, currentOutput);
+        }
+
+        return currentOutput;
+    }
+}
+```
+
+---
+
+### **📜 `Redirection.java`**
+```java
+package fr.terminal;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Classe pour gérer les redirections d'entrée/sortie (>, >>, <).
+ */
+public class Redirection {
+    /**
+     * Type de redirection.
+     */
+    public enum Type {
+        NONE,       // Pas de redirection
+        OUTPUT,     // > (écrasement)
+        APPEND,     // >> (ajout)
+        INPUT       // < (entrée)
+    }
+
+    private Type type;
+    private String fileName;
+    public String[] cleanedArgs; // Arguments nettoyés (sans les redirections)
+
+    /**
+     * Constructeur.
+     * @param type Type de redirection.
+     * @param fileName Nom du fichier.
+     */
+    public Redirection(Type type, String fileName) {
+        this.type = type;
+        this.fileName = fileName;
+    }
+
+    /**
+     * Retourne le type de redirection.
+     */
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Retourne le nom du fichier.
+     */
+    public String getFileName() {
+        return fileName;
+    }
+
+    /**
+     * Analyse une commande pour extraire les redirections.
+     * @param args Arguments de la commande.
+     * @return Liste des redirections trouvées.
+     */
+    public static List<Redirection> parseRedirections(String[] args) {
+        List<Redirection> redirections = new ArrayList<>();
+        List<String> cleanedArgs = new ArrayList<>();
+
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.equals(">") && i + 1 < args.length) {
+                redirections.add(new Redirection(Type.OUTPUT, args[i + 1]));
+                i++;
+            } else if (arg.equals(">>") && i + 1 < args.length) {
+                redirections.add(new Redirection(Type.APPEND, args[i + 1]));
+                i++;
+            } else if (arg.equals("<") && i + 1 < args.length) {
+                redirections.add(new Redirection(Type.INPUT, args[i + 1]));
+                i++;
+            } else {
+                cleanedArgs.add(arg);
+            }
+        }
+
+        if (!cleanedArgs.isEmpty() && !redirections.isEmpty()) {
+            redirections.get(0).cleanedArgs = cleanedArgs.toArray(new String[0]);
+        }
+
+        return redirections;
+    }
+}
+```
+
+---
+
+### **📜 `Pipe.java`**
+```java
+package fr.terminal;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Classe pour gérer les pipes entre commandes.
+ */
+public class Pipe {
+    private List<String[]> commands;
+
+    /**
+     * Constructeur.
+     * @param commands Liste des commandes séparées par des pipes.
+     */
+    public Pipe(List<String[]> commands) {
+        this.commands = commands;
+    }
+
+    /**
+     * Retourne la liste des commandes.
+     */
+    public List<String[]> getCommands() {
+        return commands;
+    }
+
+    /**
+     * Analyse une chaîne de commandes avec pipes.
+     * @param input Chaîne complète (ex: "ls | grep txt").
+     * @return Objet Pipe contenant les commandes séparées.
+     */
+    public static Pipe parsePipe(String input) {
+        String[] parts = input.split("\\|");
+        List<String[]> commandList = new ArrayList<>();
+        for (String part : parts) {
+            String trimmedPart = part.trim();
+            if (!trimmedPart.isEmpty()) {
+                commandList.add(trimmedPart.split("\\s+"));
+            }
+        }
+        return new Pipe(commandList);
+    }
+}
+```
+
+---
+---
+---
+
+## **📄 3. Commandes (`src/main/java/fr/terminal/commands/`)**
+
+---
+
+### **📜 `Command.java` (Interface)**
+```java
+package fr.terminal.commands;
+
+/**
+ * Interface pour les commandes du terminal.
+ * Supporte les entrées standard (stdin) pour les pipes et redirections.
+ */
+public interface Command {
+    /**
+     * Exécute la commande avec les arguments fournis.
+     * @param args Arguments de la commande.
+     * @return Résultat de l'exécution.
+     */
+    default String execute(String[] args) {
+        return execute(args, null);
+    }
+
+    /**
+     * Exécute la commande avec une entrée standard (pour les pipes et redirections <).
+     * @param args Arguments de la commande.
+     * @param stdin Entrée standard (peut être null).
+     * @return Résultat de l'exécution.
+     */
+    String execute(String[] args, String stdin);
+}
+```
+
+---
+
+### **📜 `LsCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+import java.util.List;
+
+/**
+ * Commande 'ls' : liste le contenu du répertoire courant.
+ */
+public class LsCommand implements Command {
+    private FileSystem fileSystem;
+
+    public LsCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        List<String> contents = fileSystem.ls();
+        if (contents.isEmpty()) {
+            return "";
+        }
+        return String.join(" ", contents);
+    }
+}
+```
+
+---
+
+### **📜 `CdCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'cd' : change le répertoire courant.
+ */
+public class CdCommand implements Command {
+    private FileSystem fileSystem;
+
+    public CdCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            return "Usage: cd <directory>";
+        }
+
+        String targetDir = args[0];
+        if (targetDir.equals("..")) {
+            String parentDir = fileSystem.getParentDirectory(fileSystem.getCurrentDirectory());
+            fileSystem.setCurrentDirectory(parentDir);
+            return "";
+        } else if (targetDir.equals("/")) {
+            fileSystem.setCurrentDirectory(fileSystem.getRoot());
+            return "";
+        } else {
+            String currentDir = fileSystem.getCurrentDirectory();
+            String fullPath = currentDir.equals("/") ? "/" + targetDir : currentDir + "/" + targetDir;
+            if (fileSystem.exists(targetDir)) {
+                fileSystem.setCurrentDirectory(fullPath);
+                return "";
+            }
+            return "Répertoire introuvable: " + targetDir;
+        }
+    }
+}
+```
+
+---
+
+### **📜 `CatCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'cat' : affiche le contenu d'un fichier ou de stdin.
+ */
+public class CatCommand implements Command {
+    private FileSystem fileSystem;
+
+    public CatCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            if (stdin != null) {
+                return stdin;
+            }
+            return "Usage: cat <filename> ou utiliser une redirection (<)";
+        }
+
+        StringBuilder output = new StringBuilder();
+        for (String fileName : args) {
+            if (fileSystem.exists(fileName)) {
+                output.append(fileSystem.cat(fileName)).append("\n");
+            } else {
+                output.append("Fichier introuvable: ").append(fileName).append("\n");
+            }
+        }
+        return output.toString();
+    }
+}
+```
+
+---
+
+### **📜 `EchoCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'echo' : affiche du texte.
+ */
+public class EchoCommand implements Command {
+    private FileSystem fileSystem;
+
+    public EchoCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            return "Usage: echo <text>";
+        }
+
+        StringBuilder text = new StringBuilder();
+        for (String arg : args) {
+            text.append(arg).append(" ");
+        }
+        return text.toString().trim();
+    }
+}
+```
+
+---
+
+### **📜 `MkdirCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'mkdir' : crée un nouveau répertoire.
+ */
+public class MkdirCommand implements Command {
+    private FileSystem fileSystem;
+
+    public MkdirCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            return "Usage: mkdir <directory>";
+        }
+        if (fileSystem.mkdir(args[0])) {
+            return "";
+        }
+        return "Erreur: Répertoire déjà existant ou nom invalide.";
+    }
+}
+```
+
+---
+
+### **📜 `TouchCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'touch' : crée un nouveau fichier.
+ */
+public class TouchCommand implements Command {
+    private FileSystem fileSystem;
+
+    public TouchCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            return "Usage: touch <filename>";
+        }
+        if (fileSystem.touch(args[0])) {
+            return "";
+        }
+        return "Erreur: Fichier déjà existant ou nom invalide.";
+    }
+}
+```
+
+---
+
+### **📜 `RmCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'rm' : supprime un fichier ou un répertoire.
+ */
+public class RmCommand implements Command {
+    private FileSystem fileSystem;
+
+    public RmCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            return "Usage: rm <filename|directory>";
+        }
+        if (fileSystem.rm(args[0])) {
+            return "";
+        }
+        return "Erreur: Fichier ou répertoire introuvable ou non vide.";
+    }
+}
+```
+
+---
+### **📜 `PwdCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'pwd' : affiche le répertoire courant.
+ */
+public class PwdCommand implements Command {
+    private FileSystem fileSystem;
+
+    public PwdCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        return fileSystem.getCurrentDirectory();
+    }
+}
+```
+
+---
+### **📜 `HelpCommand.java`**
+```java
+package fr.terminal.commands;
+
+/**
+ * Commande 'help' : affiche la liste des commandes disponibles.
+ */
+public class HelpCommand implements Command {
+    @Override
+    public String execute(String[] args, String stdin) {
+        return "Commandes disponibles:\n" +
+               "  ls              - Lister les fichiers/répertoires\n" +
+               "  cd <dir>        - Changer de répertoire\n" +
+               "  cat <file>      - Afficher le contenu d'un fichier\n" +
+               "  echo <text>     - Afficher du texte\n" +
+               "  echo <text> > <file> - Écrire dans un fichier (écrasement)\n" +
+               "  echo <text> >> <file> - Ajouter à un fichier\n" +
+               "  mkdir <dir>     - Créer un répertoire\n" +
+               "  touch <file>    - Créer un fichier\n" +
+               "  rm <file|dir>   - Supprimer un fichier/répertoire\n" +
+               "  pwd             - Afficher le répertoire courant\n" +
+               "  edit <file>     - Éditer un fichier (nano par défaut)\n" +
+               "  edit --nano <file> - Éditer avec nano\n" +
+               "  edit --vim <file>  - Éditer avec vim\n" +
+               "  run <script>     - Exécuter un script\n" +
+               "  grep <pattern>   - Filtrer les lignes contenant un motif\n" +
+               "  wc              - Compter les lignes, mots, caractères\n" +
+               "  tr <set1> <set2> - Remplacer des caractères\n" +
+               "  sort            - Trier les lignes\n" +
+               "  < cmd           - Rediriger l'entrée depuis un fichier\n" +
+               "  cmd > file      - Rediriger la sortie vers un fichier\n" +
+               "  cmd >> file     - Ajouter la sortie à un fichier\n" +
+               "  cmd1 | cmd2     - Pipe: sortie de cmd1 → entrée de cmd2\n" +
+               "  help            - Afficher cette aide\n" +
+               "  clear           - Effacer l'écran";
+    }
+}
+```
+
+---
+### **📜 `ClearCommand.java`**
+```java
+package fr.terminal.commands;
+
+/**
+ * Commande 'clear' : efface l'écran (simulé par des sauts de ligne).
+ */
+public class ClearCommand implements Command {
+    @Override
+    public String execute(String[] args, String stdin) {
+        return "\n\n\n\n\n\n\n\n\n\n";
+    }
+}
+```
+
+---
+### **📜 `EditCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+import fr.terminal.CommandParser;
+
+/**
+ * Commande 'edit' : lance un éditeur de texte (nano ou vim).
+ * Usage:
+ *   edit <filename>          # Utilise nano par défaut
+ *   edit --nano <filename>   # Force nano
+ *   edit --vim <filename>    # Force vim
+ */
+public class EditCommand implements Command {
+    private FileSystem fileSystem;
+    private CommandParser commandParser;
+
+    public EditCommand(FileSystem fileSystem, CommandParser commandParser) {
+        this.fileSystem = fileSystem;
+        this.commandParser = commandParser;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            return "Usage: edit [--nano|--vim] <filename>";
+        }
+        return "MODE_EDIT:" + String.join(" ", args);
+    }
+}
+```
+
+---
+### **📜 `RunCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+import fr.terminal.CommandParser;
+
+/**
+ * Commande 'run' : exécute un script (fichier contenant des commandes).
+ * Supporte les redirections et pipes.
+ */
+public class RunCommand implements Command {
+    private FileSystem fileSystem;
+    private CommandParser commandParser;
+
+    public RunCommand(FileSystem fileSystem, CommandParser commandParser) {
+        this.fileSystem = fileSystem;
+        this.commandParser = commandParser;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            return "Usage: run <filename>";
+        }
+
+        String fileName = args[0];
+        if (!fileSystem.exists(fileName)) {
+            return "Fichier introuvable: " + fileName;
+        }
+
+        String scriptContent = fileSystem.cat(fileName);
+        String[] lines = scriptContent.split("\n");
+        StringBuilder output = new StringBuilder();
+
+        String originalDir = fileSystem.getCurrentDirectory();
+
+        for (String line : lines) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue;
+            }
+            String result = commandParser.execute(line, fileSystem.getCurrentDirectory());
+            if (!result.isEmpty() && !result.startsWith("MODE_EDIT:")) {
+                output.append(result).append("\n");
+            }
+        }
+
+        fileSystem.setCurrentDirectory(originalDir);
+
+        return output.toString().isEmpty() ?
+               "Script exécuté avec succès." :
+               output.toString();
+    }
+}
+```
+
+---
+### **📜 `GrepCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'grep' : filtre les lignes contenant un motif.
+ * Usage: grep <motif> [fichier] ou grep <motif> < stdin
+ */
+public class GrepCommand implements Command {
+    private FileSystem fileSystem;
+
+    public GrepCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length == 0) {
+            return "Usage: grep <pattern> [file]";
+        }
+
+        String pattern = args[0];
+        String content;
+
+        if (args.length > 1) {
+            String fileName = args[1];
+            if (!fileSystem.exists(fileName)) {
+                return "Fichier introuvable: " + fileName;
+            }
+            content = fileSystem.cat(fileName);
+        } else if (stdin != null) {
+            content = stdin;
+        } else {
+            return "Usage: grep <pattern> [file] ou utiliser un pipe";
+        }
+
+        StringBuilder output = new StringBuilder();
+        for (String line : content.split("\n")) {
+            if (line.contains(pattern)) {
+                output.append(line).append("\n");
+            }
+        }
+
+        return output.toString();
+    }
+}
+```
+
+---
+### **📜 `WcCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'wc' : compte les lignes, mots et caractères.
+ * Usage: wc [fichier] ou wc < stdin
+ */
+public class WcCommand implements Command {
+    private FileSystem fileSystem;
+
+    public WcCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        String content;
+
+        if (args.length > 0) {
+            String fileName = args[0];
+            if (!fileSystem.exists(fileName)) {
+                return "Fichier introuvable: " + fileName;
+            }
+            content = fileSystem.cat(fileName);
+        } else if (stdin != null) {
+            content = stdin;
+        } else {
+            return "Usage: wc [file] ou utiliser un pipe";
+        }
+
+        int lines = content.split("\n").length;
+        int words = content.split("\\s+").length;
+        int chars = content.length();
+
+        return String.format("%d %d %d", lines, words, chars);
+    }
+}
+```
+
+---
+### **📜 `TrCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+
+/**
+ * Commande 'tr' : remplace ou supprime des caractères.
+ * Usage: tr <set1> <set2> [fichier] ou tr <set1> <set2> < stdin
+ */
+public class TrCommand implements Command {
+    private FileSystem fileSystem;
+
+    public TrCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        if (args.length < 2) {
+            return "Usage: tr <set1> <set2> [file]";
+        }
+
+        String set1 = args[0];
+        String set2 = args[1];
+        String content;
+
+        if (args.length > 2) {
+            String fileName = args[2];
+            if (!fileSystem.exists(fileName)) {
+                return "Fichier introuvable: " + fileName;
+            }
+            content = fileSystem.cat(fileName);
+        } else if (stdin != null) {
+            content = stdin;
+        } else {
+            return "Usage: tr <set1> <set2> [file] ou utiliser un pipe";
+        }
+
+        StringBuilder output = new StringBuilder();
+        for (char c : content.toCharArray()) {
+            int index = set1.indexOf(c);
+            if (index != -1 && index < set2.length()) {
+                output.append(set2.charAt(index));
+            } else {
+                output.append(c);
+            }
+        }
+
+        return output.toString();
+    }
+}
+```
+
+---
+### **📜 `SortCommand.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Commande 'sort' : trie les lignes d'un fichier ou de stdin.
+ * Usage: sort [fichier] ou sort < stdin
+ */
+public class SortCommand implements Command {
+    private FileSystem fileSystem;
+
+    public SortCommand(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public String execute(String[] args, String stdin) {
+        String content;
+
+        if (args.length > 0) {
+            String fileName = args[0];
+            if (!fileSystem.exists(fileName)) {
+                return "Fichier introuvable: " + fileName;
+            }
+            content = fileSystem.cat(fileName);
+        } else if (stdin != null) {
+            content = stdin;
+        } else {
+            return "Usage: sort [file] ou utiliser un pipe";
+        }
+
+        List<String> lines = Arrays.asList(content.split("\n"));
+        Collections.sort(lines);
+        return String.join("\n", lines);
+    }
+}
+```
+
+---
+---
+---
+
+## **📄 4. Éditeurs (`src/main/java/fr/terminal/editors/`)**
+
+---
+
+### **📜 `TextEditorSwing.java` (Interface)**
+```java
+package fr.terminal.editors;
+
+/**
+ * Interface pour les éditeurs de texte adaptés à Swing.
+ */
+public interface TextEditorSwing {
+    /**
+     * Démarre l'édition.
+     */
+    void start();
+
+    /**
+     * Gère une entrée utilisateur.
+     * @param input Entrée de l'utilisateur.
+     * @return Résultat de l'édition (null pour continuer, "SAVE:..." pour sauvegarder, "CANCEL" pour annuler).
+     */
+    String handleInput(String input);
+
+    /**
+     * Retourne le nom de l'éditeur.
+     */
+    String getName();
+}
+```
+
+---
+### **📜 `NanoEditorSwing.java`**
+```java
+package fr.terminal.editors;
+
+import fr.terminal.FileSystem;
+import fr.terminal.TerminalEmulator;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Éditeur nano adapté à Swing.
+ * Permet d'éditer un fichier ligne par ligne.
+ */
+public class NanoEditorSwing implements TextEditorSwing {
+    private TerminalEmulator terminal;
+    private FileSystem fileSystem;
+    private String fileName;
+    private List<String> lines;
+
+    /**
+     * Constructeur.
+     * @param terminal TerminalEmulator pour afficher les messages.
+     * @param fileSystem Système de fichiers.
+     * @param fileName Nom du fichier à éditer.
+     */
+    public NanoEditorSwing(TerminalEmulator terminal, FileSystem fileSystem, String fileName) {
+        this.terminal = terminal;
+        this.fileSystem = fileSystem;
+        this.fileName = fileName;
+        this.lines = new ArrayList<>();
+
+        if (fileSystem.exists(fileName)) {
+            String content = fileSystem.cat(fileName);
+            for (String line : content.split("\n")) {
+                lines.add(line);
+            }
+        }
+    }
+
+    @Override
+    public void start() {
+        terminal.appendToOutput("--- Nano: Édition de '" + fileName + "' ---\n");
+        terminal.appendToOutput("Commandes: :wq (sauvegarder et quitter), :q (quitter)\n");
+        if (!lines.isEmpty()) {
+            terminal.appendToOutput("Contenu actuel:\n");
+            for (String line : lines) {
+                terminal.appendToOutput(line + "\n");
+            }
+        }
+        terminal.appendToOutput("nano> ");
+    }
+
+    @Override
+    public String handleInput(String input) {
+        if (input.equals(":wq")) {
+            return "SAVE:" + String.join("\n", lines);
+        } else if (input.equals(":q")) {
+            return "CANCEL";
+        } else {
+            lines.add(input);
+            return null;
+        }
+    }
+
+    @Override
+    public String getName() {
+        return "nano";
+    }
+}
+```
+
+---
+### **📜 `VimEditorSwing.java`**
+```java
+package fr.terminal.editors;
+
+import fr.terminal.FileSystem;
+import fr.terminal.TerminalEmulator;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Éditeur vim adapté à Swing (simplifié).
+ * Supporte le mode commande et le mode insertion.
+ */
+public class VimEditorSwing implements TextEditorSwing {
+    private TerminalEmulator terminal;
+    private FileSystem fileSystem;
+    private String fileName;
+    private List<String> lines;
+    private int currentLineIndex;
+    private boolean insertMode = false;
+
+    /**
+     * Constructeur.
+     * @param terminal TerminalEmulator pour afficher les messages.
+     * @param fileSystem Système de fichiers.
+     * @param fileName Nom du fichier à éditer.
+     */
+    public VimEditorSwing(TerminalEmulator terminal, FileSystem fileSystem, String fileName) {
+        this.terminal = terminal;
+        this.fileSystem = fileSystem;
+        this.fileName = fileName;
+        this.lines = new ArrayList<>();
+        this.currentLineIndex = 0;
+
+        if (fileSystem.exists(fileName)) {
+            String content = fileSystem.cat(fileName);
+            for (String line : content.split("\n")) {
+                lines.add(line);
+            }
+        } else {
+            lines.add("");
+        }
+    }
+
+    @Override
+    public void start() {
+        terminal.appendToOutput("--- Vim: Édition de '" + fileName + "' ---\n");
+        terminal.appendToOutput("Mode: COMMANDE | Tapez 'i' pour passer en mode insertion\n");
+        terminal.appendToOutput("Commandes: :wq (sauvegarder), :q! (quitter), :esc (mode commande)\n");
+        displayCurrentLine();
+    }
+
+    /**
+     * Affiche la ligne courante.
+     */
+    private void displayCurrentLine() {
+        terminal.appendToOutput("vim [" + (insertMode ? "INSERT" : "COMMAND") + "] > " + lines.get(currentLineIndex) + "\n");
+    }
+
+    @Override
+    public String handleInput(String input) {
+        if (insertMode) {
+            if (input.equals(":esc")) {
+                insertMode = false;
+                terminal.appendToOutput("Mode: COMMANDE\n");
+                displayCurrentLine();
+                return null;
+            } else {
+                lines.set(currentLineIndex, lines.get(currentLineIndex) + input);
+                displayCurrentLine();
+                return null;
+            }
+        } else {
+            if (input.equals("i")) {
+                insertMode = true;
+                terminal.appendToOutput("Mode: INSERT\n");
+                displayCurrentLine();
+                return null;
+            } else if (input.equals(":wq")) {
+                return "SAVE:" + String.join("\n", lines);
+            } else if (input.equals(":q!")) {
+                return "CANCEL";
+            } else if (input.equals(":esc")) {
+                displayCurrentLine();
+                return null;
+            } else {
+                terminal.appendToOutput("Commande inconnue. Tapez 'i' pour éditer.\n");
+                displayCurrentLine();
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public String getName() {
+        return "vim";
+    }
+}
+```
+
+---
+---
+---
+
+## **📄 5. Tests (`src/test/java/fr/terminal/`)**
+
+---
+
+### **📜 `FileSystemTest.java`**
+```java
+package fr.terminal;
+
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+class FileSystemTest {
+    private FileSystem fileSystem;
+
+    @BeforeEach
+    void setUp() {
+        fileSystem = new FileSystem();
+    }
+
+    @Test
+    void testGetRoot() {
+        assertEquals("/", fileSystem.getRoot());
+    }
+
+    @Test
+    void testGetCurrentDirectory() {
+        assertEquals("/", fileSystem.getCurrentDirectory());
+    }
+
+    @Test
+    void testMkdir() {
+        assertTrue(fileSystem.mkdir("test"));
+        assertFalse(fileSystem.mkdir("test"));
+    }
+
+    @Test
+    void testTouch() {
+        assertTrue(fileSystem.touch("file.txt"));
+        assertFalse(fileSystem.touch("file.txt"));
+    }
+
+    @Test
+    void testLs() {
+        fileSystem.mkdir("dir1");
+        fileSystem.touch("file1.txt");
+        List<String> contents = fileSystem.ls();
+        assertTrue(contents.contains("dir1/"));
+        assertTrue(contents.contains("file1.txt"));
+    }
+
+    @Test
+    void testCd() {
+        fileSystem.mkdir("test");
+        fileSystem.setCurrentDirectory("/test");
+        assertEquals("/test", fileSystem.getCurrentDirectory());
+    }
+
+    @Test
+    void testRm() {
+        fileSystem.touch("file.txt");
+        assertTrue(fileSystem.rm("file.txt"));
+        assertFalse(fileSystem.exists("file.txt"));
+    }
+
+    @Test
+    void testCat() {
+        fileSystem.touch("file.txt");
+        fileSystem.echo("file.txt", "Hello, World!");
+        assertEquals("Hello, World!", fileSystem.cat("file.txt"));
+    }
+
+    @Test
+    void testEcho() {
+        assertTrue(fileSystem.echo("file.txt", "Test content"));
+        assertEquals("Test content", fileSystem.cat("file.txt"));
+    }
+
+    @Test
+    void testAppend() {
+        fileSystem.echo("file.txt", "Line1\n");
+        assertTrue(fileSystem.append("file.txt", "Line2\n"));
+        assertEquals("Line1\nLine2\n", fileSystem.cat("file.txt"));
+    }
+
+    @Test
+    void testExists() {
+        fileSystem.touch("file.txt");
+        assertTrue(fileSystem.exists("file.txt"));
+        assertFalse(fileSystem.exists("nonexistent.txt"));
+    }
+
+    @Test
+    void testGetParentDirectory() {
+        assertEquals("/", fileSystem.getParentDirectory("/test"));
+        assertEquals("/", fileSystem.getParentDirectory("/"));
+        assertEquals("/test", fileSystem.getParentDirectory("/test/subdir"));
+    }
+
+    @Test
+    void testResolvePath() {
+        fileSystem.mkdir("test");
+        fileSystem.setCurrentDirectory("/test");
+        assertEquals("/test/file.txt", fileSystem.resolvePath("file.txt"));
+        assertEquals("/images", fileSystem.resolvePath("/images"));
+    }
+
+    @Test
+    void testNormalizePath() {
+        assertEquals("/a/c", fileSystem.normalizePath("/a/./b/../c"));
+        assertEquals("/c", fileSystem.normalizePath("/a/b/../../c"));
+        assertEquals("/", fileSystem.normalizePath("/../.."));
+    }
+
+    @Test
+    void testRmdir() {
+        fileSystem.mkdir("dir1");
+        fileSystem.setCurrentDirectory("/dir1");
+        fileSystem.mkdir("dir2");
+        fileSystem.touch("file.txt");
+        fileSystem.setCurrentDirectory("/");
+        assertTrue(fileSystem.rmdir("dir1"));
+        assertFalse(fileSystem.exists("dir1"));
+    }
+
+    @Test
+    void testIsDirectory() {
+        fileSystem.mkdir("test");
+        assertTrue(fileSystem.isDirectory("/test"));
+        assertFalse(fileSystem.isDirectory("/nonexistent"));
+    }
+
+    @Test
+    void testIsFile() {
+        fileSystem.touch("file.txt");
+        assertTrue(fileSystem.isFile("/file.txt"));
+        assertFalse(fileSystem.isFile("/nonexistent"));
+    }
+
+    @Test
+    void testLsWithPath() {
+        fileSystem.mkdir("test");
+        fileSystem.touch("file.txt");
+        List<String> contents = fileSystem.ls("/");
+        assertTrue(contents.contains("test/"));
+        assertTrue(contents.contains("file.txt"));
+    }
+
+    @Test
+    void testSetCurrentDirectoryInvalid() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            fileSystem.setCurrentDirectory("/nonexistent");
+        });
+    }
+
+    @Test
+    void testMkdirInvalidName() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            fileSystem.mkdir("");
+        });
+    }
+
+    @Test
+    void testTouchInvalidName() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            fileSystem.touch("");
+        });
+    }
+}
+```
+
+---
+### **📜 `CommandParserTest.java`**
+```java
+package fr.terminal;
+
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+class CommandParserTest {
+    private FileSystem fileSystem;
+    private CommandParser commandParser;
+
+    @BeforeEach
+    void setUp() {
+        fileSystem = new FileSystem();
+        commandParser = new CommandParser(fileSystem);
+    }
+
+    @Test
+    void testExecuteLs() {
+        fileSystem.touch("file.txt");
+        String output = commandParser.execute("ls", "/");
+        assertTrue(output.contains("file.txt"));
+    }
+
+    @Test
+    void testExecuteCd() {
+        fileSystem.mkdir("test");
+        commandParser.execute("cd test", "/");
+        assertEquals("/test", fileSystem.getCurrentDirectory());
+    }
+
+    @Test
+    void testExecuteCat() {
+        fileSystem.touch("file.txt");
+        fileSystem.echo("file.txt", "Hello");
+        String output = commandParser.execute("cat file.txt", "/");
+        assertEquals("Hello", output);
+    }
+
+    @Test
+    void testExecuteEcho() {
+        String output = commandParser.execute("echo Hello", "/");
+        assertEquals("Hello", output);
+    }
+
+    @Test
+    void testExecuteMkdir() {
+        String output = commandParser.execute("mkdir test", "/");
+        assertEquals("", output);
+        assertTrue(fileSystem.exists("test"));
+    }
+
+    @Test
+    void testExecuteTouch() {
+        String output = commandParser.execute("touch file.txt", "/");
+        assertEquals("", output);
+        assertTrue(fileSystem.exists("file.txt"));
+    }
+
+    @Test
+    void testExecuteRm() {
+        fileSystem.touch("file.txt");
+        String output = commandParser.execute("rm file.txt", "/");
+        assertEquals("", output);
+        assertFalse(fileSystem.exists("file.txt"));
+    }
+
+    @Test
+    void testExecutePwd() {
+        String output = commandParser.execute("pwd", "/");
+        assertEquals("/", output);
+    }
+
+    @Test
+    void testExecuteHelp() {
+        String output = commandParser.execute("help", "/");
+        assertTrue(output.contains("ls"));
+        assertTrue(output.contains("cd"));
+    }
+
+    @Test
+    void testExecuteUnknownCommand() {
+        String output = commandParser.execute("unknown", "/");
+        assertTrue(output.contains("Commande introuvable"));
+    }
+
+    @Test
+    void testRedirectionOutput() {
+        fileSystem.touch("output.txt");
+        String output = commandParser.execute("echo Hello > output.txt", "/");
+        assertEquals("", output);
+        assertEquals("Hello", fileSystem.cat("output.txt"));
+    }
+
+    @Test
+    void testRedirectionAppend() {
+        fileSystem.echo("output.txt", "Line1\n");
+        String output = commandParser.execute("echo Line2 >> output.txt", "/");
+        assertEquals("", output);
+        assertEquals("Line1\nLine2", fileSystem.cat("output.txt"));
+    }
+
+    @Test
+    void testRedirectionInput() {
+        fileSystem.echo("input.txt", "Hello from file");
+        String output = commandParser.execute("cat < input.txt", "/");
+        assertEquals("Hello from file", output);
+    }
+
+    @Test
+    void testPipe() {
+        fileSystem.echo("test.txt", "line1\nline2\nline3");
+        String output = commandParser.execute("cat test.txt | grep line2", "/");
+        assertEquals("line2", output.trim());
+    }
+
+    @Test
+    void testMultiplePipes() {
+        fileSystem.echo("test.txt", "apple\nbanana\napple");
+        String output = commandParser.execute("cat test.txt | grep apple | wc", "/");
+        assertEquals("2 2 10", output.trim());
+    }
+}
+```
+
+---
+### **📜 `RedirectionTest.java`**
+```java
+package fr.terminal;
+
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+class RedirectionTest {
+    @Test
+    void testParseRedirectionsOutput() {
+        String[] args = {"echo", "Hello", ">", "output.txt"};
+        List<Redirection> redirections = Redirection.parseRedirections(args);
+        assertEquals(1, redirections.size());
+        assertEquals(Redirection.Type.OUTPUT, redirections.get(0).getType());
+        assertEquals("output.txt", redirections.get(0).getFileName());
+        assertArrayEquals(new String[]{"echo", "Hello"}, redirections.get(0).cleanedArgs);
+    }
+
+    @Test
+    void testParseRedirectionsAppend() {
+        String[] args = {"echo", "Hello", ">>", "output.txt"};
+        List<Redirection> redirections = Redirection.parseRedirections(args);
+        assertEquals(1, redirections.size());
+        assertEquals(Redirection.Type.APPEND, redirections.get(0).getType());
+        assertEquals("output.txt", redirections.get(0).getFileName());
+    }
+
+    @Test
+    void testParseRedirectionsInput() {
+        String[] args = {"cat", "<", "input.txt"};
+        List<Redirection> redirections = Redirection.parseRedirections(args);
+        assertEquals(1, redirections.size());
+        assertEquals(Redirection.Type.INPUT, redirections.get(0).getType());
+        assertEquals("input.txt", redirections.get(0).getFileName());
+    }
+
+    @Test
+    void testParseRedirectionsMultiple() {
+        String[] args = {"cat", "<", "input.txt", ">", "output.txt"};
+        List<Redirection> redirections = Redirection.parseRedirections(args);
+        assertEquals(2, redirections.size());
+        assertEquals(Redirection.Type.INPUT, redirections.get(0).getType());
+        assertEquals(Redirection.Type.OUTPUT, redirections.get(1).getType());
+    }
+
+    @Test
+    void testParseRedirectionsNone() {
+        String[] args = {"ls", "-l"};
+        List<Redirection> redirections = Redirection.parseRedirections(args);
+        assertEquals(0, redirections.size());
+    }
+}
+```
+
+---
+### **📜 `PipeTest.java`**
+```java
+package fr.terminal;
+
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+class PipeTest {
+    @Test
+    void testParsePipeSingle() {
+        String input = "ls";
+        Pipe pipe = Pipe.parsePipe(input);
+        List<String[]> commands = pipe.getCommands();
+        assertEquals(1, commands.size());
+        assertArrayEquals(new String[]{"ls"}, commands.get(0));
+    }
+
+    @Test
+    void testParsePipeDouble() {
+        String input = "ls | grep txt";
+        Pipe pipe = Pipe.parsePipe(input);
+        List<String[]> commands = pipe.getCommands();
+        assertEquals(2, commands.size());
+        assertArrayEquals(new String[]{"ls"}, commands.get(0));
+        assertArrayEquals(new String[]{"grep", "txt"}, commands.get(1));
+    }
+
+    @Test
+    void testParsePipeMultiple() {
+        String input = "cat file.txt | grep pattern | wc";
+        Pipe pipe = Pipe.parsePipe(input);
+        List<String[]> commands = pipe.getCommands();
+        assertEquals(3, commands.size());
+        assertArrayEquals(new String[]{"cat", "file.txt"}, commands.get(0));
+        assertArrayEquals(new String[]{"grep", "pattern"}, commands.get(1));
+        assertArrayEquals(new String[]{"wc"}, commands.get(2));
+    }
+
+    @Test
+    void testParsePipeWithSpaces() {
+        String input = "  ls  |   grep txt  ";
+        Pipe pipe = Pipe.parsePipe(input);
+        List<String[]> commands = pipe.getCommands();
+        assertEquals(2, commands.size());
+        assertArrayEquals(new String[]{"ls"}, commands.get(0));
+        assertArrayEquals(new String[]{"grep", "txt"}, commands.get(1));
+    }
+}
+```
+
+---
+### **📜 `CommandsTest.java`**
+```java
+package fr.terminal.commands;
+
+import fr.terminal.FileSystem;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+class CommandsTest {
+    private FileSystem fileSystem;
+
+    @BeforeEach
+    void setUp() {
+        fileSystem = new FileSystem();
+    }
+
+    @Test
+    void testCatCommandWithFile() {
+        fileSystem.echo("test.txt", "Hello");
+        CatCommand cat = new CatCommand(fileSystem);
+        assertEquals("Hello", cat.execute(new String[]{"test.txt"}, null));
+    }
+
+    @Test
+    void testCatCommandWithStdin() {
+        CatCommand cat = new CatCommand(fileSystem);
+        assertEquals("Input text", cat.execute(new String[]{}, "Input text"));
+    }
+
+    @Test
+    void testEchoCommand() {
+        EchoCommand echo = new EchoCommand(fileSystem);
+        assertEquals("Hello World", echo.execute(new String[]{"Hello", "World"}, null));
+    }
+
+    @Test
+    void testGrepCommandWithFile() {
+        fileSystem.echo("test.txt", "line1\nline2\nline3");
+        GrepCommand grep = new GrepCommand(fileSystem);
+        assertEquals("line2\n", grep.execute(new String[]{"line2", "test.txt"}, null));
+    }
+
+    @Test
+    void testGrepCommandWithStdin() {
+        GrepCommand grep = new GrepCommand(fileSystem);
+        assertEquals("line2\n", grep.execute(new String[]{"line2"}, "line1\nline2\nline3"));
+    }
+
+    @Test
+    void testWcCommandWithFile() {
+        fileSystem.echo("test.txt", "Hello World");
+        WcCommand wc = new WcCommand(fileSystem);
+        assertEquals("1 2 11", wc.execute(new String[]{"test.txt"}, null));
+    }
+
+    @Test
+    void testWcCommandWithStdin() {
+        WcCommand wc = new WcCommand(fileSystem);
+        assertEquals("2 2 11", wc.execute(new String[]{}, "Hello\nWorld"));
+    }
+
+    @Test
+    void testTrCommandWithFile() {
+        fileSystem.echo("test.txt", "Hello");
+        TrCommand tr = new TrCommand(fileSystem);
+        assertEquals("HeLLo", tr.execute(new String[]{"l", "L", "test.txt"}, null));
+    }
+
+    @Test
+    void testTrCommandWithStdin() {
+        TrCommand tr = new TrCommand(fileSystem);
+        assertEquals("HeLLo", tr.execute(new String[]{"l", "L"}, "Hello"));
+    }
+
+    @Test
+    void testSortCommandWithFile() {
+        fileSystem.echo("test.txt", "banana\napple\ncherry");
+        SortCommand sort = new SortCommand(fileSystem);
+        String result = sort.execute(new String[]{"test.txt"}, null);
+        assertEquals("apple\nbanana\ncherry", result);
+    }
+
+    @Test
+    void testSortCommandWithStdin() {
+        SortCommand sort = new SortCommand(fileSystem);
+        String result = sort.execute(new String[]{}, "banana\napple\ncherry");
+        assertEquals("apple\nbanana\ncherry", result);
+    }
+}
+```
+
+---
+### **📜 `TerminalEmulatorIntegrationTest.java`**
+```java
+package fr.terminal;
+
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+class TerminalEmulatorIntegrationTest {
+    private FileSystem fileSystem;
+    private CommandParser commandParser;
+
+    @BeforeEach
+    void setUp() {
+        fileSystem = new FileSystem();
+        commandParser = new CommandParser(fileSystem);
+    }
+
+    @Test
+    void testFullWorkflow() {
+        commandParser.execute("mkdir test", "/");
+        commandParser.execute("cd test", "/");
+        commandParser.execute("touch file.txt", "/test");
+        commandParser.execute("echo Hello > file.txt", "/test");
+
+        String catOutput = commandParser.execute("cat file.txt", "/test");
+        assertEquals("Hello", catOutput);
+
+        String pipeOutput = commandParser.execute("cat file.txt | grep Hello", "/test");
+        assertEquals("Hello", pipeOutput.trim());
+
+        commandParser.execute("echo World >> file.txt", "/test");
+        catOutput = commandParser.execute("cat file.txt", "/test");
+        assertEquals("Hello\nWorld", catOutput);
+
+        commandParser.execute("cd ..", "/test");
+        commandParser.execute("rm test", "/");
+        assertFalse(fileSystem.exists("test"));
+    }
+
+    @Test
+    void testScriptExecution() {
+        fileSystem.echo("script.txt", "echo Line1\necho Line2\necho Line3 | grep Line2");
+        String output = commandParser.execute("run script.txt", "/");
+        assertTrue(output.contains("Line1"));
+        assertTrue(output.contains("Line2"));
+        assertTrue(output.contains("Line2"));
+    }
+
+    @Test
+    void testComplexPipe() {
+        fileSystem.echo("data.txt", "apple\nbanana\napple\ncherry");
+        String output = commandParser.execute("cat data.txt | grep apple | wc", "/");
+        assertEquals("2 2 10", output.trim());
+    }
+
+    @Test
+    void testRedirectionAndPipe() {
+        fileSystem.echo("input.txt", "Hello\nWorld");
+        String output = commandParser.execute("cat < input.txt | tr H h", "/");
+        assertEquals("hello\nWorld", output);
+    }
+
+    @Test
+    void testErrorHandling() {
+        String output = commandParser.execute("unknown", "/");
+        assertTrue(output.contains("Commande introuvable"));
+
+        output = commandParser.execute("cd nonexistent", "/");
+        assertTrue(output.contains("Répertoire introuvable"));
+
+        output = commandParser.execute("cat nonexistent.txt", "/");
+        assertTrue(output.contains("Fichier introuvable"));
+
+        output = commandParser.execute("cat < nonexistent.txt", "/");
+        assertTrue(output.contains("Fichier introuvable pour l'entrée"));
+    }
+}
+```
+
+---
+---
+---
+
+## **📌 Instructions pour Utiliser le Code**
+
+### **1. Créer la Structure du Projet**
+```bash
+mkdir -p unix-terminal-emulator/src/main/java/fr/terminal/{commands,editors}
+mkdir -p unix-terminal-emulator/src/test/java/fr/terminal
+```
+
+### **2. Copier les Fichiers**
+- Copie chaque bloc de code dans le fichier correspondant (ex: `Main.java` → `src/main/java/fr/terminal/Main.java`).
+- Copie `pom.xml` à la racine du projet.
+
+### **3. Compiler et Exécuter**
+```bash
+cd unix-terminal-emulator
+mvn clean compile
+mvn test  # Pour exécuter les tests
+java -cp target/classes fr.terminal.Main  # Pour lancer l'application
+```
+
+---
+---
+---
+## **✅ Résumé**
+Tu as maintenant **tout le code nécessaire** pour :
+- Un **émulateur de terminal** complet avec **interface Swing**.
+- Des **commandes Unix** (`ls`, `cd`, `cat`, `echo`, etc.).
+- Des **éditeurs de texte** (`nano` et `vim`).
+- Des **redirections** (`>`, `>>`, `<`).
+- Des **pipes** (`|`).
+- Des **scripts** (`run`).
+- Des **tests unitaires et d'intégration** (JUnit 5).
+
+**Besoin d'aide pour une partie spécifique ?** 😊
+- **Intégration dans un IDE** (Eclipse, IntelliJ).
+- **Ajout de nouvelles commandes**.
+- **Amélioration de l'interface graphique**.

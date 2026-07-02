@@ -15,6 +15,7 @@ import javax.swing.SwingConstants;
 
 import gabywald.terminal.TerminalState;
 
+
 /**
  * Main terminal window with Swing GUI
  * @author Gabriel Chandesris (2026)
