@@ -2,7 +2,7 @@ package gabywald.terminal.commands;
 
 import gabywald.terminal.TerminalState;
 import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 import gabywald.terminal.filesystem.TerminalFile;
 
 /**
@@ -16,7 +16,7 @@ public class TouchCommand implements Command {
         
         StringBuilder output = new StringBuilder();
         for (String fileName : args) {
-            FileNode existing = resolveFile(state, fileName);
+            TerminalNode existing = resolveFile(state, fileName);
             if (existing != null && existing.isDirectory()) {
                 output.append("touch: cannot touch '").append(fileName).append("': Is a directory\n");
                 continue;
@@ -36,7 +36,7 @@ public class TouchCommand implements Command {
         return output.toString();
     }
     
-    private FileNode resolveFile(TerminalState state, String fileName) {
+    private TerminalNode resolveFile(TerminalState state, String fileName) {
         TerminalDirectory current = state.getCurrentDirectory();
         if (fileName.startsWith("/")) { return CommandHelper.resolveAbsolutePath(state.getRootDirectory(), fileName); }
         return CommandHelper.resolveRelativePath(current, fileName);

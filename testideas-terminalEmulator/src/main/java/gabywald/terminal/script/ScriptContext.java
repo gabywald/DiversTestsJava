@@ -22,63 +22,75 @@ public class ScriptContext {
     private int forIndex;
     private int forBlockDepth;
     
-    public ScriptContext() {
-        this.variables = new HashMap<>();
-    }
+    public ScriptContext() 
+    	{ this.variables = new HashMap<String, String>(); }
     
-    public Map<String, String> getVariables() { return variables; }
-    public void setVariables(Map<String, String> variables) { this.variables = variables; }
+    public Map<String, String> getVariables() { return this.variables; }
+    public void setVariables(Map<String, String> variables) 
+    	{ this.variables = variables; }
     
-    public boolean isInIfBlock() { return inIfBlock; }
-    public void setInIfBlock(boolean inIfBlock) { this.inIfBlock = inIfBlock; }
+    public boolean isInIfBlock() { return this.inIfBlock; }
+    public void setInIfBlock(boolean inIfBlock) 
+    	{ this.inIfBlock = inIfBlock; }
     
-    public boolean isIfConditionResult() { return ifConditionResult; }
-    public void setIfConditionResult(boolean ifConditionResult) { this.ifConditionResult = ifConditionResult; }
+    public boolean isIfConditionResult() { return this.ifConditionResult; }
+    public void setIfConditionResult(boolean ifConditionResult) 
+    	{ this.ifConditionResult = ifConditionResult; }
     
-    public int getIfBlockDepth() { return ifBlockDepth; }
-    public void setIfBlockDepth(int ifBlockDepth) { this.ifBlockDepth = ifBlockDepth; }
+    public int getIfBlockDepth() { return this.ifBlockDepth; }
+    public void setIfBlockDepth(int ifBlockDepth) 
+    	{ this.ifBlockDepth = ifBlockDepth; }
     
-    public boolean isInWhileBlock() { return inWhileBlock; }
-    public void setInWhileBlock(boolean inWhileBlock) { this.inWhileBlock = inWhileBlock; }
+    public boolean isInWhileBlock() { return this.inWhileBlock; }
+    public void setInWhileBlock(boolean inWhileBlock) 
+    	{ this.inWhileBlock = inWhileBlock; }
     
-    public String getWhileCondition() { return whileCondition; }
-    public void setWhileCondition(String whileCondition) { this.whileCondition = whileCondition; }
+    public String getWhileCondition() { return this.whileCondition; }
+    public void setWhileCondition(String whileCondition) 
+    	{ this.whileCondition = whileCondition; }
     
-    public boolean isWhileConditionResult() { return whileConditionResult; }
-    public void setWhileConditionResult(boolean whileConditionResult) { this.whileConditionResult = whileConditionResult; }
+    public boolean isWhileConditionResult() { return this.whileConditionResult; }
+    public void setWhileConditionResult(boolean whileConditionResult) 
+    	{ this.whileConditionResult = whileConditionResult; }
     
-    public int getWhileBlockDepth() { return whileBlockDepth; }
-    public void setWhileBlockDepth(int whileBlockDepth) { this.whileBlockDepth = whileBlockDepth; }
+    public int getWhileBlockDepth() { return this.whileBlockDepth; }
+    public void setWhileBlockDepth(int whileBlockDepth) 
+    	{ this.whileBlockDepth = whileBlockDepth; }
     
-    public boolean isInForBlock() { return inForBlock; }
-    public void setInForBlock(boolean inForBlock) { this.inForBlock = inForBlock; }
+    public boolean isInForBlock() { return this.inForBlock; }
+    public void setInForBlock(boolean inForBlock) 
+    	{ this.inForBlock = inForBlock; }
     
-    public String getForVariable() { return forVariable; }
-    public void setForVariable(String forVariable) { this.forVariable = forVariable; }
+    public String getForVariable() { return this.forVariable; }
+    public void setForVariable(String forVariable) 
+    	{ this.forVariable = forVariable; }
     
-    public String[] getForValues() { return forValues; }
-    public void setForValues(String[] forValues) { this.forValues = forValues; }
+    public String[] getForValues() { return this.forValues; }
+    public void setForValues(String[] forValues) 
+    	{ this.forValues = forValues; }
     
-    public int getForIndex() { return forIndex; }
-    public void setForIndex(int forIndex) { this.forIndex = forIndex; }
+    public int getForIndex() { return this.forIndex; }
+    public void setForIndex(int forIndex) 
+    	{ this.forIndex = forIndex; }
     
-    public int getForBlockDepth() { return forBlockDepth; }
-    public void setForBlockDepth(int forBlockDepth) { this.forBlockDepth = forBlockDepth; }
+    public int getForBlockDepth() { return this.forBlockDepth; }
+    public void setForBlockDepth(int forBlockDepth) 
+    	{ this.forBlockDepth = forBlockDepth; }
     
     public void reset() {
-        variables.clear();
-        inIfBlock = false;
-        ifConditionResult = false;
-        ifBlockDepth = 0;
-        inWhileBlock = false;
-        whileCondition = "";
-        whileConditionResult = false;
-        whileBlockDepth = 0;
-        inForBlock = false;
-        forVariable = "";
-        forValues = new String[0];
-        forIndex = 0;
-        forBlockDepth = 0;
+    	this.variables.clear();
+    	this.inIfBlock = false;
+    	this.ifConditionResult = false;
+    	this.ifBlockDepth = 0;
+    	this.inWhileBlock = false;
+    	this.whileCondition = "";
+    	this.whileConditionResult = false;
+    	this.whileBlockDepth = 0;
+    	this.inForBlock = false;
+    	this.forVariable = "";
+    	this.forValues = new String[0];
+    	this.forIndex = 0;
+    	this.forBlockDepth = 0;
     }
     
 }

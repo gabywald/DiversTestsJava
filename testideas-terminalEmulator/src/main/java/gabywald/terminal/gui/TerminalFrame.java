@@ -3,10 +3,6 @@ package gabywald.terminal.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -18,9 +14,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import gabywald.terminal.TerminalState;
-import gabywald.terminal.commands.Command;
-import gabywald.terminal.commands.CommandFactory;
-import gabywald.terminal.commands.CommandParser;
 
 /**
  * Main terminal window with Swing GUI
@@ -42,165 +35,83 @@ public class TerminalFrame extends JFrame {
     
     public TerminalFrame(TerminalState state) {
         this.state = state;
-        initializeUI();
+        this.initializeUI();
     }
     
     private void initializeUI() {
-        setTitle("Terminal Emulator");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
+    	this.setTitle("Terminal Emulator");
+    	this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    	this.setSize(800, 600);
+    	this.setLocationRelativeTo(null);
         
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
-        outputArea = new JTextArea();
-        outputArea.setEditable(false);
-        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        outputArea.setBackground(Color.BLACK);
-        outputArea.setForeground(Color.WHITE);
-        outputArea.setCaretColor(Color.WHITE);
+        this.outputArea = new JTextArea();
+        this.outputArea.setEditable(false);
+        this.outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        this.outputArea.setBackground(Color.BLACK);
+        this.outputArea.setForeground(Color.WHITE);
+        this.outputArea.setCaretColor(Color.WHITE);
         
-        scrollPane = new JScrollPane(outputArea);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        this.scrollPane = new JScrollPane(this.outputArea);
+        this.scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        this.scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(this.scrollPane, BorderLayout.CENTER);
         
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         
-        promptLabel = new JLabel(state.getPrompt() + " ", SwingConstants.RIGHT);
-        promptLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        promptLabel.setForeground(Color.WHITE);
-        promptLabel.setBackground(Color.BLACK);
-        promptLabel.setOpaque(true);
+        this.promptLabel = new JLabel(this.state.getPrompt() + " ", SwingConstants.RIGHT);
+        this.promptLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        this.promptLabel.setForeground(Color.WHITE);
+        this.promptLabel.setBackground(Color.BLACK);
+        this.promptLabel.setOpaque(true);
         
-        inputField = new JTextField();
-        inputField.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        inputField.setBackground(Color.BLACK);
-        inputField.setForeground(Color.WHITE);
-        inputField.setCaretColor(Color.WHITE);
-        inputField.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        this.inputField = new JTextField();
+        this.inputField.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        this.inputField.setBackground(Color.BLACK);
+        this.inputField.setForeground(Color.WHITE);
+        this.inputField.setCaretColor(Color.WHITE);
+        this.inputField.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         
-        inputField.addActionListener(new CommandActionListener());
-        inputField.addKeyListener(new HistoryKeyListener());
+        this.inputField.addActionListener(new CommandActionListener(this));
+        this.inputField.addKeyListener(new HistoryKeyListener(this));
         
-        inputPanel.add(promptLabel, BorderLayout.WEST);
-        inputPanel.add(inputField, BorderLayout.CENTER);
+        inputPanel.add(this.promptLabel, BorderLayout.WEST);
+        inputPanel.add(this.inputField, BorderLayout.CENTER);
         
         mainPanel.add(inputPanel, BorderLayout.SOUTH);
         
-        add(mainPanel);
+        this.add(mainPanel);
         
-        printWelcomeMessage();
-        inputField.requestFocusInWindow();
+        this.printWelcomeMessage();
+        this.inputField.requestFocusInWindow();
     }
     
-    private void printWelcomeMessage() {
-        appendOutput("=============================================\n");
-        appendOutput("   TERMINAL EMULATOR - Java 8 / Swing\n");
-        appendOutput("   Type 'help' for a list of available commands\n");
-        appendOutput("   Type 'exit' to quit\n");
-        appendOutput("=============================================\n\n");
+    void printWelcomeMessage() {
+        this.appendOutput("=============================================\n");
+        this.appendOutput("   TERMINAL EMULATOR - Java 8 / Swing\n");
+        this.appendOutput("   Type 'help' for a list of available commands\n");
+        this.appendOutput("   Type 'exit' to quit\n");
+        this.appendOutput("=============================================\n\n");
     }
     
-    public void appendOutput(String text) {
-        outputArea.append(text);
-        outputArea.setCaretPosition(outputArea.getDocument().getLength());
+    void appendOutput(String text) {
+    	this.outputArea.append(text);
+    	this.outputArea.setCaretPosition(outputArea.getDocument().getLength());
     }
     
-    public void clearScreen() {
-        outputArea.setText("");
-    }
+    void clearScreen()		{ this.outputArea.setText(""); }
     
-    private void clearInputLine() {
-        inputField.setText("");
-    }
+    void clearInputLine()	{ this.inputField.setText(""); }
     
-    private void updatePrompt() {
-        promptLabel.setText(state.getPrompt() + " ");
-    }
-    
-//    public TerminalState getState() { return this.state; }
-//    public void setState(TerminalState state) { this.state = state; updatePrompt(); }
-    
-    private class CommandActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String command = inputField.getText().trim();
-            if (command.isEmpty()) {
-                clearInputLine();
-                return;
-            }
-            
-            state.addToHistory(command);
-            state.resetHistoryIndex();
-            appendOutput(state.getPrompt() + " " + command + "\n");
-            
-            String[] parts = CommandParser.parse(command);
-            if (parts.length == 0) {
-                clearInputLine();
-                return;
-            }
-            
-            String commandName = parts[0];
-            String[] cmdArgs = new String[parts.length - 1];
-            System.arraycopy(parts, 1, cmdArgs, 0, cmdArgs.length);
-            
-            Command cmd = CommandFactory.getCommand(commandName);
-            if (cmd == null) {
-                appendOutput(commandName + ": command not found\n");
-            } else {
-                String result = cmd.execute(state, cmdArgs);
-                if ("EXIT".equals(result)) {
-                    System.exit(0);
-                } else if (result.contains("\033[H\033[2J")) {
-                    clearScreen();
-                    printWelcomeMessage();
-                } else {
-                    appendOutput(result + "\n");
-                }
-            }
-            
-            updatePrompt();
-            clearInputLine();
-        }
-    }
-    
-    private class HistoryKeyListener extends KeyAdapter {
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_UP) {
-                String prevCommand = state.getPreviousCommand();
-                if (prevCommand != null) inputField.setText(prevCommand);
-                e.consume();
-            } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                String nextCommand = state.getNextCommand();
-                if (nextCommand != null) inputField.setText(nextCommand);
-                e.consume();
-            } else if (e.getKeyCode() == KeyEvent.VK_TAB) {
-                handleTabCompletion();
-                e.consume();
-            }
-        }
-        
-        private void handleTabCompletion() {
-            String text = inputField.getText();
-            String[] parts = CommandParser.parse(text);
-            if (parts.length == 0) return;
-            
-            if (parts.length == 1) {
-                String prefix = parts[0];
-                String[] commandNames = CommandFactory.getCommandNames();
-                for (String cmdName : commandNames) {
-                    if (cmdName.startsWith(prefix)) {
-                        inputField.setText(cmdName + " ");
-                        return;
-                    }
-                }
-            }
-        }
-    }
-    
+    void updatePrompt()		{ this.promptLabel.setText(this.state.getPrompt() + " "); }
+
+	JTextField getInputField()		{ return this.inputField; }
+	
+    public TerminalState getTerminalState()	{ return this.state; }
+    public void setState(TerminalState state) { this.state = state;this.updatePrompt(); }
+
 }

@@ -9,19 +9,19 @@ import java.util.stream.Collectors;
  * Directory class representing a folder in the file system.
  * @author Gabriel Chandesris (2026)
  */
-public class TerminalDirectory extends FileNode {
-    private List<FileNode> children;
+public class TerminalDirectory extends TerminalNode {
+    private List<TerminalNode> children;
     
     public TerminalDirectory(String name, TerminalDirectory parent) {
         super(name, parent);
-        this.children = new ArrayList<FileNode>();
+        this.children = new ArrayList<TerminalNode>();
     }
     
-    public List<FileNode> getChildren() { return Collections.unmodifiableList(children); }
+    public List<TerminalNode> getChildren() { return Collections.unmodifiableList(children); }
     
-    public boolean addChild(FileNode child) {
+    public boolean addChild(TerminalNode child) {
         if (child == null) { return false; }
-        for (FileNode existing : children) {
+        for (TerminalNode existing : children) {
             if (existing.getName().equals(child.getName())) 
             	{ return false; }
         }
@@ -31,7 +31,7 @@ public class TerminalDirectory extends FileNode {
         return true;
     }
     
-    public boolean removeChild(FileNode child) {
+    public boolean removeChild(TerminalNode child) {
         if (child == null) { return false; }
         boolean removed = this.children.remove(child);
         if (removed) {
@@ -42,13 +42,13 @@ public class TerminalDirectory extends FileNode {
     }
     
     public boolean removeChildByName(String name) {
-        FileNode toRemove = getChild(name);
+        TerminalNode toRemove = getChild(name);
         if (toRemove != null) { return removeChild(toRemove); }
         return false;
     }
     
-    public FileNode getChild(String name) {
-        for (FileNode child : children) {
+    public TerminalNode getChild(String name) {
+        for (TerminalNode child : children) {
             if (child.getName().equals(name)) 
             	{ return child; }
         }
@@ -59,14 +59,14 @@ public class TerminalDirectory extends FileNode {
     
     public List<TerminalDirectory> getSubdirectories() {
         return this.children.stream()
-                .filter(FileNode::isDirectory)
+                .filter(TerminalNode::isDirectory)
                 .map(node -> (TerminalDirectory) node)
                 .collect(Collectors.toList());
     }
     
     public List<TerminalFile> getFiles() {
         return this.children.stream()
-                .filter(FileNode::isFile)
+                .filter(TerminalNode::isFile)
                 .map(node -> (TerminalFile) node)
                 .collect(Collectors.toList());
     }

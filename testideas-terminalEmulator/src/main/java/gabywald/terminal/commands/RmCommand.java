@@ -1,7 +1,7 @@
 package gabywald.terminal.commands;
 
 import gabywald.terminal.TerminalState;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 
 /**
  * rm command - Remove files
@@ -14,7 +14,7 @@ public class RmCommand implements Command {
         
         StringBuilder output = new StringBuilder();
         for (String fileName : args) {
-            FileNode node = CommandHelper.resolveFile(state, fileName);
+            TerminalNode node = CommandHelper.resolveFile(state, fileName);
             if (node == null) {
                 output.append("rm: cannot remove '").append(fileName).append("': No such file or directory\n");
                 continue;

@@ -1,7 +1,7 @@
 package gabywald.terminal.commands;
 
 import gabywald.terminal.TerminalState;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 import gabywald.terminal.filesystem.TerminalFile;
 
 /**
@@ -15,7 +15,7 @@ public class CatCommand implements Command {
         
         StringBuilder output = new StringBuilder();
         for (String fileName : args) {
-            FileNode node = CommandHelper.resolveFile(state, fileName);
+            TerminalNode node = CommandHelper.resolveFile(state, fileName);
             if (node == null) {
                 output.append("cat: ").append(fileName).append(": No such file or directory\n");
                 continue;

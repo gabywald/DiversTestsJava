@@ -4,7 +4,7 @@ package gabywald.terminal.filesystem;
  * TerminalFile class representing a text file in the file system.
  * @author Gabriel Chandesris (2026)
  */
-public class TerminalFile extends FileNode {
+public class TerminalFile extends TerminalNode {
     private String content;
     
     public TerminalFile(String name, TerminalDirectory parent) {
@@ -18,6 +18,7 @@ public class TerminalFile extends FileNode {
     }
     
     public String getContent() { return content; }
+    
     public void setContent(String content) {
         this.content = content != null ? content : "";
         this.modifiedAt = java.time.LocalDateTime.now();

@@ -84,11 +84,11 @@ public class ScriptParser {
             this.lines = new ArrayList<>();
         }
         
-        public void addLine(String line) 	{ lines.add(line); }
-        public Type getType()				{ return type; }
-        public int getStartLine()			{ return startLine; }
-        public List<String> getLines()		{ return lines; }
-        public String getContent()			{ return String.join("\n", lines); }
+        public void addLine(String line) 	{ this.lines.add(line); }
+        public Type getType()				{ return this.type; }
+        public int getStartLine()			{ return this.startLine; }
+        public List<String> getLines()		{ return this.lines; }
+        public String getContent()			{ return String.join("\n", this.lines); }
     }
     
 }

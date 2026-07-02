@@ -2,7 +2,7 @@ package gabywald.terminal.commands;
 
 import gabywald.terminal.TerminalState;
 import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 import gabywald.terminal.filesystem.TerminalFile;
 
 /**
@@ -36,7 +36,7 @@ public class MvCommand implements Command {
     }
     
     private String moveFile(TerminalState state, String sourcePath, String destPath) {
-        FileNode source = CommandHelper.resolveFile(state, sourcePath);
+        TerminalNode source = CommandHelper.resolveFile(state, sourcePath);
         if (source == null) { return "mv: cannot stat '" + sourcePath + "': No such file or directory"; }
         
         TerminalDirectory destParent = CommandHelper.getParentDirectory(state, destPath);
@@ -44,7 +44,7 @@ public class MvCommand implements Command {
         
         String destName = CommandHelper.getSimpleName(destPath);
         if (destParent.hasChild(destName)) {
-            FileNode existing = destParent.getChild(destName);
+            TerminalNode existing = destParent.getChild(destName);
             if (existing.isDirectory()) { return "mv: cannot overwrite directory '" + destPath + "' with '" + sourcePath + "'"; }
             if (source.isFile()) { ((TerminalFile) existing).setContent(((TerminalFile) source).getContent()); }
             source.delete();

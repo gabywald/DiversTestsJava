@@ -22,30 +22,30 @@ public class TerminalPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
         
-        outputArea = new JTextArea();
-        outputArea.setEditable(false);
-        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        outputArea.setBackground(Color.BLACK);
-        outputArea.setForeground(Color.WHITE);
-        outputArea.setCaretColor(Color.WHITE);
+        this.outputArea = new JTextArea();
+        this.outputArea.setEditable(false);
+        this.outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        this.outputArea.setBackground(Color.BLACK);
+        this.outputArea.setForeground(Color.WHITE);
+        this.outputArea.setCaretColor(Color.WHITE);
         
-        scrollPane = new JScrollPane(outputArea);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        this.scrollPane = new JScrollPane(this.outputArea);
+        this.scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        this.scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        this.scrollPane.setBorder(BorderFactory.createEmptyBorder());
         
-        add(scrollPane, BorderLayout.CENTER);
+        this.add(this.scrollPane, BorderLayout.CENTER);
     }
     
     public void appendOutput(String text) {
-        outputArea.append(text);
-        outputArea.setCaretPosition(outputArea.getDocument().getLength());
+    	this.outputArea.append(text);
+    	this.outputArea.setCaretPosition(this.outputArea.getDocument().getLength());
     }
     
-    public void clearScreen() 				{ outputArea.setText(""); }
-    public void setOutputText(String text)	{ outputArea.setText(text); }
-    public String getOutputText()			{ return outputArea.getText(); }
-    public JTextArea getOutputArea()		{ return outputArea; }
+    public void clearScreen() 				{ this.outputArea.setText(""); }
+    public void setOutputText(String text)	{ this.outputArea.setText(text); }
+    public String getOutputText()			{ return this.outputArea.getText(); }
+    public JTextArea getOutputArea()		{ return this.outputArea; }
     
 }
 

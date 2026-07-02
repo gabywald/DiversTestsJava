@@ -2,7 +2,7 @@ package gabywald.terminal.commands;
 
 import gabywald.terminal.TerminalState;
 import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 
 /**
  * rmdir command - Remove empty directories
@@ -15,7 +15,7 @@ public class RmdirCommand implements Command {
         
         StringBuilder output = new StringBuilder();
         for (String dirName : args) {
-            FileNode node = CommandHelper.resolveDirectory(state, dirName);
+            TerminalNode node = CommandHelper.resolveDirectory(state, dirName);
             if (node == null) {
                 output.append("rmdir: failed to remove '").append(dirName).append("': No such file or directory\n");
                 continue;

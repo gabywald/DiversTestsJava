@@ -2,7 +2,7 @@ package gabywald.terminal.commands;
 
 import gabywald.terminal.TerminalState;
 import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 import gabywald.terminal.filesystem.TerminalFile;
 
 /**
@@ -33,7 +33,7 @@ public class CpCommand implements Command {
     }
     
     private String copyFile(TerminalState state, String sourcePath, String destPath) {
-        FileNode source = CommandHelper.resolveFile(state, sourcePath);
+        TerminalNode source = CommandHelper.resolveFile(state, sourcePath);
         if (source == null) return "cp: cannot stat '" + sourcePath + "': No such file or directory";
         if (source.isDirectory()) return "cp: -r not specified; omitting directory '" + sourcePath + "'";
         
@@ -42,7 +42,7 @@ public class CpCommand implements Command {
         
         String destName = CommandHelper.getSimpleName(destPath);
         if (destParent.hasChild(destName)) {
-            FileNode existing = destParent.getChild(destName);
+            TerminalNode existing = destParent.getChild(destName);
             if (existing.isDirectory()) { return "cp: cannot overwrite directory '" + destPath + "' with '" + sourcePath + "'"; }
             ((TerminalFile) existing).setContent(((TerminalFile) source).getContent());
         } else {

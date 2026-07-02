@@ -6,14 +6,14 @@ import java.time.LocalDateTime;
  * Abstract base class for file system nodes (files and directories).
  * @author Gabriel Chandesris (2026)
  */
-public abstract class FileNode implements Comparable<FileNode> {
+public abstract class TerminalNode implements Comparable<TerminalNode> {
 	
     protected String name;
     protected TerminalDirectory parent;
     protected LocalDateTime createdAt;
     protected LocalDateTime modifiedAt;
     
-    public FileNode(String name, TerminalDirectory parent) {
+    public TerminalNode(String name, TerminalDirectory parent) {
         this.name = name;
         this.parent = parent;
         this.createdAt = LocalDateTime.now();
@@ -37,13 +37,13 @@ public abstract class FileNode implements Comparable<FileNode> {
     public String toString() { return name; }
     
     @Override
-    public int compareTo(FileNode other) { return this.name.compareTo(other.name); }
+    public int compareTo(TerminalNode other) { return this.name.compareTo(other.name); }
     
     @Override
     public boolean equals(Object obj) {
         if (this == obj) { return true; }
         if (obj == null || this.getClass() != obj.getClass()) { return false;}
-        FileNode fileNode = (FileNode) obj;
+        TerminalNode fileNode = (TerminalNode) obj;
         return name.equals(fileNode.name) && 
                ( (parent == null) ? fileNode.parent == null : parent.equals(fileNode.parent));
     }

@@ -2,7 +2,7 @@ package gabywald.terminal.commands;
 
 import gabywald.terminal.TerminalState;
 import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +34,7 @@ public class LsCommand implements Command {
         TerminalDirectory targetDir = CommandHelper.resolveDirectory(state, targetPath);
         if (targetDir == null) { return "ls: cannot access '" + targetPath + "': No such file or directory"; }
         
-        List<FileNode> children = new ArrayList<>(targetDir.getChildren());
+        List<TerminalNode> children = new ArrayList<>(targetDir.getChildren());
         if (!showHidden) { children.removeIf(node -> node.getName().startsWith(".")); }
         
         final boolean reverseO = reverseOrder;
@@ -46,7 +46,7 @@ public class LsCommand implements Command {
         StringBuilder output = new StringBuilder();
         if (longFormat) {
             output.append("total ").append(children.size()).append("\n");
-            for (FileNode node : children) output.append(CommandHelper.formatLong(node));
+            for (TerminalNode node : children) output.append(CommandHelper.formatLong(node));
         } else {
             for (int i = 0; i < children.size(); i++) {
                 if (i > 0) { output.append("  "); }

@@ -5,7 +5,7 @@ import gabywald.terminal.commands.Command;
 import gabywald.terminal.commands.CommandFactory;
 import gabywald.terminal.commands.CommandParser;
 import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 import gabywald.terminal.filesystem.TerminalFile;
 import java.util.Map;
 
@@ -162,7 +162,7 @@ public class ScriptEngine {
             if (parts.length == 2) {
                 String test = parts[0];
                 String path = parts[1].trim().replaceAll("^$", ""); // NOTE "^\"|"$"
-                FileNode node = resolveFile(state, path);
+                TerminalNode node = resolveFile(state, path);
                 if ("-f".equals(test)) { return node != null && node.isFile(); } 
                 if ("-d".equals(test)) { return node != null && node.isDirectory(); } 
                 if ("-e".equals(test)) { return node != null; } 
@@ -178,7 +178,7 @@ public class ScriptEngine {
         return result;
     }
     
-    private FileNode resolveFile(TerminalState state, String fileName) {
+    private TerminalNode resolveFile(TerminalState state, String fileName) {
         TerminalDirectory current = state.getCurrentDirectory();
         if (fileName.startsWith("/")) { return resolveAbsolutePath(state.getRootDirectory(), fileName); }
         return resolveRelativePath(current, fileName);
@@ -190,7 +190,7 @@ public class ScriptEngine {
         return resolveRelativeDirectory(current, dirName);
     }
     
-    private FileNode resolveAbsolutePath(TerminalDirectory root, String path) {
+    private TerminalNode resolveAbsolutePath(TerminalDirectory root, String path) {
         String[] parts = path.split("/");
         TerminalDirectory current = root;
         for (int i = 1; i < parts.length; i++) {
@@ -198,7 +198,7 @@ public class ScriptEngine {
             if ("..".equals(parts[i])) {
                 if (current.getParent() != null) { current = current.getParent(); }
             } else {
-                FileNode node = current.getChild(parts[i]);
+                TerminalNode node = current.getChild(parts[i]);
                 if (node == null)			{ return null; }
                 if (i == parts.length - 1)	{ return node; }
                 if (!node.isDirectory())	{ return null; }
@@ -208,14 +208,14 @@ public class ScriptEngine {
         return current;
     }
     
-    private FileNode resolveRelativePath(TerminalDirectory current, String path) {
+    private TerminalNode resolveRelativePath(TerminalDirectory current, String path) {
         String[] parts = path.split("/");
         for (int i = 0; i < parts.length; i++) {
             if (parts[i].isEmpty() || ".".equals(parts[i])) { continue; }
             if ("..".equals(parts[i])) {
                 if (current.getParent() != null) { current = current.getParent(); }
             } else {
-                FileNode node = current.getChild(parts[i]);
+                TerminalNode node = current.getChild(parts[i]);
                 if (node == null)			{ return null; }
                 if (i == parts.length - 1)	{ return node; }
                 if (!node.isDirectory())	{ return null; }
@@ -233,7 +233,7 @@ public class ScriptEngine {
             if ("..".equals(parts[i])) {
                 if (current.getParent() != null) current = current.getParent();
             } else {
-                FileNode node = current.getChild(parts[i]);
+                TerminalNode node = current.getChild(parts[i]);
                 if (node == null || !node.isDirectory()) return null;
                 current = (TerminalDirectory) node;
             }
@@ -248,7 +248,7 @@ public class ScriptEngine {
             if ("..".equals(part)) {
                 if (current.getParent() != null) current = current.getParent();
             } else {
-                FileNode node = current.getChild(part);
+                TerminalNode node = current.getChild(part);
                 if (node == null || !node.isDirectory()) return null;
                 current = (TerminalDirectory) node;
             }

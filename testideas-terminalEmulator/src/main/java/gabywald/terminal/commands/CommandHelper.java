@@ -3,7 +3,7 @@ package gabywald.terminal.commands;
 import java.time.format.DateTimeFormatter;
 
 import gabywald.terminal.TerminalState;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 import gabywald.terminal.filesystem.TerminalDirectory;
 
 /**
@@ -20,7 +20,7 @@ public abstract class CommandHelper {
             if ("..".equals(parts[i])) {
                 if (current.getParent() != null) { current = current.getParent(); }
             } else {
-                FileNode node = current.getChild(parts[i]);
+                TerminalNode node = current.getChild(parts[i]);
                 if (node == null || !node.isDirectory()) { return null; }
                 current = (TerminalDirectory) node;
             }
@@ -35,7 +35,7 @@ public abstract class CommandHelper {
             if ("..".equals(parts[i])) {
                 if (current.getParent() != null) current = current.getParent();
             } else {
-                FileNode node = current.getChild(parts[i]);
+                TerminalNode node = current.getChild(parts[i]);
                 if (node == null || !node.isDirectory()) { return null; }
                 current = (TerminalDirectory) node;
             }
@@ -43,13 +43,13 @@ public abstract class CommandHelper {
         return current;
     }
     
-    static FileNode resolveFile(TerminalState state, String fileName) {
+    static TerminalNode resolveFile(TerminalState state, String fileName) {
         TerminalDirectory current = state.getCurrentDirectory();
         if (fileName.startsWith("/")) { return CommandHelper.resolveAbsolutePath(state.getRootDirectory(), fileName); }
         return CommandHelper.resolveRelativePath(current, fileName);
     }
     
-    static FileNode resolveAbsolutePath(TerminalDirectory root, String path) {
+    static TerminalNode resolveAbsolutePath(TerminalDirectory root, String path) {
         String[] parts = path.split("/");
         TerminalDirectory current = root;
         for (int i = 1; i < parts.length; i++) {
@@ -57,7 +57,7 @@ public abstract class CommandHelper {
             if ("..".equals(parts[i])) {
                 if (current.getParent() != null) { current = current.getParent(); }
             } else {
-                FileNode node = current.getChild(parts[i]);
+                TerminalNode node = current.getChild(parts[i]);
                 if (node == null)			{ return null; }
                 if (i == parts.length - 1)	{ return node; }
                 if (!node.isDirectory())	{ return null; }
@@ -67,14 +67,14 @@ public abstract class CommandHelper {
         return current;
     }
     
-    static FileNode resolveRelativePath(TerminalDirectory current, String path) {
+    static TerminalNode resolveRelativePath(TerminalDirectory current, String path) {
         String[] parts = path.split("/");
         for (int i = 0; i < parts.length; i++) {
             if (parts[i].isEmpty() || ".".equals(parts[i])) { continue; }
             if ("..".equals(parts[i])) {
                 if (current.getParent() != null) { current = current.getParent(); }
             } else {
-                FileNode node = current.getChild(parts[i]);
+                TerminalNode node = current.getChild(parts[i]);
                 if (node == null)			{ return null; }
                 if (i == parts.length - 1)	{ return node; }
                 if (!node.isDirectory())	{ return null; }
@@ -98,7 +98,7 @@ public abstract class CommandHelper {
             if ("..".equals(parts[i])) {
                 if (current.getParent() != null) { current = current.getParent(); }
             } else {
-                FileNode node = current.getChild(parts[i]);
+                TerminalNode node = current.getChild(parts[i]);
                 if (node == null || !node.isDirectory()) { return null; }
                 current = (TerminalDirectory) node;
             }
@@ -113,7 +113,7 @@ public abstract class CommandHelper {
             if ("..".equals(part)) {
                 if (current.getParent() != null) { current = current.getParent(); }
             } else {
-                FileNode node = current.getChild(part);
+                TerminalNode node = current.getChild(part);
                 if (node == null || !node.isDirectory()) { return null; }
                 current = (TerminalDirectory) node;
             }
@@ -133,7 +133,7 @@ public abstract class CommandHelper {
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     
-    static String formatLong(FileNode node) {
+    static String formatLong(TerminalNode node) {
         String type = node.isDirectory() ? "d" : "-";
         String permissions = node.isDirectory() ? "rwxr-xr-x" : "rw-r--r--";
         String size = node.isDirectory() ? "4096" : String.valueOf(node.getSize());

@@ -1,7 +1,7 @@
 package gabywald.terminal.filesystem.tests;
 
 import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.FileNode;
+import gabywald.terminal.filesystem.TerminalNode;
 import gabywald.terminal.filesystem.TerminalFile;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -71,10 +71,10 @@ class FileSystemTest {
     
     @Test
     void testGetChild() {
-        FileNode child = home.getChild("file1.txt");
+        TerminalNode child = home.getChild("file1.txt");
         assertNotNull(child);
         assertEquals("file1.txt", child.getName());
-        FileNode nonexistent = home.getChild("nonexistent");
+        TerminalNode nonexistent = home.getChild("nonexistent");
         assertNull(nonexistent);
     }
     
