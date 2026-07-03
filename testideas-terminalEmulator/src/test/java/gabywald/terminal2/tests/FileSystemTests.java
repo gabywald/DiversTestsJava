@@ -8,138 +8,141 @@ import org.junit.jupiter.api.Test;
 
 import gabywald.terminal2.FileSystem;
 
+/**
+ * @author Gabriel Chandesris (2026)
+ */
 class FileSystemTest {
     private FileSystem fileSystem;
 
     @BeforeEach
     void setUp() {
-        fileSystem = new FileSystem();
+    	this.fileSystem = new FileSystem();
     }
 
     @Test
     void testGetRoot() {
-        Assertions.assertEquals("/", fileSystem.getRoot());
+        Assertions.assertEquals("/", this.fileSystem.getRoot());
     }
 
     @Test
     void testGetCurrentDirectory() {
-    	Assertions.assertEquals("/", fileSystem.getCurrentDirectory());
+    	Assertions.assertEquals("/", this.fileSystem.getCurrentDirectory());
     }
 
     @Test
     void testMkdir() {
-    	Assertions.assertTrue(fileSystem.mkdir("test"));
-    	Assertions.assertFalse(fileSystem.mkdir("test"));
+    	Assertions.assertTrue(this.fileSystem.mkdir("test"));
+    	Assertions.assertFalse(this.fileSystem.mkdir("test"));
     }
 
     @Test
     void testTouch() {
-    	Assertions.assertTrue(fileSystem.touch("file.txt"));
-    	Assertions.assertFalse(fileSystem.touch("file.txt"));
+    	Assertions.assertTrue(this.fileSystem.touch("file.txt"));
+    	Assertions.assertFalse(this.fileSystem.touch("file.txt"));
     }
 
     @Test
     void testLs() {
-        fileSystem.mkdir("dir1");
-        fileSystem.touch("file1.txt");
-        List<String> contents = fileSystem.ls();
+    	this.fileSystem.mkdir("dir1");
+    	this.fileSystem.touch("file1.txt");
+        List<String> contents = this.fileSystem.ls();
         Assertions.assertTrue(contents.contains("dir1/"));
         Assertions.assertTrue(contents.contains("file1.txt"));
     }
 
     @Test
     void testCd() {
-        fileSystem.mkdir("test");
-        fileSystem.setCurrentDirectory("/test");
-        Assertions.assertEquals("/test", fileSystem.getCurrentDirectory());
+    	this.fileSystem.mkdir("test");
+    	this.fileSystem.setCurrentDirectory("/test");
+        Assertions.assertEquals("/test", this.fileSystem.getCurrentDirectory());
     }
 
     @Test
     void testRm() {
-        fileSystem.touch("file.txt");
-        Assertions.assertTrue(fileSystem.rm("file.txt"));
-        Assertions.assertFalse(fileSystem.exists("file.txt"));
+    	this.fileSystem.touch("file.txt");
+        Assertions.assertTrue(this.fileSystem.rm("file.txt"));
+        Assertions.assertFalse(this.fileSystem.exists("file.txt"));
     }
 
     @Test
     void testCat() {
-        fileSystem.touch("file.txt");
-        fileSystem.echo("file.txt", "Hello, World!");
-        Assertions.assertEquals("Hello, World!", fileSystem.cat("file.txt"));
+    	this.fileSystem.touch("file.txt");
+    	this.fileSystem.echo("file.txt", "Hello, World!");
+        Assertions.assertEquals("Hello, World!", this.fileSystem.cat("file.txt"));
     }
 
     @Test
     void testEcho() {
-        Assertions.assertTrue(fileSystem.echo("file.txt", "Test content"));
-        Assertions.assertEquals("Test content", fileSystem.cat("file.txt"));
+        Assertions.assertTrue(this.fileSystem.echo("file.txt", "Test content"));
+        Assertions.assertEquals("Test content", this.fileSystem.cat("file.txt"));
     }
 
     @Test
     void testAppend() {
-        fileSystem.echo("file.txt", "Line1\n");
-        Assertions.assertTrue(fileSystem.append("file.txt", "Line2\n"));
-        Assertions.assertEquals("Line1\nLine2\n", fileSystem.cat("file.txt"));
+    	this.fileSystem.echo("file.txt", "Line1\n");
+        Assertions.assertTrue(this.fileSystem.append("file.txt", "Line2\n"));
+        Assertions.assertEquals("Line1\nLine2\n", this.fileSystem.cat("file.txt"));
     }
 
     @Test
     void testExists() {
-        fileSystem.touch("file.txt");
-        Assertions.assertTrue(fileSystem.exists("file.txt"));
-        Assertions.assertFalse(fileSystem.exists("nonexistent.txt"));
+    	this.fileSystem.touch("file.txt");
+        Assertions.assertTrue(this.fileSystem.exists("file.txt"));
+        Assertions.assertFalse(this.fileSystem.exists("nonexistent.txt"));
     }
 
     @Test
     void testGetParentDirectory() {
-        Assertions.assertEquals("/", fileSystem.getParentDirectory("/test"));
-        Assertions.assertEquals("/", fileSystem.getParentDirectory("/"));
-        Assertions.assertEquals("/test", fileSystem.getParentDirectory("/test/subdir"));
+        Assertions.assertEquals("/", this.fileSystem.getParentDirectory("/test"));
+        Assertions.assertEquals("/", this.fileSystem.getParentDirectory("/"));
+        Assertions.assertEquals("/test", this.fileSystem.getParentDirectory("/test/subdir"));
     }
 
     @Test
     void testResolvePath() {
-        fileSystem.mkdir("test");
-        fileSystem.setCurrentDirectory("/test");
-        Assertions.assertEquals("/test/file.txt", fileSystem.resolvePath("file.txt"));
-        Assertions.assertEquals("/images", fileSystem.resolvePath("/images"));
+    	this.fileSystem.mkdir("test");
+    	this.fileSystem.setCurrentDirectory("/test");
+        Assertions.assertEquals("/test/file.txt", this.fileSystem.resolvePath("file.txt"));
+        Assertions.assertEquals("/images", this.fileSystem.resolvePath("/images"));
     }
 
     @Test
     void testNormalizePath() {
-        Assertions.assertEquals("/a/c", fileSystem.normalizePath("/a/./b/../c"));
-        Assertions.assertEquals("/c", fileSystem.normalizePath("/a/b/../../c"));
-        Assertions.assertEquals("/", fileSystem.normalizePath("/../.."));
+        Assertions.assertEquals("/a/c", this.fileSystem.normalizePath("/a/./b/../c"));
+        Assertions.assertEquals("/c", this.fileSystem.normalizePath("/a/b/../../c"));
+        Assertions.assertEquals("/", this.fileSystem.normalizePath("/../.."));
     }
 
     @Test
     void testRmdir() {
-        fileSystem.mkdir("dir1");
-        fileSystem.setCurrentDirectory("/dir1");
-        fileSystem.mkdir("dir2");
-        fileSystem.touch("file.txt");
-        fileSystem.setCurrentDirectory("/");
-        Assertions.assertTrue(fileSystem.rmdir("dir1"));
-        Assertions.assertFalse(fileSystem.exists("dir1"));
+    	this.fileSystem.mkdir("dir1");
+    	this.fileSystem.setCurrentDirectory("/dir1");
+    	this.fileSystem.mkdir("dir2");
+    	this.fileSystem.touch("file.txt");
+    	this.fileSystem.setCurrentDirectory("/");
+        Assertions.assertTrue(this.fileSystem.rmdir("dir1"));
+        Assertions.assertFalse(this.fileSystem.exists("dir1"));
     }
 
     @Test
     void testIsDirectory() {
-        fileSystem.mkdir("test");
-        Assertions.assertTrue(fileSystem.isDirectory("/test"));
-        Assertions.assertFalse(fileSystem.isDirectory("/nonexistent"));
+    	this.fileSystem.mkdir("test");
+        Assertions.assertTrue(this.fileSystem.isDirectory("/test"));
+        Assertions.assertFalse(this.fileSystem.isDirectory("/nonexistent"));
     }
 
     @Test
     void testIsFile() {
-        fileSystem.touch("file.txt");
-        Assertions.assertTrue(fileSystem.isFile("/file.txt"));
-        Assertions.assertFalse(fileSystem.isFile("/nonexistent"));
+    	this.fileSystem.touch("file.txt");
+        Assertions.assertTrue(this.fileSystem.isFile("/file.txt"));
+        Assertions.assertFalse(this.fileSystem.isFile("/nonexistent"));
     }
 
     @Test
     void testLsWithPath() {
-        fileSystem.mkdir("test");
-        fileSystem.touch("file.txt");
-        List<String> contents = fileSystem.ls("/");
+    	this.fileSystem.mkdir("test");
+    	this.fileSystem.touch("file.txt");
+        List<String> contents = this.fileSystem.ls("/");
         Assertions.assertTrue(contents.contains("test/"));
         Assertions.assertTrue(contents.contains("file.txt"));
     }
@@ -147,21 +150,21 @@ class FileSystemTest {
     @Test
     void testSetCurrentDirectoryInvalid() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            fileSystem.setCurrentDirectory("/nonexistent");
+        	this.fileSystem.setCurrentDirectory("/nonexistent");
         });
     }
 
     @Test
     void testMkdirInvalidName() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            fileSystem.mkdir("");
+        	this.fileSystem.mkdir("");
         });
     }
 
     @Test
     void testTouchInvalidName() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            fileSystem.touch("");
+        	this.fileSystem.touch("");
         });
     }
 }

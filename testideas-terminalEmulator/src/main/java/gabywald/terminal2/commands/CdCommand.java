@@ -4,6 +4,7 @@ import gabywald.terminal2.FileSystem;
 
 /**
  * Commande 'cd' : change le répertoire courant.
+ * @author Gabriel Chandesris (2026)
  */
 public class CdCommand implements Command {
     private FileSystem fileSystem;
@@ -14,14 +15,12 @@ public class CdCommand implements Command {
 
     @Override
     public String execute(String[] args, String stdin) {
-        if (args.length == 0) {
-            return "Usage: cd <directory>";
-        }
+        if (args.length == 0) { return "Usage: cd <directory>"; }
 
         String targetDir = args[0];
         if (targetDir.equals("..")) {
             String parentDir = fileSystem.getParentDirectory(fileSystem.getCurrentDirectory());
-            fileSystem.setCurrentDirectory(parentDir);
+            this.fileSystem.setCurrentDirectory(parentDir);
             return "";
         } else if (targetDir.equals("/")) {
             fileSystem.setCurrentDirectory(fileSystem.getRoot());

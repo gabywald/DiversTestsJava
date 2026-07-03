@@ -7,54 +7,57 @@ import org.junit.jupiter.api.Test;
 import gabywald.terminal2.FileSystem;
 import gabywald.terminal2.commands.CommandParser;
 
+/**
+ * @author Gabriel Chandesris (2026)
+ */
 class CommandParserTest {
     private FileSystem fileSystem;
     private CommandParser commandParser;
 
     @BeforeEach
     void setUp() {
-        fileSystem = new FileSystem();
-        commandParser = new CommandParser(fileSystem);
+    	this.fileSystem = new FileSystem();
+    	this.commandParser = new CommandParser(this.fileSystem);
     }
 
     @Test
     void testExecuteLs() {
-        fileSystem.touch("file.txt");
+    	this.fileSystem.touch("file.txt");
         String output = commandParser.execute("ls", "/");
         Assertions.assertTrue(output.contains("file.txt"));
     }
 
     @Test
     void testExecuteCd() {
-        fileSystem.mkdir("test");
-        commandParser.execute("cd test", "/");
-        Assertions.assertEquals("/test", fileSystem.getCurrentDirectory());
+    	Assertions.assertTrue(this.fileSystem.mkdir("test"));
+    	Assertions.assertEquals("", this.commandParser.execute("cd test", "/"));
+        Assertions.assertEquals("/test", this.fileSystem.getCurrentDirectory());
     }
 
     @Test
     void testExecuteCat() {
-        fileSystem.touch("file.txt");
-        fileSystem.echo("file.txt", "Hello");
-        String output = commandParser.execute("cat file.txt", "/");
+    	Assertions.assertTrue(this.fileSystem.touch("file.txt"));
+    	Assertions.assertTrue(this.fileSystem.echo("file.txt", "Hello"));
+        String output = this.commandParser.execute("cat file.txt", "/");
         Assertions.assertEquals("Hello", output);
     }
 
     @Test
     void testExecuteEcho() {
-        String output = commandParser.execute("echo Hello", "/");
+        String output = this.commandParser.execute("echo Hello", "/");
         Assertions.assertEquals("Hello", output);
     }
 
     @Test
     void testExecuteMkdir() {
-        String output = commandParser.execute("mkdir test", "/");
+        String output = this.commandParser.execute("mkdir test", "/");
         Assertions.assertEquals("", output);
         Assertions.assertTrue(fileSystem.exists("test"));
     }
 
     @Test
     void testExecuteTouch() {
-        String output = commandParser.execute("touch file.txt", "/");
+        String output = this.commandParser.execute("touch file.txt", "/");
         Assertions.assertEquals("", output);
         Assertions.assertTrue(fileSystem.exists("file.txt"));
     }
@@ -62,64 +65,72 @@ class CommandParserTest {
     @Test
     void testExecuteRm() {
         fileSystem.touch("file.txt");
-        String output = commandParser.execute("rm file.txt", "/");
+        String output = this.commandParser.execute("rm file.txt", "/");
         Assertions.assertEquals("", output);
-        Assertions.assertFalse(fileSystem.exists("file.txt"));
+        Assertions.assertFalse(this.fileSystem.exists("file.txt"));
     }
 
     @Test
     void testExecutePwd() {
-        String output = commandParser.execute("pwd", "/");
+        String output = this.commandParser.execute("pwd", "/");
         Assertions.assertEquals("/", output);
     }
 
     @Test
     void testExecuteHelp() {
-        String output = commandParser.execute("help", "/");
+        String output = this.commandParser.execute("help", "/");
         Assertions.assertTrue(output.contains("ls"));
         Assertions.assertTrue(output.contains("cd"));
+    }
+    
+    @Test
+    void testExecuteGrep() {
+    	Assertions.assertTrue(this.fileSystem.echo("test.txt", "line1\nline2\nline3") );
+    	Assertions.assertEquals("line1\nline2\nline3", this.commandParser.execute("cat test.txt", "/") );
+    	String output = this.commandParser.execute("grep line2 test.txt", "/");
+        Assertions.assertEquals("line2", output.trim());
     }
 
     @Test
     void testExecuteUnknownCommand() {
-        String output = commandParser.execute("unknown", "/");
+        String output = this.commandParser.execute("unknown", "/");
         Assertions.assertTrue(output.contains("Commande introuvable"));
     }
 
     @Test
     void testRedirectionOutput() {
-        fileSystem.touch("output.txt");
-        String output = commandParser.execute("echo Hello > output.txt", "/");
+    	Assertions.assertTrue(this.fileSystem.touch("output.txt"));
+        String output = this.commandParser.execute("echo Hello > output.txt", "/");
         Assertions.assertEquals("", output);
-        Assertions.assertEquals("Hello", fileSystem.cat("output.txt"));
+        Assertions.assertEquals("Hello", this.fileSystem.cat("output.txt"));
     }
 
     @Test
     void testRedirectionAppend() {
-        fileSystem.echo("output.txt", "Line1\n");
-        String output = commandParser.execute("echo Line2 >> output.txt", "/");
+    	Assertions.assertTrue(this.fileSystem.echo("output.txt", "Line1\n"));
+        String output = this.commandParser.execute("echo Line2 >> output.txt", "/");
         Assertions.assertEquals("", output);
-        Assertions.assertEquals("Line1\nLine2", fileSystem.cat("output.txt"));
+        Assertions.assertEquals("Line1\nLine2", this.fileSystem.cat("output.txt"));
     }
 
     @Test
     void testRedirectionInput() {
-        fileSystem.echo("input.txt", "Hello from file");
-        String output = commandParser.execute("cat < input.txt", "/");
+    	Assertions.assertTrue(this.fileSystem.echo("input.txt", "Hello from file"));
+        String output = this.commandParser.execute("cat < input.txt", "/");
         Assertions.assertEquals("Hello from file", output);
     }
 
     @Test
     void testPipe() {
-        fileSystem.echo("test.txt", "line1\nline2\nline3");
-        String output = commandParser.execute("cat test.txt | grep line2", "/");
+    	Assertions.assertTrue(this.fileSystem.echo("test.txt", "line1\nline2\nline3"));
+        String output = this.commandParser.execute("cat test.txt | grep line2", "/");
         Assertions.assertEquals("line2", output.trim());
     }
 
     @Test
     void testMultiplePipes() {
-        fileSystem.echo("test.txt", "apple\nbanana\napple");
-        String output = commandParser.execute("cat test.txt | grep apple | wc", "/");
-        Assertions.assertEquals("2 2 10", output.trim());
+    	Assertions.assertTrue(this.fileSystem.echo("test.txt", "apple\nbanana\napple"));
+        String output = this.commandParser.execute("cat test.txt | grep apple | wc", "/");
+        Assertions.assertEquals("2 2 12", output.trim()); // NOTE count '\n'
     }
 }

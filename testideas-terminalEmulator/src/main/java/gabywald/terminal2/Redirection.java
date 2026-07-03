@@ -1,10 +1,12 @@
 package gabywald.terminal2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Classe pour gérer les redirections d'entrée/sortie (>, >>, <).
+ * @author Gabriel Chandesris (2026)
  */
 public class Redirection {
     /**
@@ -34,16 +36,12 @@ public class Redirection {
     /**
      * Retourne le type de redirection.
      */
-    public Type getType() {
-        return type;
-    }
+    public Type getType() { return this.type; }
 
     /**
      * Retourne le nom du fichier.
      */
-    public String getFileName() {
-        return fileName;
-    }
+    public String getFileName() { return this.fileName; }
 
     /**
      * Analyse une commande pour extraire les redirections.
@@ -65,9 +63,7 @@ public class Redirection {
             } else if (arg.equals("<") && i + 1 < args.length) {
                 redirections.add(new Redirection(Type.INPUT, args[i + 1]));
                 i++;
-            } else {
-                cleanedArgs.add(arg);
-            }
+            } else { cleanedArgs.add(arg); }
         }
 
         if (!cleanedArgs.isEmpty() && !redirections.isEmpty()) {
@@ -76,4 +72,15 @@ public class Redirection {
 
         return redirections;
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sbToReturn = new StringBuilder();
+    	
+    	sbToReturn.append(this.fileName).append(this.type.name()).append("\n");
+    	Arrays.asList(this.cleanedArgs).stream().forEach(elt -> sbToReturn.append("\t").append(elt).append("\n"));
+    	
+    	return sbToReturn.toString();
+    }
+    
 }

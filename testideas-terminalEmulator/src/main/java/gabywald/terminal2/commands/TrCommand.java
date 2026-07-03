@@ -5,19 +5,16 @@ import gabywald.terminal2.FileSystem;
 /**
  * Commande 'tr' : remplace ou supprime des caractères.
  * Usage: tr <set1> <set2> [fichier] ou tr <set1> <set2> < stdin
+ * @author Gabriel Chandesris (2026)
  */
 public class TrCommand implements Command {
     private FileSystem fileSystem;
 
-    public TrCommand(FileSystem fileSystem) {
-        this.fileSystem = fileSystem;
-    }
+    public TrCommand(FileSystem fileSystem) { this.fileSystem = fileSystem; }
 
     @Override
     public String execute(String[] args, String stdin) {
-        if (args.length < 2) {
-            return "Usage: tr <set1> <set2> [file]";
-        }
+        if (args.length < 2) { return "Usage: tr <set1> <set2> [file]"; }
 
         String set1 = args[0];
         String set2 = args[1];
@@ -25,10 +22,9 @@ public class TrCommand implements Command {
 
         if (args.length > 2) {
             String fileName = args[2];
-            if (!fileSystem.exists(fileName)) {
-                return "Fichier introuvable: " + fileName;
-            }
-            content = fileSystem.cat(fileName);
+            if (!this.fileSystem.exists(fileName)) 
+            	{ return "Fichier introuvable: " + fileName; }
+            content = this.fileSystem.cat(fileName);
         } else if (stdin != null) {
             content = stdin;
         } else {

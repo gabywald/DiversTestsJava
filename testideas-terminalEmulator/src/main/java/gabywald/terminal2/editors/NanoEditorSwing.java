@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * Éditeur nano adapté à Swing.
  * Permet d'éditer un fichier ligne par ligne.
+ * @author Gabriel Chandesris (2026)
  */
 public class NanoEditorSwing implements TextEditorSwing {
     private TerminalEmulator terminal;

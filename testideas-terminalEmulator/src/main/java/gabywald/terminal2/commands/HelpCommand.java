@@ -1,7 +1,8 @@
 package gabywald.terminal2.commands;
 
 /**
- * Commande 'help' : affiche la liste des commandes disponibles.
+ * Command 'help' : Show Availaible Command List. 
+ * @author Gabriel Chandesris (2026)
  */
 public class HelpCommand implements Command {
     @Override

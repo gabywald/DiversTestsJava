@@ -3,6 +3,7 @@ package gabywald.terminal2.commands;
 /**
  * Interface pour les commandes du terminal.
  * Supporte les entrées standard (stdin) pour les pipes et redirections.
+ * @author Gabriel Chandesris (2026)
  */
 public interface Command {
     /**
@@ -10,9 +11,7 @@ public interface Command {
      * @param args Arguments de la commande.
      * @return Résultat de l'exécution.
      */
-    default String execute(String[] args) {
-        return execute(args, null);
-    }
+    default String execute(String[] args) { return this.execute(CommandParser.removefirstFrom(args), null); }
 
     /**
      * Exécute la commande avec une entrée standard (pour les pipes et redirections <).

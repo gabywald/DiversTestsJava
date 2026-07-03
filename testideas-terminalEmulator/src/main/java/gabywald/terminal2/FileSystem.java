@@ -5,6 +5,7 @@ import java.util.*;
 /**
  * Classe représentant un système de fichiers simplifié pour l'émulateur de terminal.
  * Gère les fichiers et répertoires sous forme de structure arborescente.
+ * @author Gabriel Chandesris (2026)
  */
 public class FileSystem {
     private static final String ROOT = "/";
@@ -16,25 +17,21 @@ public class FileSystem {
      * Constructeur : initialise le système de fichiers avec un répertoire racine.
      */
     public FileSystem() {
-        this.currentDirectory = ROOT;
+        this.currentDirectory = FileSystem.ROOT;
         this.directories = new HashMap<>();
         this.files = new HashMap<>();
-        this.directories.put(ROOT, new HashSet<>());
+        this.directories.put(FileSystem.ROOT, new HashSet<>());
     }
 
     /**
      * Retourne le répertoire racine.
      */
-    public String getRoot() {
-        return ROOT;
-    }
+    public String getRoot() { return FileSystem.ROOT; }
 
     /**
      * Retourne le répertoire courant.
      */
-    public String getCurrentDirectory() {
-        return this.currentDirectory;
-    }
+    public String getCurrentDirectory() { return this.currentDirectory; }
 
     /**
      * Change le répertoire courant.
@@ -42,9 +39,8 @@ public class FileSystem {
      * @throws IllegalArgumentException Si le répertoire n'existe pas.
      */
     public void setCurrentDirectory(String path) {
-        if (!this.directories.containsKey(path)) {
-            throw new IllegalArgumentException("Répertoire introuvable: " + path);
-        }
+        if (!this.directories.containsKey(path)) 
+        	{ throw new IllegalArgumentException("Répertoire introuvable: " + path); }
         this.currentDirectory = path;
     }
 
@@ -55,15 +51,13 @@ public class FileSystem {
      * @throws IllegalArgumentException Si dirName est vide ou null.
      */
     public boolean mkdir(String dirName) {
-        if (dirName == null || dirName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nom de répertoire invalide.");
-        }
+        if (dirName == null || dirName.trim().isEmpty()) 
+        	{ throw new IllegalArgumentException("Nom de répertoire invalide."); }
 
         String fullPath = getFullPath(dirName);
 
-        if (this.directories.containsKey(fullPath)) {
-            return false;
-        }
+        if (this.directories.containsKey(fullPath)) 
+        	{ return false; }
 
         this.directories.put(fullPath, new HashSet<>());
         this.directories.get(this.currentDirectory).add(dirName);
@@ -76,11 +70,9 @@ public class FileSystem {
      * @return true si la suppression a réussi, false sinon.
      */
     public boolean rm(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return false;
-        }
+        if (name == null || name.trim().isEmpty()) { return false; }
 
-        String fullPath = getFullPath(name);
+        String fullPath = this.getFullPath(name);
 
         if (this.files.containsKey(fullPath)) {
             this.files.remove(fullPath);
@@ -105,15 +97,11 @@ public class FileSystem {
      * @return true si la suppression a réussi, false sinon.
      */
     public boolean rmdir(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return false;
-        }
+        if (name == null || name.trim().isEmpty()) { return false; }
 
         String fullPath = getFullPath(name);
 
-        if (!this.directories.containsKey(fullPath)) {
-            return false;
-        }
+        if (!this.directories.containsKey(fullPath)) { return false; }
 
         Set<String> contents = new HashSet<>(this.directories.get(fullPath));
         for (String item : contents) {
@@ -139,7 +127,7 @@ public class FileSystem {
         Set<String> dirContents = this.directories.getOrDefault(this.currentDirectory, new HashSet<>());
 
         for (String item : dirContents) {
-            String fullPath = getFullPath(item);
+            String fullPath = this.getFullPath(item);
             if (this.directories.containsKey(fullPath)) {
                 contents.add(item + "/");
             } else if (this.files.containsKey(fullPath)) {
@@ -158,9 +146,8 @@ public class FileSystem {
      * @throws IllegalArgumentException Si le répertoire n'existe pas.
      */
     public List<String> ls(String dirPath) {
-        if (!this.directories.containsKey(dirPath)) {
-            throw new IllegalArgumentException("Répertoire introuvable: " + dirPath);
-        }
+        if (!this.directories.containsKey(dirPath)) 
+        	{ throw new IllegalArgumentException("Répertoire introuvable: " + dirPath); }
 
         List<String> contents = new ArrayList<>();
         Set<String> dirContents = this.directories.get(dirPath);
@@ -185,17 +172,15 @@ public class FileSystem {
      * @throws IllegalArgumentException Si fileName est vide ou null.
      */
     public boolean touch(String fileName) {
-        if (fileName == null || fileName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nom de fichier invalide.");
-        }
+        if (fileName == null || fileName.trim().isEmpty()) 
+        	{ throw new IllegalArgumentException("Nom de fichier invalide."); }
 
-        String fullPath = getFullPath(fileName);
+        String fullPath = this.getFullPath(fileName);
 
-        if (this.files.containsKey(fullPath)) {
-            return false;
-        }
+        if (this.files.containsKey(fullPath)) { return false; }
 
         this.files.put(fullPath, "");
+        this.directories.get(this.currentDirectory).add(fileName);
         return true;
     }
 
@@ -205,7 +190,7 @@ public class FileSystem {
      * @return Contenu du fichier, ou un message d'erreur si le fichier n'existe pas.
      */
     public String cat(String fileName) {
-        String fullPath = getFullPath(fileName);
+        String fullPath = this.getFullPath(fileName);
         return this.files.getOrDefault(fullPath, "Fichier introuvable: " + fileName);
     }
 
@@ -216,11 +201,9 @@ public class FileSystem {
      * @return true si l'écriture a réussi, false sinon.
      */
     public boolean echo(String fileName, String content) {
-        if (fileName == null || fileName.trim().isEmpty()) {
-            return false;
-        }
+        if (fileName == null || fileName.trim().isEmpty()) { return false; }
 
-        String fullPath = getFullPath(fileName);
+        String fullPath = this.getFullPath(fileName);
         this.files.put(fullPath, content);
         return true;
     }
@@ -232,9 +215,7 @@ public class FileSystem {
      * @return true si l'ajout a réussi, false sinon.
      */
     public boolean append(String fileName, String content) {
-        if (fileName == null || fileName.trim().isEmpty()) {
-            return false;
-        }
+        if (fileName == null || fileName.trim().isEmpty()) { return false; }
 
         String fullPath = getFullPath(fileName);
         String existingContent = this.files.getOrDefault(fullPath, "");
@@ -248,9 +229,8 @@ public class FileSystem {
      * @return Chemin absolu.
      */
     private String getFullPath(String name) {
-        if (this.currentDirectory.equals(ROOT)) {
-            return ROOT + name;
-        }
+        if (this.currentDirectory.equals(FileSystem.ROOT)) 
+        	{ return FileSystem.ROOT + name; }
         return this.currentDirectory + "/" + name;
     }
 
@@ -270,21 +250,16 @@ public class FileSystem {
      * @return Chemin absolu du répertoire parent.
      */
     public String getParentDirectory(String path) {
-        if (path.equals(ROOT)) {
-            return ROOT;
-        }
+        if (path.equals(FileSystem.ROOT)) { return FileSystem.ROOT; }
 
         String[] parts = path.split("/");
-        if (parts.length <= 2) {
-            return ROOT;
-        }
+        if (parts.length <= 2) { return FileSystem.ROOT; }
 
         StringBuilder parentPath = new StringBuilder();
-        for (int i = 1; i < parts.length - 1; i++) {
-            parentPath.append("/").append(parts[i]);
-        }
+        for (int i = 1; i < parts.length - 1; i++)
+        	{ parentPath.append("/").append(parts[i]); }
 
-        return parentPath.length() == 0 ? ROOT : parentPath.toString();
+        return parentPath.length() == 0 ? FileSystem.ROOT : parentPath.toString();
     }
 
     /**
@@ -293,15 +268,13 @@ public class FileSystem {
      * @return Chemin absolu résolu.
      */
     public String resolvePath(String path) {
-        if (path == null || path.trim().isEmpty()) {
-            return this.currentDirectory;
-        }
+        if (path == null || path.trim().isEmpty()) 
+        	{ return this.currentDirectory; }
 
         path = path.trim();
 
-        if (path.startsWith(ROOT)) {
-            return normalizePath(path);
-        }
+        if (path.startsWith(ROOT)) 
+        	{ return this.normalizePath(path); }
 
         String resolvedPath = this.currentDirectory + "/" + path;
         return normalizePath(resolvedPath);
@@ -313,33 +286,28 @@ public class FileSystem {
      * @return Chemin normalisé.
      */
     public String normalizePath(String path) {
-        if (path.equals(ROOT)) {
-            return ROOT;
-        }
+        if (path.equals(FileSystem.ROOT)) { return FileSystem.ROOT; }
 
         String[] parts = path.split("/");
         List<String> normalizedParts = new ArrayList<>();
 
         for (String part : parts) {
-            if (part.isEmpty() || part.equals(".")) {
-                continue;
-            } else if (part.equals("..")) {
+            if (part.isEmpty() || part.equals(".")) 
+            	{ continue; } 
+            else if (part.equals("..")) {
                 if (!normalizedParts.isEmpty()) {
                     normalizedParts.remove(normalizedParts.size() - 1);
                 }
-            } else {
-                normalizedParts.add(part);
-            }
+            } 
+            else { normalizedParts.add(part); }
         }
 
-        if (normalizedParts.isEmpty()) {
-            return ROOT;
-        }
+        if (normalizedParts.isEmpty()) 
+        	{ return FileSystem.ROOT; }
 
         StringBuilder normalizedPath = new StringBuilder();
-        for (String part : normalizedParts) {
-            normalizedPath.append("/").append(part);
-        }
+        for (String part : normalizedParts) 
+        	{ normalizedPath.append("/").append(part); }
 
         return normalizedPath.toString();
     }
@@ -349,16 +317,14 @@ public class FileSystem {
      * @param path Chemin à vérifier.
      * @return true si c'est un répertoire, false sinon.
      */
-    public boolean isDirectory(String path) {
-        return this.directories.containsKey(path);
-    }
+    public boolean isDirectory(String path) 
+    	{ return this.directories.containsKey(path); }
 
     /**
      * Vérifie si un chemin est un fichier.
      * @param path Chemin à vérifier.
      * @return true si c'est un fichier, false sinon.
      */
-    public boolean isFile(String path) {
-        return this.files.containsKey(path);
-    }
+    public boolean isFile(String path) 
+    	{ return this.files.containsKey(path); }
 }

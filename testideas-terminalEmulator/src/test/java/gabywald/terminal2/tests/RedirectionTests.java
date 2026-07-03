@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import gabywald.terminal2.Redirection;
 
+/**
+ * @author Gabriel Chandesris (2026)
+ */
 class RedirectionTest {
     @Test
     void testParseRedirectionsOutput() {

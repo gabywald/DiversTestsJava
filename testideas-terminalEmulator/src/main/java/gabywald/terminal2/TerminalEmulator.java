@@ -1,17 +1,28 @@
 package gabywald.terminal2;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
+
 import gabywald.terminal2.commands.CommandParser;
 import gabywald.terminal2.editors.NanoEditorSwing;
 import gabywald.terminal2.editors.TextEditorSwing;
 import gabywald.terminal2.editors.VimEditorSwing;
-import javax.swing.*;
-import javax.swing.text.*;
-import java.awt.*;
-import java.awt.event.*;
 
 /**
  * Classe principale pour l'interface graphique de l'émulateur de terminal.
  * Gère l'affichage, la saisie des commandes, et les modes d'édition.
+ * @author Gabriel Chandesris (2026)
  */
 public class TerminalEmulator {
     private JFrame frame;
@@ -21,59 +32,69 @@ public class TerminalEmulator {
     private CommandParser commandParser;
     private String currentDirectory;
 
-    // Pour le mode édition
+    // For Edition Mode
     private TextEditorSwing currentEditor;
     private String currentEditFile;
     private boolean isEditing = false;
 
     /**
-     * Constructeur : initialise l'interface graphique et le système de fichiers.
+     * Constructor : initialize graphical Interface and File System
      */
     public TerminalEmulator() {
-        fileSystem = new FileSystem();
-        commandParser = new CommandParser(fileSystem);
-        currentDirectory = fileSystem.getRoot();
-        initializeUI();
+    	this.fileSystem = new FileSystem();
+    	this.commandParser = new CommandParser(this.fileSystem);
+    	this.currentDirectory = this.fileSystem.getRoot();
+        this.initializeUI();
     }
 
     /**
-     * Initialise l'interface utilisateur (UI).
+     * Initialise User Interface (UI).
      */
     private void initializeUI() {
-        frame = new JFrame("Terminal Emulator");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
-        frame.setLayout(new BorderLayout());
+    	this.frame = new JFrame("Terminal Emulator");
+    	this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    	this.frame.setSize(800, 600);
+    	this.frame.setLayout(new BorderLayout());
 
-        // Zone de sortie (non éditable)
-        outputArea = new JTextPane();
-        outputArea.setEditable(false);
-        outputArea.setBackground(Color.BLACK);
-        outputArea.setForeground(Color.GREEN);
-        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        JScrollPane scrollPane = new JScrollPane(outputArea);
-        frame.add(scrollPane, BorderLayout.CENTER);
+        // Not editable output Zone
+    	this.outputArea = new JTextPane();
+    	this.outputArea.setEditable(false);
+    	this.outputArea.setBackground(Color.BLACK);
+    	this.outputArea.setForeground(Color.GREEN);
+    	this.outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        JScrollPane scrollPane = new JScrollPane(this.outputArea);
+        this.frame.add(scrollPane, BorderLayout.CENTER);
 
-        // Champ de saisie
-        inputField = new JTextField();
-        inputField.setBackground(Color.BLACK);
-        inputField.setForeground(Color.GREEN);
-        inputField.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        inputField.addActionListener(e -> executeCommand());
-        frame.add(inputField, BorderLayout.SOUTH);
+        // Input Field
+        this.inputField = new JTextField();
+        this.inputField.setBackground(Color.BLACK);
+        this.inputField.setForeground(Color.GREEN);
+        this.inputField.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        this.inputField.addActionListener(e -> executeCommand());
+        this.frame.add(this.inputField, BorderLayout.SOUTH);
 
-        // Afficher le prompt initial
-        printPrompt();
+        // Show Welcome Message
+        this.printWelcomeMessage();
+        // Show Initial Prompt
+        this.printPrompt();
 
-        frame.setVisible(true);
+        this.frame.setVisible(true);
+    }
+    
+   private void printWelcomeMessage() {
+        this.appendToOutput("===============================================\n");
+        this.appendToOutput("   TERMINAL EMULATOR (V2) - Java 8 / Swing\n");
+        this.appendToOutput("   Type 'help' for a list of available commands\n");
+        // this.appendToOutput("   Type 'exit' to quit\n");
+        this.appendToOutput("===============================================\n\n");
     }
 
     /**
-     * Affiche le prompt dans la zone de sortie.
+     * Show Prompt in Output Zone
      */
     private void printPrompt() {
         try {
-            StyledDocument doc = outputArea.getStyledDocument();
+            StyledDocument doc = this.outputArea.getStyledDocument();
             doc.insertString(doc.getLength(), currentDirectory + " > ", getPromptStyle());
         } catch (BadLocationException ex) {
             ex.printStackTrace();
@@ -81,7 +102,7 @@ public class TerminalEmulator {
     }
 
     /**
-     * Retourne le style pour le prompt.
+     * Return Prompt Stule
      */
     private Style getPromptStyle() {
         StyleContext sc = StyleContext.getDefaultStyleContext();
@@ -92,48 +113,46 @@ public class TerminalEmulator {
     }
 
     /**
-     * Exécute la commande saisie par l'utilisateur.
+     * Execute command given by User
      */
     private void executeCommand() {
-        String command = inputField.getText().trim();
-        inputField.setText("");
+        String command = this.inputField.getText().trim();
+        this.inputField.setText("");
 
         if (command.isEmpty()) {
-            printPrompt();
+        	this.printPrompt();
             return;
         }
 
-        appendToOutput(command + "\n");
+        this.appendToOutput(command + "\n");
 
-        if (isEditing) {
-            handleEditorInput(command);
+        if (this.isEditing) {
+        	this.handleEditorInput(command);
             return;
         }
 
         if (command.startsWith("edit ")) {
-            startEditMode(command.substring(5).trim());
+        	this.startEditMode(command.substring(5).trim());
             return;
         }
 
-        String output = commandParser.execute(command, currentDirectory);
-        if (output.startsWith("MODE_EDIT:")) {
-            startEditMode(output.substring(10));
-        } else {
-            appendToOutput(output + "\n");
-        }
+        String output = this.commandParser.execute(command, this.currentDirectory);
+        if (output.startsWith("MODE_EDIT:")) 
+        	{ this.startEditMode(output.substring(10)); }
+        else 
+        	{ this.appendToOutput(output + "\n"); }
 
-        if (command.startsWith("cd ")) {
-            currentDirectory = fileSystem.getCurrentDirectory();
-        }
+        if (command.startsWith("cd ")) 
+        	{ this.currentDirectory = this.fileSystem.getCurrentDirectory(); }
 
-        printPrompt();
+        this.printPrompt();
     }
 
     /**
-     * Démarre le mode édition (nano ou vim).
+     * Start Editing mode (nano or vim)
      */
     private void startEditMode(String args) {
-        isEditing = true;
+    	this.isEditing = true;
         String[] editArgs = args.split("\\s+");
         String editorType = "nano";
         String fileName;
@@ -142,63 +161,60 @@ public class TerminalEmulator {
             editorType = editArgs[0].substring(2);
             if (editArgs.length < 2) {
                 appendToOutput("Usage: edit [--nano|--vim] <filename>\n");
-                isEditing = false;
+                this.isEditing = false;
                 printPrompt();
                 return;
             }
             fileName = editArgs[1];
-        } else {
-            fileName = editArgs[0];
-        }
+        } else { fileName = editArgs[0]; }
 
-        currentEditFile = fileName;
+        this.currentEditFile = fileName;
 
-        if (editorType.equals("nano")) {
-            currentEditor = new NanoEditorSwing(this, fileSystem, fileName);
-        } else {
-            currentEditor = new VimEditorSwing(this, fileSystem, fileName);
-        }
+        if (editorType.equals("nano")) 
+        	{ this.currentEditor = new NanoEditorSwing(this, this.fileSystem, fileName); } 
+        else 
+        	{ this.currentEditor = new VimEditorSwing(this, this.fileSystem, fileName); }
 
-        appendToOutput("--- Édition avec " + editorType + " ---\n");
-        currentEditor.start();
+        this.appendToOutput("--- Edition with '" + editorType + "' ---\n");
+        this.currentEditor.start();
     }
 
     /**
      * Gère les entrées en mode édition.
      */
     private void handleEditorInput(String input) {
-        String result = currentEditor.handleInput(input);
+        String result = this.currentEditor.handleInput(input);
         if (result != null) {
             if (result.startsWith("SAVE:")) {
-                fileSystem.echo(currentEditFile, result.substring(5));
-                appendToOutput("Fichier '" + currentEditFile + "' sauvegardé.\n");
+            	this.fileSystem.echo(this.currentEditFile, result.substring(5));
+                this.appendToOutput("File '" + this.currentEditFile + "' recorded.\n");
             } else if (result.equals("CANCEL")) {
-                appendToOutput("Édition annulée.\n");
+            	this.appendToOutput("Edition Canceled.\n");
             }
-            endEditMode();
+            this.endEditMode();
         } else {
             appendToOutput(input + "\n");
         }
     }
 
     /**
-     * Termine le mode édition.
+     * End Edtion Mode 
      */
     private void endEditMode() {
-        isEditing = false;
-        currentEditor = null;
-        currentEditFile = null;
-        printPrompt();
+    	this.isEditing			= false;
+    	this.currentEditor		= null;
+    	this.currentEditFile	= null;
+    	this.printPrompt();
     }
 
     /**
-     * Ajoute du texte à la zone de sortie.
+     * Add Text to Output Zone
      */
     public void appendToOutput(String text) {
         try {
-            StyledDocument doc = outputArea.getStyledDocument();
+            StyledDocument doc = this.outputArea.getStyledDocument();
             doc.insertString(doc.getLength(), text, null);
-            outputArea.setCaretPosition(doc.getLength());
+            this.outputArea.setCaretPosition(doc.getLength());
         } catch (BadLocationException ex) {
             ex.printStackTrace();
         }

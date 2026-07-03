@@ -8,6 +8,7 @@ import gabywald.terminal2.FileSystem;
  *   edit <filename>          # Utilise nano par défaut
  *   edit --nano <filename>   # Force nano
  *   edit --vim <filename>    # Force vim
+ * @author Gabriel Chandesris (2026)
  */
 public class EditCommand implements Command {
     private FileSystem fileSystem;
@@ -20,9 +21,7 @@ public class EditCommand implements Command {
 
     @Override
     public String execute(String[] args, String stdin) {
-        if (args.length == 0) {
-            return "Usage: edit [--nano|--vim] <filename>";
-        }
+        if (args.length == 0) { return "Usage: edit [--nano|--vim] <filename>"; }
         return "MODE_EDIT:" + String.join(" ", args);
     }
 }

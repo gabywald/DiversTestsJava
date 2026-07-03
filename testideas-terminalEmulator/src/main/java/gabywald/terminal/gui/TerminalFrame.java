@@ -92,11 +92,11 @@ public class TerminalFrame extends JFrame {
     }
     
     void printWelcomeMessage() {
-        this.appendOutput("=============================================\n");
+        this.appendOutput("===============================================\n");
         this.appendOutput("   TERMINAL EMULATOR - Java 8 / Swing\n");
         this.appendOutput("   Type 'help' for a list of available commands\n");
         this.appendOutput("   Type 'exit' to quit\n");
-        this.appendOutput("=============================================\n\n");
+        this.appendOutput("===============================================\n\n");
     }
     
     void appendOutput(String text) {

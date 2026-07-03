@@ -12,7 +12,7 @@ public class EchoCommand implements Command {
         if (args.length == 0) return "";
         StringBuilder output = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
-            if (i > 0) output.append(" ");
+            if (i > 0) { output.append(" "); }
             output.append(args[i]);
         }
         return output.toString();

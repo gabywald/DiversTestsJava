@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * Éditeur vim adapté à Swing (simplifié).
  * Supporte le mode commande et le mode insertion.
+ * @author Gabriel Chandesris (2026)
  */
 public class VimEditorSwing implements TextEditorSwing {
     private TerminalEmulator terminal;
@@ -32,19 +33,15 @@ public class VimEditorSwing implements TextEditorSwing {
 
         if (fileSystem.exists(fileName)) {
             String content = fileSystem.cat(fileName);
-            for (String line : content.split("\n")) {
-                lines.add(line);
-            }
-        } else {
-            lines.add("");
-        }
+            for (String line : content.split("\n")) { lines.add(line); }
+        } else { lines.add(""); }
     }
 
     @Override
     public void start() {
-        terminal.appendToOutput("--- Vim: Édition de '" + fileName + "' ---\n");
-        terminal.appendToOutput("Mode: COMMANDE | Tapez 'i' pour passer en mode insertion\n");
-        terminal.appendToOutput("Commandes: :wq (sauvegarder), :q! (quitter), :esc (mode commande)\n");
+        this.terminal.appendToOutput("--- Vim: Édition de '" + fileName + "' ---\n");
+        this.terminal.appendToOutput("Mode: COMMANDE | Tapez 'i' pour passer en mode insertion\n");
+        this.terminal.appendToOutput("Commandes: :wq (sauvegarder), :q! (quitter), :esc (mode commande)\n");
         displayCurrentLine();
     }
 
@@ -52,15 +49,15 @@ public class VimEditorSwing implements TextEditorSwing {
      * Affiche la ligne courante.
      */
     private void displayCurrentLine() {
-        terminal.appendToOutput("vim [" + (insertMode ? "INSERT" : "COMMAND") + "] > " + lines.get(currentLineIndex) + "\n");
+    	this.terminal.appendToOutput("vim [" + (this.insertMode ? "INSERT" : "COMMAND") + "] > " + this.lines.get(currentLineIndex) + "\n");
     }
 
     @Override
     public String handleInput(String input) {
-        if (insertMode) {
+        if (this.insertMode) {
             if (input.equals(":esc")) {
-                insertMode = false;
-                terminal.appendToOutput("Mode: COMMANDE\n");
+            	this.insertMode = false;
+                this.terminal.appendToOutput("Mode: COMMANDE\n");
                 displayCurrentLine();
                 return null;
             } else {
@@ -70,27 +67,25 @@ public class VimEditorSwing implements TextEditorSwing {
             }
         } else {
             if (input.equals("i")) {
-                insertMode = true;
-                terminal.appendToOutput("Mode: INSERT\n");
-                displayCurrentLine();
+            	this.insertMode = true;
+                this.terminal.appendToOutput("Mode: INSERT\n");
+                this.displayCurrentLine();
                 return null;
             } else if (input.equals(":wq")) {
                 return "SAVE:" + String.join("\n", lines);
             } else if (input.equals(":q!")) {
                 return "CANCEL";
             } else if (input.equals(":esc")) {
-                displayCurrentLine();
+            	this.displayCurrentLine();
                 return null;
             } else {
-                terminal.appendToOutput("Commande inconnue. Tapez 'i' pour éditer.\n");
-                displayCurrentLine();
+            	this.terminal.appendToOutput("Commande inconnue. Tapez 'i' pour éditer.\n");
+            	this.displayCurrentLine();
                 return null;
             }
         }
     }
 
     @Override
-    public String getName() {
-        return "vim";
-    }
+    public String getName() { return "vim"; }
 }

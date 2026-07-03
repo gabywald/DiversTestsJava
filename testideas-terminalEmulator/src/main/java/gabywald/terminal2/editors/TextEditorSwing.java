@@ -2,6 +2,7 @@ package gabywald.terminal2.editors;
 
 /**
  * Interface pour les éditeurs de texte adaptés à Swing.
+ * @author Gabriel Chandesris (2026)
  */
 public interface TextEditorSwing {
     /**

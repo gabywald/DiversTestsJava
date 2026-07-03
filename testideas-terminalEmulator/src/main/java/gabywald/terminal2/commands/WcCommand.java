@@ -5,13 +5,12 @@ import gabywald.terminal2.FileSystem;
 /**
  * Commande 'wc' : compte les lignes, mots et caractères.
  * Usage: wc [fichier] ou wc < stdin
+ * @author Gabriel Chandesris (2026)
  */
 public class WcCommand implements Command {
     private FileSystem fileSystem;
 
-    public WcCommand(FileSystem fileSystem) {
-        this.fileSystem = fileSystem;
-    }
+    public WcCommand(FileSystem fileSystem) { this.fileSystem = fileSystem; }
 
     @Override
     public String execute(String[] args, String stdin) {
@@ -19,10 +18,9 @@ public class WcCommand implements Command {
 
         if (args.length > 0) {
             String fileName = args[0];
-            if (!fileSystem.exists(fileName)) {
-                return "Fichier introuvable: " + fileName;
-            }
-            content = fileSystem.cat(fileName);
+            if (!this.fileSystem.exists(fileName)) 
+            	{ return "Fichier introuvable: " + fileName; }
+            content = this.fileSystem.cat(fileName);
         } else if (stdin != null) {
             content = stdin;
         } else {
