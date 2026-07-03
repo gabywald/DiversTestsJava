@@ -20,6 +20,15 @@
 		<junit.version>5.8.2</junit.version>
 	</properties>
 	<dependencies>
+	
+		<!-- Source: https://mvnrepository.com/artifact/info.picocli/picocli -->
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+			<version>4.7.7</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- junit 5, unit test -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -33,6 +42,7 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		
 	</dependencies>
 
 	<build>
@@ -62,7 +72,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>gabywald.crypto.launcher.CryptoLauncher</mainClass>
+							<mainClass>gabywald.launchers.TerminalEmulatorLaunchers</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -75,7 +85,7 @@
 					<archive>
 						<manifest>
 							<!-- Your main class -->
-							<mainClass>gabywald.crypto.launcher.CryptoLauncher</mainClass>
+							<mainClass>gabywald.launchers.TerminalEmulatorLaunchers</mainClass>
 							<!-- ClassPath / CP -->
 							<addClasspath>true</addClasspath>
 						</manifest>
