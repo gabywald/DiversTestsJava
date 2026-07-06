@@ -28,12 +28,12 @@ public class HelloLauncher {
         rc.property(LoggingFeature.LOGGING_FEATURE_LOGGER_LEVEL_SERVER, Level.WARNING.getName());
 
         try {
-            HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, rc);
+            HttpServer server = GrizzlyHttpServerFactory.createHttpServer(HelloLauncher.BASE_URI, rc);
             server.start();
 
             System.out.println(String.format(
                     "Jersey app started with WADL available at " + "%sapplication.wadl\nHit enter to stop it...",
-                    BASE_URI, BASE_URI));
+                    HelloLauncher.BASE_URI, HelloLauncher.BASE_URI));
 
             System.in.read();
             server.shutdownNow();
