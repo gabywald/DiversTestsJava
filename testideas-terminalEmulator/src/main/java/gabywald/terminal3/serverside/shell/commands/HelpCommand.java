@@ -1,13 +1,20 @@
-package gabywald.terminal.commands;
+package gabywald.terminal3.serverside.shell.commands;
 
-import gabywald.terminal.TerminalState;
 import java.util.Map;
+
+import gabywald.terminal3.clientside.gui.TerminalState;
+import gabywald.terminal3.serverside.shell.CommandFactory;
+import gabywald.terminal3.serverside.shell.ICommand;
 
 /**
  * help command - Display help information
  * @author Gabriel Chandesris (2026)
  */
-public class HelpCommand implements Command {
+public class HelpCommand implements ICommand {
+	
+	@Override
+	public String execute(TerminalState state, String[] args, String stdin) 
+		{ return this.execute(state, args); }
 	
     @Override
     public String execute(TerminalState state, String[] args) {
@@ -19,9 +26,9 @@ public class HelpCommand implements Command {
     private String getGeneralHelp() {
         StringBuilder help = new StringBuilder();
         help.append("Available commands:\n\n");
-        Map<String, Command> commands = CommandFactory.getAllCommands();
-        for (Map.Entry<String, Command> entry : commands.entrySet()) {
-            Command cmd = entry.getValue();
+        Map<String, ICommand> commands = CommandFactory.getAllCommands();
+        for (Map.Entry<String, ICommand> entry : commands.entrySet()) {
+        	ICommand cmd = entry.getValue();
             help.append(String.format("  %-15s %s\n", cmd.getName(), cmd.getDescription()));
         }
         help.append("\nType 'help <command>' for more information about a specific command.\n");
@@ -29,7 +36,7 @@ public class HelpCommand implements Command {
     }
     
     private String getCommandHelp(String commandName) {
-        Command cmd = CommandFactory.getCommand(commandName);
+    	ICommand cmd = CommandFactory.getCommand(commandName);
         if (cmd == null) 
         	{ return "help: no help topics match '" + commandName + "'.\nTry 'help' for a list of available commands."; }
         return String.format("Usage: %s\n\n%s\n", cmd.getUsage(), cmd.getDescription());

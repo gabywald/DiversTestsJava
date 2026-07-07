@@ -1,4 +1,4 @@
-package gabywald.terminal.gui;
+package gabywald.terminal3.clientside.gui;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -30,12 +30,12 @@ public class TerminalOutput {
         this.textPane.setEditable(false);
         this.textPane.setFont(new Font("Monospaced", Font.PLAIN, 14));
         this.textPane.setBackground(Color.BLACK);
-        this.textPane.setCaretColor(Color.WHITE);
+        this.textPane.setCaretColor(Color.WHITE); // WHITE
         
         this.styleContext = new StyleContext();
         
         this.defaultStyle = this.styleContext.addStyle("default", null);
-        StyleConstants.setForeground(this.defaultStyle, Color.WHITE);
+        StyleConstants.setForeground(this.defaultStyle, Color.WHITE); // WHITE
         
         this.errorStyle = this.styleContext.addStyle("error", null);
         StyleConstants.setForeground(this.errorStyle, Color.RED);

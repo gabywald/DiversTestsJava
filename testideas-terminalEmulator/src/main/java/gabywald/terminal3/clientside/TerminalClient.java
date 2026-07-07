@@ -1,4 +1,4 @@
-package gabywald.terminal3.client;
+package gabywald.terminal3.clientside;
 
 import java.io.IOException;
 
@@ -21,6 +21,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import gabywald.terminal3.clientside.gui.TerminalFrame;
+import gabywald.terminal3.clientside.gui.TerminalState;
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
 import gabywald.utilities.others.PropertiesLoader;
@@ -81,26 +83,30 @@ public class TerminalClient {
 			String helloUser = EntityUtils.toString(httpResponseService.getEntity(), "UTF-8");
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, " => '" + httpResponseService.getStatusLine() + "' <= " );
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, " => '" + helloUser + "' <= " );
+			TerminalFrame.getInstance().appendOutput( helloUser );
 		} catch (ParseException | IOException e) { e.printStackTrace(); }
 		
 		// Request standard service calling...
 		HttpResponse httpResponseServiceCMD = null;
 		try {
-			httpResponseServiceCMD = TerminalClient.callCommandServer(serverName, serverMAINport, serverMAIN, clientUAUA, httpResponseAuth.getHeaders("Authorization")[0], "PWDLSCAT");
+			httpResponseServiceCMD = TerminalClient.callCommandServer(serverName, serverMAINport, serverMAIN, clientUAUA, httpResponseAuth.getHeaders("Authorization")[0], "help");
 		} catch (IOException e) { e.printStackTrace(); }
 		
 		if (httpResponseServiceCMD == null) {
-			Logger.printlnLog(LoggerLevel.LL_ERROR, "NO SERVICE !");
+			Logger.printlnLog(LoggerLevel.LL_ERROR, "NO COMMAND !");
 			return null;
 		}
 		
 		try {
-			String helloUser = EntityUtils.toString(httpResponseServiceCMD.getEntity(), "UTF-8");
+			String outputOfCMD = EntityUtils.toString(httpResponseServiceCMD.getEntity(), "UTF-8");
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, " => '" + httpResponseServiceCMD.getStatusLine() + "' <= " );
-			Logger.printlnLog(LoggerLevel.LL_FORUSER, " => '" + helloUser + "' <= " );
+			Logger.printlnLog(LoggerLevel.LL_FORUSER, " => '" + outputOfCMD + "' <= " );
+			TerminalFrame.getInstance().appendOutput( outputOfCMD );
 		} catch (ParseException | IOException e) { e.printStackTrace(); }
 		
-		return new TerminalClient(serverName, serverAUTHport, serverAUTH, serverMAINport, serverMAIN, serverTOKS, serverTOKU, clientUAUA, login, psswd);
+		return new TerminalClient(serverName, serverAUTHport, serverAUTH, serverMAINport, serverMAIN, 
+								serverTOKS, serverTOKU, clientUAUA, 
+								login, psswd, httpResponseAuth.getHeaders("Authorization")[0]);
 	}
 	
 	/**
@@ -200,21 +206,12 @@ public class TerminalClient {
 	private String clientUAUA;
 	private String login;
 	private String psswd;
+	private Header bearerHeader;
+	private TerminalFrame tf;
 
-	/**
-	 * 
-	 * @param serverName
-	 * @param serverAUTHport
-	 * @param serverAUTH
-	 * @param serverMAINport
-	 * @param serverMAIN
-	 * @param serverTOKS
-	 * @param serverTOKU
-	 * @param clientUAUA
-	 * @param login
-	 * @param psswd
-	 */
-	private TerminalClient(String serverName, int serverAUTHport, String serverAUTH, int serverMAINport, String serverMAIN, String serverTOKS, String serverTOKU, String clientUAUA, String login, String psswd) {
+	private TerminalClient(	String serverName, int serverAUTHport, String serverAUTH, int serverMAINport, String serverMAIN, 
+							String serverTOKS, String serverTOKU, String clientUAUA, 
+							String login, String psswd, Header bearerHeader) {
 		this.serverName = serverName;
 		this.serverAUTHport = serverAUTHport;
 		this.serverAUTH = serverAUTH;
@@ -225,6 +222,28 @@ public class TerminalClient {
 		this.clientUAUA = clientUAUA;
 		this.login = login;
 		this.psswd = psswd;
+		this.bearerHeader = bearerHeader;
+		this.tf = TerminalFrame.getInstance();
+	}
+	
+	public String callCommandServer(TerminalState state, String cmd) {
+		HttpResponse responseCMD = null;
+		try {
+			responseCMD = TerminalClient.callCommandServer(this.serverName, this.serverMAINport, this.serverMAIN, this.clientUAUA, this.bearerHeader, cmd);
+		} catch (IOException e) { e.printStackTrace(); }
+		
+		if (responseCMD == null) {
+			Logger.printlnLog(LoggerLevel.LL_ERROR, "NO COMMAND !");
+			 // return "Error (" + responseCMD.getStatusLine().getStatusCode() + ")";
+			return "Error (" + "..." + ")";
+		}
+		
+		String outputOfCMD = null;
+		try {
+			outputOfCMD = EntityUtils.toString(responseCMD.getEntity(), "UTF-8");
+			// TODO Check output Status Code !!
+		} catch (ParseException | IOException e) { e.printStackTrace(); }
+		return outputOfCMD;
 	}
 	
 	

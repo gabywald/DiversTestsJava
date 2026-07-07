@@ -11,10 +11,10 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import gabywald.terminal3.serverside.authentication.BasicAuthFilter;
-import gabywald.terminal3.serverside.authentication.BearerAuthFilter;
-import gabywald.terminal3.serverside.authentication.TokenGenerator;
-import gabywald.terminal3.serverside.authentication.TokenUseCase;
+import gabywald.terminal3.serverside.restmodules.BasicAuthFilter;
+import gabywald.terminal3.serverside.restmodules.BearerAuthFilter;
+import gabywald.terminal3.serverside.restmodules.TokenGenerator;
+import gabywald.terminal3.serverside.restmodules.TokenUseCase;
 import gabywald.utilities.others.PropertiesLoader;
 
 /**

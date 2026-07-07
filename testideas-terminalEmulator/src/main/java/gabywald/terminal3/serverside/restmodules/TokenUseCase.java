@@ -1,4 +1,4 @@
-package gabywald.terminal3.serverside.authentication;
+package gabywald.terminal3.serverside.restmodules;
 
 
 import javax.ws.rs.GET;
@@ -13,6 +13,9 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import gabywald.terminal3.serverside.shell.CommandFactory;
+import gabywald.terminal3.serverside.shell.CommandParser;
+import gabywald.terminal3.serverside.shell.ICommand;
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
 
@@ -23,6 +26,13 @@ import gabywald.utilities.logger.Logger.LoggerLevel;
 @Path("terminalemulator")
 @Produces(MediaType.TEXT_PLAIN)
 public class TokenUseCase {
+	
+	public static String WELCOME_MESSAGE =     
+			"===============================================\n" 
+				+ "   TERMINAL EMULATOR - Java 8 / Swing / REST\n"
+				+ "   Type 'help' for a list of available commands\n"
+				+ "   Type 'exit' to quit\n"
+				+ "===============================================\n\n";
     
     /*
      *
@@ -47,7 +57,7 @@ public class TokenUseCase {
                 Claim claim = decodedJWT.getClaim( TokenGenerator.CLAIM_USER );
                 
                 // Authorize and respond
-                return Response.ok("Hello, '" + claim.asString() + "'").build();
+                return Response.ok(TokenUseCase.WELCOME_MESSAGE + "Hello, '" + claim.asString() + "'\n").build();
             } catch (JWTVerificationException e) {
             	Logger.printlnLog(LoggerLevel.LL_ERROR, "UNAUTHORIZED: '" + e.getMessage() + "'");
                 Response.status(Response.Status.UNAUTHORIZED).build(); 
@@ -69,8 +79,16 @@ public class TokenUseCase {
                 
                 Logger.printlnLog(LoggerLevel.LL_DEBUG, "RECEIVED COMMAND: '" + command + "'");
                 
+                String[] parts = CommandParser.parse(command);
+                if (parts.length == 0) { return Response.ok("...").build(); }
+                String commandName = parts[0]; // 
+                String[] cmdArgs = new String[parts.length - 1];
+                System.arraycopy(parts, 1, cmdArgs, 0, cmdArgs.length);
+                ICommand cmd = CommandFactory.getCommand(commandName);
+                String result = cmd.execute(null, cmdArgs); // TODO TerminalStae Transmission !!
+                
                 // Authorize and respond
-                return Response.ok("Results of '" + command + "'").build();
+                return Response.ok( result ).build();
             } catch (JWTVerificationException e) {
             	Logger.printlnLog(LoggerLevel.LL_ERROR, "UNAUTHORIZED: '" + e.getMessage() + "'");
                 Response.status(Response.Status.UNAUTHORIZED).build(); 

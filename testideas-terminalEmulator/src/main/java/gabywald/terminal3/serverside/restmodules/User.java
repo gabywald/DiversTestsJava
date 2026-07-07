@@ -1,4 +1,4 @@
-package gabywald.terminal3.serverside.authentication;
+package gabywald.terminal3.serverside.restmodules;
 
 /**
  * 
