@@ -8,14 +8,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import gabywald.terminal3.serverside.filesystem.TerminalState;
 import gabywald.terminal3.serverside.shell.CommandFactory;
 import gabywald.terminal3.serverside.shell.CommandParser;
 import gabywald.terminal3.serverside.shell.ICommand;
+import gabywald.terminal3.serverside.users.User;
+import gabywald.terminal3.serverside.users.UserDB;
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
 
@@ -28,11 +32,11 @@ import gabywald.utilities.logger.Logger.LoggerLevel;
 public class TokenUseCase {
 	
 	public static String WELCOME_MESSAGE =     
-			"===============================================\n" 
-				+ "   TERMINAL EMULATOR - Java 8 / Swing / REST\n"
-				+ "   Type 'help' for a list of available commands\n"
-				+ "   Type 'exit' to quit\n"
-				+ "===============================================\n\n";
+			  "===============================================\n" 
+			+ "   TERMINAL EMULATOR - Java 8 / Swing / REST\n"
+			+ "   Type 'help' for a list of available commands\n"
+			+ "   Type 'exit' to quit\n"
+			+ "===============================================\n\n";
     
     /*
      *
@@ -68,8 +72,10 @@ public class TokenUseCase {
     }
     
     @POST
-    // @Path("command")
-    public Response getTransmission(@HeaderParam("Authorization") String authHeader, @HeaderParam("Command") String command) {
+    public Response getTransmission(@HeaderParam("Authorization") String authHeader, 
+						    		@HeaderParam("Command") String command, 
+						    		@HeaderParam("CurrentPath") String currentPath) {
+    	
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring("Bearer ".length());
             try {
@@ -77,18 +83,29 @@ public class TokenUseCase {
                 
                 // Claim claim = decodedJWT.getClaim( TokenGenerator.CLAIM_USER );
                 
-                Logger.printlnLog(LoggerLevel.LL_DEBUG, "RECEIVED COMMAND: '" + command + "'");
+                Logger.printlnLog(LoggerLevel.LL_DEBUG, "RECEIVED COMMAND: '" + command + "' and PATH {" + currentPath + "}");
                 
+                // Getting the correct CMD
                 String[] parts = CommandParser.parse(command);
                 if (parts.length == 0) { return Response.ok("...").build(); }
                 String commandName = parts[0]; // 
                 String[] cmdArgs = new String[parts.length - 1];
                 System.arraycopy(parts, 1, cmdArgs, 0, cmdArgs.length);
                 ICommand cmd = CommandFactory.getCommand(commandName);
-                String result = cmd.execute(null, cmdArgs); // TODO TerminalStae Transmission !!
+                
+                // TODO Getting correct State / PATH
+                String login = decodedJWT.getClaim(TokenGenerator.CLAIM_LOGIN).asString();
+                String username = decodedJWT.getClaim(TokenGenerator.CLAIM_USER).asString();
+                User currentUser = UserDB.getInstance().getUserWithName(login, username);
+                if (currentUser == null) 
+                	{ Response.status(Status.BAD_REQUEST.getStatusCode(), "User '" + login + "' not found !"); }
+                TerminalState ts = currentUser.getState();
+                
+                // executing CMD
+                String result = cmd.execute(ts, cmdArgs);
                 
                 // Authorize and respond
-                return Response.ok( result ).build();
+                return Response.ok( result ).header("prompt", ts.getPrompt()).build();
             } catch (JWTVerificationException e) {
             	Logger.printlnLog(LoggerLevel.LL_ERROR, "UNAUTHORIZED: '" + e.getMessage() + "'");
                 Response.status(Response.Status.UNAUTHORIZED).build(); 

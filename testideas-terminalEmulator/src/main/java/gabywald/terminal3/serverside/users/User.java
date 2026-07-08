@@ -1,4 +1,6 @@
-package gabywald.terminal3.serverside.restmodules;
+package gabywald.terminal3.serverside.users;
+
+import gabywald.terminal3.serverside.filesystem.TerminalState;
 
 /**
  * 
@@ -6,8 +8,9 @@ package gabywald.terminal3.serverside.restmodules;
  */
 public class User {
     
-    private String username = null, login = null;
+    private String username = null, login = null, pswd = null;
     private Role role = null;
+    private TerminalState state = null;
 
     public enum Role {
         BASIC_PLAYER, CREATOR, ADMIN
@@ -17,16 +20,21 @@ public class User {
         PLAYING, CREATION, ADMINISTRATION
     }
     
-    public User(String login, String ident, Role rolez) {
+    public User(String login, String ident, String pswd, Role rolez) {
         this.login = login;
         this.username = ident;
         this.role = rolez;
+        // TODO best load from DB of users !!
+        this.state = new TerminalState(); 
     }
 
     public String getUsername() { return this.username; }
-    public String getLogin()    { return this.login; }
-    public Role getRole()        { return this.role; }
-    public String getRoleSTR()    { return (this.role != null)?this.role.toString():new String(""); }
+    public String getLogin()	{ return this.login; }
+    public String getPswd()		{ return this.pswd; }
+    public Role getRole()		{ return this.role; }
+    public String getRoleSTR()	{ return (this.role != null)?this.role.toString():new String(""); }
+    
+    public TerminalState getState() { return this.state; }
 
     /* ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** */
     /* ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** */
@@ -55,12 +63,24 @@ public class User {
             return false;
         }
         
-        public static User getUser(String login, String psswd) {
+        static User getUser(String login, String psswd) {
             // "Library User" including default user
             for (int i = 0 ; i < UserS.values().length ; i++) { 
                 if (UserS.values()[i].login.equals(login)) { 
                     if (UserS.values()[i].psswd.equals(psswd))
-                        { return new User(UserS.values()[i].login, UserS.values()[i].ident, UserS.values()[i].rolez); }
+                        { return new User(UserS.values()[i].login, UserS.values()[i].ident, UserS.values()[i].psswd, UserS.values()[i].rolez); }
+                    else { return null; }
+                } 
+            }
+            return null;
+        }
+        
+        static User getUserWithName(String login, String name) {
+            // "Library User" including default user
+            for (int i = 0 ; i < UserS.values().length ; i++) { 
+                if (UserS.values()[i].login.equals(login)) { 
+                    if (UserS.values()[i].ident.equals(name))
+                        { return new User(UserS.values()[i].login, UserS.values()[i].ident, UserS.values()[i].psswd, UserS.values()[i].rolez); }
                     else { return null; }
                 } 
             }
@@ -69,9 +89,16 @@ public class User {
     
     }
 
-    public static User getUser(String login, String psswd) {
+    static User getUser(String login, String psswd) {
         if (UserS.has(login)) { return UserS.getUser(login, psswd); } 
         else { return null; }
     }
+    
+    static User getUserWithName(String login, String name) {
+        if (UserS.has(login)) { return UserS.getUserWithName(login, name); } 
+        else { return null; }
+    }
+    
+    // TODO temporary load of User's (easy to get and synchronise with DB)
     
 }

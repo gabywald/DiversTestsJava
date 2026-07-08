@@ -13,6 +13,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import gabywald.terminal3.serverside.filesystem.TerminalState;
+
 /**
  * Main terminal window with Swing GUI
  * @author Gabriel Chandesris (2026)
@@ -29,16 +31,19 @@ public class TerminalFrame extends JFrame {
     	return TerminalFrame.instance;
     }
     
-    private TerminalState state;
+    private TerminalState state = new TerminalState(); // Here use only for history of Commands on this client side. 
+    // private String currentPath = "/"; // NOTE starting PATH
+    private String currentPrompt = ""; // NOTE starting prompt
     private JTextArea outputArea;
     private JTextField inputField;
     private JScrollPane scrollPane;
     private JLabel promptLabel;
     
-    private TerminalFrame() { this(new TerminalState()); }
+    private TerminalFrame() { this("---@---$"); }
     
-    public TerminalFrame(TerminalState state) {
-        this.state = state;
+    public TerminalFrame(String prompt) {
+        // this.state = state;
+    	this.currentPrompt = prompt;
         this.initializeUI();
     }
     
@@ -67,7 +72,7 @@ public class TerminalFrame extends JFrame {
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         
-        this.promptLabel = new JLabel(this.state.getPrompt() + " ", SwingConstants.RIGHT);
+        this.promptLabel = new JLabel(this.currentPrompt + " ", SwingConstants.RIGHT);
         this.promptLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
         this.promptLabel.setForeground(Color.WHITE);
         this.promptLabel.setBackground(Color.BLACK);
@@ -103,11 +108,12 @@ public class TerminalFrame extends JFrame {
     
     void clearInputLine()	{ this.inputField.setText(""); }
     
-    void updatePrompt()		{ this.promptLabel.setText(this.state.getPrompt() + " "); }
+    public void updatePrompt()		{ this.promptLabel.setText(this.currentPrompt + " "); }
 
 	JTextField getInputField()		{ return this.inputField; }
 	
-    public TerminalState getTerminalState()	{ return this.state; }
-    public void setState(TerminalState state) { this.state = state;this.updatePrompt(); }
+	public TerminalState getTerminalState()	{ return this.state; }
+//    public void setState(TerminalState state) { this.state = state;this.updatePrompt(); }
+	public void setPrompt(String prompt) { this.currentPrompt = prompt; }
 
 }

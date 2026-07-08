@@ -22,7 +22,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import gabywald.terminal3.clientside.gui.TerminalFrame;
-import gabywald.terminal3.clientside.gui.TerminalState;
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
 import gabywald.utilities.others.PropertiesLoader;
@@ -89,7 +88,9 @@ public class TerminalClient {
 		// Request standard service calling...
 		HttpResponse httpResponseServiceCMD = null;
 		try {
-			httpResponseServiceCMD = TerminalClient.callCommandServer(serverName, serverMAINport, serverMAIN, clientUAUA, httpResponseAuth.getHeaders("Authorization")[0], "help");
+			httpResponseServiceCMD = TerminalClient.callCommandServer(	serverName, serverMAINport, serverMAIN, 
+																		clientUAUA, httpResponseAuth.getHeaders("Authorization")[0], 
+																		"help");
 		} catch (IOException e) { e.printStackTrace(); }
 		
 		if (httpResponseServiceCMD == null) {
@@ -100,13 +101,15 @@ public class TerminalClient {
 		try {
 			String outputOfCMD = EntityUtils.toString(httpResponseServiceCMD.getEntity(), "UTF-8");
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, " => '" + httpResponseServiceCMD.getStatusLine() + "' <= " );
-			Logger.printlnLog(LoggerLevel.LL_FORUSER, " => '" + outputOfCMD + "' <= " );
+			Logger.printlnLog(LoggerLevel.LL_NONE, " => '" + outputOfCMD + "' <= " );
 			TerminalFrame.getInstance().appendOutput( outputOfCMD );
+			TerminalFrame.getInstance().setPrompt(httpResponseServiceCMD.getHeaders("prompt")[0].getValue());
+			TerminalFrame.getInstance().updatePrompt();
 		} catch (ParseException | IOException e) { e.printStackTrace(); }
 		
 		return new TerminalClient(serverName, serverAUTHport, serverAUTH, serverMAINport, serverMAIN, 
-								serverTOKS, serverTOKU, clientUAUA, 
-								login, psswd, httpResponseAuth.getHeaders("Authorization")[0]);
+								  serverTOKS, serverTOKU, clientUAUA, 
+								  login, psswd, httpResponseAuth.getHeaders("Authorization")[0]);
 	}
 	
 	/**
@@ -170,24 +173,16 @@ public class TerminalClient {
 		else { return null; }
 	}
 	
-	/**
-	 * 
-	 * @param serverName
-	 * @param serverMAINport
-	 * @param serverMAIN
-	 * @param clientUAUA
-	 * @param bearerHeader
-	 * @param command
-	 * @return
-	 * @throws ClientProtocolException
-	 * @throws IOException
-	 */
-	private static HttpResponse callCommandServer(String serverName, int serverMAINport, String serverMAIN, String clientUAUA, Header bearerHeader, String command) 
+	private static HttpResponse callCommandServer(	String serverName, int serverMAINport, String serverMAIN, 
+													String clientUAUA, Header bearerHeader, 
+													String command) 
 			throws ClientProtocolException, IOException {
 		HttpUriRequest requestService = new HttpPost( "http://" + serverName + ":" + serverMAINport + "/" + serverMAIN + "" );
 		requestService.addHeader( bearerHeader );
 		requestService.setHeader("user-agent", clientUAUA);
+		// TODO reflexions about : put in content of request ? encryption ?
 		requestService.setHeader("Command", command);
+		// requestService.setHeader("CurrentPath", currentPath);
 		HttpResponse httpResponseService = HttpClientBuilder.create().build().execute( requestService );
 		
 		Logger.printlnLog(LoggerLevel.LL_DEBUG, "Status Code: {" + httpResponseService.getStatusLine().getStatusCode() + "}");
@@ -226,10 +221,12 @@ public class TerminalClient {
 		this.tf = TerminalFrame.getInstance();
 	}
 	
-	public String callCommandServer(TerminalState state, String cmd) {
+	public String callCommandServer(String cmd) {
 		HttpResponse responseCMD = null;
 		try {
-			responseCMD = TerminalClient.callCommandServer(this.serverName, this.serverMAINport, this.serverMAIN, this.clientUAUA, this.bearerHeader, cmd);
+			responseCMD = TerminalClient.callCommandServer(	this.serverName, this.serverMAINport, this.serverMAIN, 
+															this.clientUAUA, this.bearerHeader, 
+															cmd);
 		} catch (IOException e) { e.printStackTrace(); }
 		
 		if (responseCMD == null) {
@@ -241,6 +238,8 @@ public class TerminalClient {
 		String outputOfCMD = null;
 		try {
 			outputOfCMD = EntityUtils.toString(responseCMD.getEntity(), "UTF-8");
+			Logger.printlnLog(LoggerLevel.LL_NONE, "PROMPT: " + responseCMD.getHeaders("prompt")[0].getValue());
+			this.tf.setPrompt(responseCMD.getHeaders("prompt")[0].getValue());
 			// TODO Check output Status Code !!
 		} catch (ParseException | IOException e) { e.printStackTrace(); }
 		return outputOfCMD;

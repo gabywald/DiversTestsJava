@@ -1,9 +1,7 @@
-package gabywald.terminal3.clientside.gui;
+package gabywald.terminal3.serverside.filesystem;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
 
 /**
  * Global state of the terminal including current directory, history, etc.
@@ -24,7 +22,7 @@ public class TerminalState {
         this.prompt = "user@terminal:~$";
     }
     
-    public TerminalState(TerminalDirectory root) {
+    TerminalState(TerminalDirectory root) {
         this.rootDirectory = root;
         this.currentDirectory = root;
         this.commandHistory = new ArrayList<>();

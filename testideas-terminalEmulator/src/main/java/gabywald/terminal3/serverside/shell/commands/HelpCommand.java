@@ -2,7 +2,7 @@ package gabywald.terminal3.serverside.shell.commands;
 
 import java.util.Map;
 
-import gabywald.terminal3.clientside.gui.TerminalState;
+import gabywald.terminal3.serverside.filesystem.TerminalState;
 import gabywald.terminal3.serverside.shell.CommandFactory;
 import gabywald.terminal3.serverside.shell.ICommand;
 

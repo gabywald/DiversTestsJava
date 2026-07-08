@@ -20,6 +20,8 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 
 import gabywald.terminal3.serverside.TerminalServer;
+import gabywald.terminal3.serverside.users.User;
+import gabywald.terminal3.serverside.users.UserDB;
 
 /**
  * 
@@ -41,14 +43,15 @@ public class TokenGenerator {
             return Response.status(Response.Status.PRECONDITION_FAILED).entity(jsonObject.toString()).build();
         } else {
             // DONE authenticate !! Check login + password
-            User user = User.getUser(login, new String(Base64.decodeBase64(psswd)));
+            User user = UserDB.getInstance().getUser(login, new String(Base64.decodeBase64(psswd)));
             if (user == null)  {
                 jsonObject.put("message", "Bad Authentification !"); 
                 return Response.status(Response.Status.PRECONDITION_FAILED).entity(jsonObject.toString()).build();
             }
-            String token = this.generateToken(login, Base64.decodeBase64(psswd).toString(), user.getRoleSTR());
+            // String token = this.generateToken(login, Base64.decodeBase64(psswd).toString(), user.getRoleSTR()); 
+            String token = this.generateToken(login, user.getUsername(), user.getRoleSTR());
             jsonObject.put("token", token); 
-            return Response    .ok(jsonObject.toString(), MediaType.APPLICATION_JSON)
+            return Response .ok(jsonObject.toString(), MediaType.APPLICATION_JSON)
                             .header("Authorization", "Bearer " + token).build();
         }
     }
@@ -66,13 +69,14 @@ public class TokenGenerator {
             String login = tmpAuth.split(":")[0];
             String psswd = tmpAuth.split(":")[1];
             // DONE authenticate !! Check login + password
-            User user = User.getUser(login, new String(Base64.decodeBase64(psswd)));
+            User user = UserDB.getInstance().getUser(login, new String(Base64.decodeBase64(psswd)));
             if (user == null)  {
                 jsonObject.put("message", "Bad Authentification !"); 
                 return Response.status(Response.Status.PRECONDITION_FAILED).entity(jsonObject.toString()).build();
             }
             // Generate Token !
-            String token = this.generateToken(user.getUsername(), new String(Base64.decodeBase64(psswd)), user.getRoleSTR());
+            // String token = this.generateToken(user.getUsername(), new String(Base64.decodeBase64(psswd)), user.getRoleSTR());
+            String token = this.generateToken(login, user.getUsername(), user.getRoleSTR());
             jsonObject.put("token", token); 
             return Response    .ok(jsonObject.toString(), MediaType.APPLICATION_JSON)
                             .header("Authorization", "Bearer " + token).build();
@@ -82,20 +86,22 @@ public class TokenGenerator {
     // Secret key to sign the token
     static final String secretKey	= TerminalServer.getProperty("gabywald.terminal.server.token.secretKey"); // "yourSecretKey";
     static final String issuer		= TerminalServer.getProperty("gabywald.terminal.server.token.issuer"); // "gabywald";
-    static final String CLAIM_USER = "user";
-    static final String CLAIM_ROLE = "role";
+    static final String CLAIM_LOGIN = "login";
+    static final String CLAIM_USER  = "user";
+    static final String CLAIM_ROLE  = "role";
     static final Algorithm algorithm = Algorithm.HMAC256( TokenGenerator.secretKey );
     static final JWTVerifier verifier = JWT.require( TokenGenerator.algorithm ).withIssuer( TokenGenerator.issuer ).build();
 
     // Generate a JWT
-    private String generateToken(String login, String password, String role) {
+    private String generateToken(String login, String user, String role) {
         Date now		= new Date();
         Date expiration	= new Date(now.getTime() + 3600000); // Token valid for 1 hour
         
         return JWT.create()
                   .withIssuer( TokenGenerator.issuer )
                   .withSubject( "'" + TokenGenerator.issuer + "' Details" )
-                  .withClaim(TokenGenerator.CLAIM_USER, login)
+                  .withClaim(TokenGenerator.CLAIM_LOGIN, login)
+                  .withClaim(TokenGenerator.CLAIM_USER, user)
                   .withClaim(TokenGenerator.CLAIM_ROLE, role)
                   .withIssuedAt( now )
                   .withExpiresAt( expiration )

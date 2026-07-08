@@ -18,7 +18,6 @@ public class MainTerminal3 {
 		mt.plClient.getProperties().list(System.out);
 		mt.plServer.getProperties().list(System.out);
 		
-		
 		Thread thrServer = new Thread(TerminalServer.getInstance());
 		thrServer.start();
 		

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import gabywald.terminal3.clientside.gui.TerminalState;
 import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
 import gabywald.terminal3.serverside.filesystem.TerminalNode;
+import gabywald.terminal3.serverside.filesystem.TerminalState;
 import gabywald.terminal3.serverside.shell.CommandHelper;
 import gabywald.terminal3.serverside.shell.ICommand;
 

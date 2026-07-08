@@ -1,6 +1,6 @@
 package gabywald.terminal3.serverside.shell;
 
-import gabywald.terminal3.clientside.gui.TerminalState;
+import gabywald.terminal3.serverside.filesystem.TerminalState;
 
 /**
  * Command interface for all executable commands.

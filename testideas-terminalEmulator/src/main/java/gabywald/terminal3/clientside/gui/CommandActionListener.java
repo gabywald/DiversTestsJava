@@ -46,7 +46,7 @@ public class CommandActionListener implements ActionListener {
         } else {
         	// TODO here call to distant / local server !! (or via the cmd
         	// String result = // cmd.execute(this.localtf.getTerminalState(), cmdArgs);
-            String result = TerminalClient.getInstance().callCommandServer(this.localtf.getTerminalState(), command); 
+            String result = TerminalClient.getInstance().callCommandServer(command); 
             if ("EXIT".equals(result)) // exit 
             	{ System.exit(0); } 
             else if (result.contains("\033[H\033[2J")) // clear

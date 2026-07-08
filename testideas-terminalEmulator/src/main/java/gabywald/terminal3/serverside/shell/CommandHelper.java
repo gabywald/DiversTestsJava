@@ -2,9 +2,9 @@ package gabywald.terminal3.serverside.shell;
 
 import java.time.format.DateTimeFormatter;
 
-import gabywald.terminal3.clientside.gui.TerminalState;
 import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
 import gabywald.terminal3.serverside.filesystem.TerminalNode;
+import gabywald.terminal3.serverside.filesystem.TerminalState;
 
 /**
  * 

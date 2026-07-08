@@ -1,8 +1,8 @@
 package gabywald.terminal3.serverside.shell.commands;
 
-import gabywald.terminal3.clientside.gui.TerminalState;
 import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
 import gabywald.terminal3.serverside.filesystem.TerminalNode;
+import gabywald.terminal3.serverside.filesystem.TerminalState;
 import gabywald.terminal3.serverside.shell.CommandHelper;
 import gabywald.terminal3.serverside.shell.ICommand;
 
