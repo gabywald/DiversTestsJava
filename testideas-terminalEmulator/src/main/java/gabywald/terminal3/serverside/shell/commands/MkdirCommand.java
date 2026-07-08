@@ -42,6 +42,6 @@ public class MkdirCommand implements ICommand {
     @Override
     public String getDescription() { return "Create directories"; }
     @Override
-    public String getUsage() { return "mkdir DIRECTORY..."; }
+    public String getUsage() { return "Usage: mkdir DIRECTORY..."; }
     
 }

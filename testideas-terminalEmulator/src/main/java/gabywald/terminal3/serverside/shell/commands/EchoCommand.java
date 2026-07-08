@@ -31,5 +31,5 @@ public class EchoCommand implements ICommand {
     @Override
     public String getDescription() { return "Display a line of text"; }
     @Override
-    public String getUsage() { return "echo [STRING]..."; }
+    public String getUsage() { return "Usage: echo [STRING]..."; }
 }

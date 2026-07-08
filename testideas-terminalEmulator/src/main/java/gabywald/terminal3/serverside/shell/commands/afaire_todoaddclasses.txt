@@ -2,10 +2,5 @@ HERE, in this package 'gabywald.terminal3.serverside.shell.commands'
 
 ADD FOLLOWINGS COMMANDS : 
 	edit (vim, nano) (? swing / gui interaction)
-	grep
 	run -- scripts
-	sort
-	touch
-	tr
-	wc
 	...

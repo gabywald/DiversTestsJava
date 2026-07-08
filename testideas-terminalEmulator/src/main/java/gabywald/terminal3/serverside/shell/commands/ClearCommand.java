@@ -22,6 +22,6 @@ public class ClearCommand implements ICommand {
 	@Override
 	public String getDescription() { return "Clear the terminal screen"; }
 	@Override
-	public String getUsage() { return "clear"; }
+	public String getUsage() { return "Usage: clear"; }
 	
 }

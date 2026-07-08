@@ -22,5 +22,5 @@ public class PwdCommand implements ICommand {
     @Override
     public String getDescription() { return "Print the current working directory"; }
     @Override
-    public String getUsage() { return "pwd"; }
+    public String getUsage() { return "Usage: pwd"; }
 }

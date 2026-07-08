@@ -35,7 +35,7 @@ public class TerminalState {
     public TerminalDirectory getCurrentDirectory() { return currentDirectory; }
     public void setCurrentDirectory(TerminalDirectory currentDirectory) {
         this.currentDirectory = currentDirectory;
-        updatePrompt();
+        this.updatePrompt();
     }
     public TerminalDirectory getRootDirectory()		{ return this.rootDirectory; }
     public List<String> getCommandHistory()	{ return new ArrayList<String>(commandHistory); }

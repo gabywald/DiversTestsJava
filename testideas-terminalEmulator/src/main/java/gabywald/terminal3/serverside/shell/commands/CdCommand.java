@@ -37,6 +37,6 @@ public class CdCommand implements ICommand {
 	@Override
 	public String getDescription() { return "Change the current directory"; }
 	@Override
-	public String getUsage() { return "cd [DIR]"; }
+	public String getUsage() { return "Usage: cd [DIR]"; }
 	
 }

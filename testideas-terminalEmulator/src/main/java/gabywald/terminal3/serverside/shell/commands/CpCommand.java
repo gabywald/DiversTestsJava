@@ -64,6 +64,6 @@ public class CpCommand implements ICommand {
     @Override
     public String getDescription() { return "Copy files and directories"; }
     @Override
-    public String getUsage() { return "cp [OPTION] SOURCE DEST\n       cp [OPTION] SOURCE... DIRECTORY"; }
+    public String getUsage() { return "Usage: \n        cp [OPTION] SOURCE DEST\n        cp [OPTION] SOURCE... DIRECTORY"; }
     
 }

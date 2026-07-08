@@ -47,8 +47,8 @@ class CommandFactoryTest {
         Assertions.assertTrue(names.length >= 10);
         boolean hasLs = false, hasCd = false;
         for (String name : names) {
-            if ("ls".equals(name)) hasLs = true;
-            if ("cd".equals(name)) hasCd = true;
+            if ("ls".equals(name)) { hasLs = true; }
+            if ("cd".equals(name)) { hasCd = true; }
         }
         Assertions.assertTrue(hasLs);
         Assertions.assertTrue(hasCd);

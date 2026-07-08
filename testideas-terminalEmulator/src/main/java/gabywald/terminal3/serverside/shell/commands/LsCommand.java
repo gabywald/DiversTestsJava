@@ -69,6 +69,6 @@ public class LsCommand implements ICommand {
     @Override
     public String getDescription() { return "List directory contents"; }
     @Override
-    public String getUsage() { return "ls [OPTION]... [FILE]..."; }
+    public String getUsage() { return "Usage: ls [OPTION]... [FILE]..."; }
     
 }

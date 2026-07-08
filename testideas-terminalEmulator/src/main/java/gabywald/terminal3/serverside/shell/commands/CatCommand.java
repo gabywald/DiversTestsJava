@@ -44,6 +44,6 @@ public class CatCommand implements ICommand {
     @Override
     public String getDescription() { return "Concatenate and print files"; }
     @Override
-    public String getUsage() { return "cat [FILE]..."; }
+    public String getUsage() { return "Usage: cat [FILE]..."; }
 
 }

@@ -26,9 +26,9 @@ public class CommandActionListener implements ActionListener {
             return;
         }
         
-        this.localtf.getTerminalState().addToHistory(command);
-        this.localtf.getTerminalState().resetHistoryIndex();
-        this.localtf.appendOutput(this.localtf.getTerminalState().getPrompt() + " " + command + "\n");
+        this.localtf.getTerminalHistory().addToHistory(command);
+        this.localtf.getTerminalHistory().resetHistoryIndex();
+        this.localtf.appendOutput(this.localtf.getPrompt() + " " + command + "\n");
         
         String[] parts = CommandParser.parse(command);
         if (parts.length == 0) {

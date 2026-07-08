@@ -8,6 +8,7 @@ import gabywald.terminal3.serverside.shell.ICommand;
 /**
  * rm command - Remove files
  * @author Gabriel Chandesris (2026)
+ * TODO to make fuzion with rmdir command (and add some options : -d, -f...)
  */
 public class RmCommand implements ICommand {
 	
@@ -42,5 +43,5 @@ public class RmCommand implements ICommand {
     @Override
     public String getDescription() { return "Remove files"; }
     @Override
-    public String getUsage() { return "rm FILE..."; }
+    public String getUsage() { return "Usage: rm [FILE] ..."; }
 }

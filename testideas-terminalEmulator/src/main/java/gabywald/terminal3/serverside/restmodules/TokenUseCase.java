@@ -73,8 +73,7 @@ public class TokenUseCase {
     
     @POST
     public Response getTransmission(@HeaderParam("Authorization") String authHeader, 
-						    		@HeaderParam("Command") String command, 
-						    		@HeaderParam("CurrentPath") String currentPath) {
+						    		@HeaderParam("Command") String command) {
     	
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring("Bearer ".length());
@@ -83,7 +82,7 @@ public class TokenUseCase {
                 
                 // Claim claim = decodedJWT.getClaim( TokenGenerator.CLAIM_USER );
                 
-                Logger.printlnLog(LoggerLevel.LL_DEBUG, "RECEIVED COMMAND: '" + command + "' and PATH {" + currentPath + "}");
+                Logger.printlnLog(LoggerLevel.LL_DEBUG, "RECEIVED COMMAND: '" + command + "' ... !");
                 
                 // Getting the correct CMD
                 String[] parts = CommandParser.parse(command);

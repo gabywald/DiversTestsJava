@@ -182,7 +182,6 @@ public class TerminalClient {
 		requestService.setHeader("user-agent", clientUAUA);
 		// TODO reflexions about : put in content of request ? encryption ?
 		requestService.setHeader("Command", command);
-		// requestService.setHeader("CurrentPath", currentPath);
 		HttpResponse httpResponseService = HttpClientBuilder.create().build().execute( requestService );
 		
 		Logger.printlnLog(LoggerLevel.LL_DEBUG, "Status Code: {" + httpResponseService.getStatusLine().getStatusCode() + "}");

@@ -69,5 +69,5 @@ public class MvCommand implements ICommand {
     public String getDescription() { return "Move or rename files"; }
     @Override
     
-    public String getUsage() { return "mv [OPTION] SOURCE DEST\n       mv [OPTION] SOURCE... DIRECTORY"; }
+    public String getUsage() { return "mUsage: \n        mv [OPTION] SOURCE DEST\n        mv [OPTION] SOURCE... DIRECTORY"; }
 }

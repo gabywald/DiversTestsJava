@@ -13,8 +13,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import gabywald.terminal3.serverside.filesystem.TerminalState;
-
 /**
  * Main terminal window with Swing GUI
  * @author Gabriel Chandesris (2026)
@@ -31,8 +29,7 @@ public class TerminalFrame extends JFrame {
     	return TerminalFrame.instance;
     }
     
-    private TerminalState state = new TerminalState(); // Here use only for history of Commands on this client side. 
-    // private String currentPath = "/"; // NOTE starting PATH
+    private TerminalHistory history = new TerminalHistory(); 
     private String currentPrompt = ""; // NOTE starting prompt
     private JTextArea outputArea;
     private JTextField inputField;
@@ -109,11 +106,12 @@ public class TerminalFrame extends JFrame {
     void clearInputLine()	{ this.inputField.setText(""); }
     
     public void updatePrompt()		{ this.promptLabel.setText(this.currentPrompt + " "); }
+    public String getPrompt()		{ return this.currentPrompt; }
 
 	JTextField getInputField()		{ return this.inputField; }
 	
-	public TerminalState getTerminalState()	{ return this.state; }
-//    public void setState(TerminalState state) { this.state = state;this.updatePrompt(); }
+	public TerminalHistory getTerminalHistory()	{ return this.history; }
+
 	public void setPrompt(String prompt) { this.currentPrompt = prompt; }
 
 }

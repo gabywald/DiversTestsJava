@@ -10,46 +10,31 @@ import gabywald.terminal.filesystem.TerminalFile;
  * @author Gabriel Chandesris (2026)
  */
 public class TouchCommand implements Command {
+
     @Override
     public String execute(TerminalState state, String[] args) {
         if (args.length == 0) { return "touch: missing file operand"; }
         
         StringBuilder output = new StringBuilder();
         for (String fileName : args) {
-            TerminalNode existing = resolveFile(state, fileName);
+            TerminalNode existing = CommandHelper.resolveFile(state, fileName);
             if (existing != null && existing.isDirectory()) {
                 output.append("touch: cannot touch '").append(fileName).append("': Is a directory\n");
                 continue;
             }
             
-            TerminalDirectory parentDir = getParentDirectory(state, fileName);
+            TerminalDirectory parentDir = CommandHelper.getParentDirectory(state, fileName);
             if (parentDir == null) {
                 output.append("touch: cannot touch '").append(fileName).append("': No such file or directory\n");
                 continue;
             }
             
-            String simpleName = getSimpleName(fileName);
+            String simpleName = CommandHelper.getSimpleName(fileName);
             if (existing != null && existing.isFile()) 
             	{ ((TerminalFile) existing).setContent(((TerminalFile)existing).getContent()); }
             else { parentDir.createFile(simpleName); }
         }
         return output.toString();
-    }
-    
-    private TerminalNode resolveFile(TerminalState state, String fileName) {
-        TerminalDirectory current = state.getCurrentDirectory();
-        if (fileName.startsWith("/")) { return CommandHelper.resolveAbsolutePath(state.getRootDirectory(), fileName); }
-        return CommandHelper.resolveRelativePath(current, fileName);
-    }
-    
-    private TerminalDirectory getParentDirectory(TerminalState state, String path) {
-        if (path.startsWith("/")) { return CommandHelper.getParentFromAbsolutePath(state.getRootDirectory(), path); }
-        return CommandHelper.getParentFromRelativePath(state.getCurrentDirectory(), path);
-    }
-    
-    private String getSimpleName(String path) {
-        String[] parts = path.split("/");
-        return parts[parts.length - 1];
     }
     
     @Override

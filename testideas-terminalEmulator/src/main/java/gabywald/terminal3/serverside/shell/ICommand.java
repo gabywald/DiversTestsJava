@@ -12,4 +12,6 @@ public interface ICommand {
 	String getName();
 	String getDescription();
     String getUsage();
+    
+    // TODO boolean isHidden();
 }

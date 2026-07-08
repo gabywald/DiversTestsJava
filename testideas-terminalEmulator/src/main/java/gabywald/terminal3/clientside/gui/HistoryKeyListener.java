@@ -20,11 +20,11 @@ public class HistoryKeyListener extends KeyAdapter {
 	@Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_UP) {
-            String prevCommand = this.localtf.getTerminalState().getPreviousCommand();
+            String prevCommand = this.localtf.getTerminalHistory().getPreviousCommand();
             if (prevCommand != null) { this.localtf.getInputField().setText(prevCommand); }
             e.consume();
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            String nextCommand = this.localtf.getTerminalState().getNextCommand();
+            String nextCommand = this.localtf.getTerminalHistory().getNextCommand();
             if (nextCommand != null) { this.localtf.getInputField().setText(nextCommand); }
             e.consume();
         } else if (e.getKeyCode() == KeyEvent.VK_TAB) {

@@ -99,18 +99,17 @@ public class FileSystem {
     public boolean rmdir(String name) {
         if (name == null || name.trim().isEmpty()) { return false; }
 
-        String fullPath = getFullPath(name);
+        String fullPath = this.getFullPath(name);
 
         if (!this.directories.containsKey(fullPath)) { return false; }
 
         Set<String> contents = new HashSet<>(this.directories.get(fullPath));
         for (String item : contents) {
-            String itemPath = fullPath.equals(ROOT) ? ROOT + item : fullPath + "/" + item;
-            if (this.directories.containsKey(itemPath)) {
-                rmdir(item);
-            } else if (this.files.containsKey(itemPath)) {
-                this.files.remove(itemPath);
-            }
+            String itemPath = fullPath.equals(FileSystem.ROOT) ? FileSystem.ROOT + item : fullPath + "/" + item;
+            if (this.directories.containsKey(itemPath)) 
+            	{ this.rmdir(item); } 
+            else if (this.files.containsKey(itemPath)) 
+            	{ this.files.remove(itemPath); }
         }
 
         this.directories.remove(fullPath);
@@ -128,11 +127,10 @@ public class FileSystem {
 
         for (String item : dirContents) {
             String fullPath = this.getFullPath(item);
-            if (this.directories.containsKey(fullPath)) {
-                contents.add(item + "/");
-            } else if (this.files.containsKey(fullPath)) {
-                contents.add(item);
-            }
+            if (this.directories.containsKey(fullPath)) 
+            	{ contents.add(item + "/"); }
+            else if (this.files.containsKey(fullPath)) 
+            	{ contents.add(item); }
         }
 
         Collections.sort(contents);

@@ -9,6 +9,7 @@ import gabywald.terminal3.serverside.shell.ICommand;
 /**
  * rmdir command - Remove empty directories
  * @author Gabriel Chandesris (2026)
+ * TODO to make fuzion with rm command (and add some options)
  */
 public class RmdirCommand implements ICommand {
 	
@@ -48,5 +49,5 @@ public class RmdirCommand implements ICommand {
     @Override
     public String getDescription() { return "Remove empty directories"; }
     @Override
-    public String getUsage() { return "rmdir DIRECTORY..."; }
+    public String getUsage() { return "Usage: rmdir [DIRECTORY]..."; }
 }

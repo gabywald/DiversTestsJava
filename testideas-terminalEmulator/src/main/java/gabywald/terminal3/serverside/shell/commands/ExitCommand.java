@@ -22,6 +22,6 @@ public class ExitCommand implements ICommand {
     @Override
     public String getDescription() { return "Exit the terminal"; }
     @Override
-    public String getUsage() { return "exit"; }
+    public String getUsage() { return "Usage: exit"; }
     
 }
