@@ -5,8 +5,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import gabywald.terminal2.FileSystem;
-import gabywald.terminal2.commands.*;
+import gabywald.terminal2.commands.CatCommand;
+import gabywald.terminal2.commands.EchoCommand;
+import gabywald.terminal2.commands.GrepCommand;
+import gabywald.terminal2.commands.SortCommand;
+import gabywald.terminal2.commands.TrCommand;
+import gabywald.terminal2.commands.WcCommand;
 
+/**
+ * @author Gabriel Chandesris (2026)
+ */
 class CommandsTest {
     private FileSystem fileSystem;
 

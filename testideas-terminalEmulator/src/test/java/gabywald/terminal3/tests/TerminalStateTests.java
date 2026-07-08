@@ -1,29 +1,32 @@
-package gabywald.terminal.tests;
+package gabywald.terminal3.tests;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import gabywald.terminal.TerminalState;
-import gabywald.terminal.filesystem.TerminalDirectory;
+import gabywald.terminal3.clientside.gui.TerminalHistory;
+import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
+import gabywald.terminal3.serverside.filesystem.TerminalState;
 
 /**
  * @author Gabriel Chandesris (2026)
  */
 class TerminalStateTest {
     private TerminalState state;
+    private TerminalHistory history;
     private TerminalDirectory root;
     
     @BeforeEach
     void setUp() {
         this.state = new TerminalState();
         this.root = this.state.getRootDirectory();
+        this.history = new TerminalHistory();
     }
     
     @AfterEach
     void tearDown() {
-        this.state = null; root = null;
+        this.state = null; this.root = null; this.history = null;
     }
     
     @Test
@@ -44,25 +47,25 @@ class TerminalStateTest {
     
     @Test
     void testCommandHistory() {
-    	Assertions.assertTrue(this.state.getCommandHistory().isEmpty());
-        this.state.addToHistory("ls");
-        Assertions.assertEquals(1, this.state.getCommandHistory().size());
-        Assertions.assertEquals("ls", this.state.getCommandHistory().get(0));
-        this.state.addToHistory("cd home");
-        Assertions.assertEquals(2, this.state.getCommandHistory().size());
+    	Assertions.assertTrue(this.history.getCommandHistory().isEmpty());
+        this.history.addToHistory("ls");
+        Assertions.assertEquals(1, this.history.getCommandHistory().size());
+        Assertions.assertEquals("ls", this.history.getCommandHistory().get(0));
+        this.history.addToHistory("cd home");
+        Assertions.assertEquals(2, this.history.getCommandHistory().size());
     }
     
     @Test
     void testHistoryNavigation() {
-    	this.state.addToHistory("ls");
-    	this.state.addToHistory("cd home");
-    	this.state.addToHistory("pwd");
-    	this.state.resetHistoryIndex();
-        String prev = this.state.getPreviousCommand();
+    	this.history.addToHistory("ls");
+    	this.history.addToHistory("cd home");
+    	this.history.addToHistory("pwd");
+    	this.history.resetHistoryIndex();
+        String prev = this.history.getPreviousCommand();
         Assertions.assertEquals("pwd", prev);
-        prev = this.state.getPreviousCommand();
+        prev = this.history.getPreviousCommand();
         Assertions.assertEquals("cd home", prev);
-        String next = this.state.getNextCommand();
+        String next = this.history.getNextCommand();
         Assertions.assertEquals("pwd", next);
     }
     

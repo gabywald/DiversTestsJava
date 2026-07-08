@@ -1,6 +1,9 @@
 package gabywald.terminal3.serverside.shell.commands;
 
+import gabywald.terminal3.serverside.filesystem.TerminalFile;
+import gabywald.terminal3.serverside.filesystem.TerminalNode;
 import gabywald.terminal3.serverside.filesystem.TerminalState;
+import gabywald.terminal3.serverside.shell.CommandHelper;
 import gabywald.terminal3.serverside.shell.ICommand;
 
 /**
@@ -11,8 +14,13 @@ public class EchoCommand implements ICommand {
 	
 	@Override
 	public String execute(TerminalState state, String[] args, String stdin) {
-		// TODO implement with stdin NOT NULL !
-		return (stdin == null)? this.execute(state, args) : null ;
+		if (stdin != null) {
+			// in that case, this is an "outputfile" for echo
+			TerminalNode outputFile = CommandHelper.resolveFile(state, stdin);
+			if ( (outputFile != null) && (outputFile.isFile()) ) 
+				{ ((TerminalFile)outputFile).setContent(args[0]); }
+		} else { return this.execute(state, args); }
+		return "";
 	}
 	
     @Override

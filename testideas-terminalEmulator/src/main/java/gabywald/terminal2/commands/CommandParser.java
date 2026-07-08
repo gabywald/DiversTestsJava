@@ -19,7 +19,7 @@ public class CommandParser {
     private Map<String, Command> commands;
 
     /**
-     * Constructeur : initialise les commandes disponibles.
+     * Constructor: Initialize available commands. 
      */
     public CommandParser(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
@@ -28,7 +28,7 @@ public class CommandParser {
     }
 
     /**
-     * Initialise les commandes disponibles.
+     * Initialize available commands. 
      */
     private void initializeCommands() {
     	this.commands.put("ls", new LsCommand(fileSystem));
@@ -50,10 +50,10 @@ public class CommandParser {
     }
 
     /**
-     * Exécute une commande avec gestion des redirections et pipes.
-     * @param input Commande complète (ex: "ls | grep txt").
-     * @param currentDirectory Répertoire courant.
-     * @return Résultat de l'exécution.
+     * Execute Command with redirections and pipes
+     * @param input Complete Command (ex: "ls | grep txt").
+     * @param currentDirectory Current Directory
+     * @return Execution Result
      */
     public String execute(String input, String currentDirectory) {
         input = input.trim();
@@ -125,12 +125,6 @@ public class CommandParser {
     }
     
     /**
-     * Remove first elt of agrs ('command'). 
-     */
-    static String[] removefirstFrom(String[] args) 
-    	{ return Arrays.asList(args).subList(1, args.length).toArray(new String[args.length - 1]); }
-
-    /**
      * Execute chain of Commands with pipes
      */
     private String executePipe(String input) {
@@ -151,4 +145,11 @@ public class CommandParser {
 
         return currentOutput;
     }
+    
+    /**
+     * Remove first elt of agrs ('command'). 
+     */
+    static String[] removefirstFrom(String[] args) 
+    	{ return Arrays.asList(args).subList(1, args.length).toArray(new String[args.length - 1]); }
+    
 }

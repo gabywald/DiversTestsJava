@@ -1,8 +1,5 @@
 package gabywald.terminal3.serverside.filesystem;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Global state of the terminal including current directory, history, etc.
  * @author Gabriel Chandesris (2026)

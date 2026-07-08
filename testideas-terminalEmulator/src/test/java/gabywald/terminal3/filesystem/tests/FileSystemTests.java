@@ -1,13 +1,13 @@
-package gabywald.terminal.filesystem.tests;
+package gabywald.terminal3.filesystem.tests;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.TerminalNode;
-import gabywald.terminal.filesystem.TerminalFile;
+import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
+import gabywald.terminal3.serverside.filesystem.TerminalFile;
+import gabywald.terminal3.serverside.filesystem.TerminalNode;
 
 /**
  * @author Gabriel Chandesris (2026)

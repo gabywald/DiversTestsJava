@@ -1,13 +1,13 @@
-package gabywald.terminal.commands.tests;
+package gabywald.terminal3.commands.tests;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import gabywald.terminal.TerminalState;
-import gabywald.terminal.commands.CdCommand;
-import gabywald.terminal.filesystem.TerminalDirectory;
+import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
+import gabywald.terminal3.serverside.filesystem.TerminalState;
+import gabywald.terminal3.serverside.shell.commands.CdCommand;
 
 /**
  * @author Gabriel Chandesris (2026)
@@ -43,45 +43,45 @@ class CdCommandTest {
     @Test
     void testCdToHome() {
     	this.cdCommand.execute(this.state, new String[]{"home"});
-        Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
+    	Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
     }
     
     @Test
     void testCdToSubdirectory() {
     	this.cdCommand.execute(this.state, new String[]{"documents"});
-        Assertions.assertEquals(this.documents, this.state.getCurrentDirectory());
+    	Assertions.assertEquals(this.documents, this.state.getCurrentDirectory());
     }
     
     @Test
     void testCdToParent() {
     	this.cdCommand.execute(this.state, new String[]{"documents"});
     	this.cdCommand.execute(this.state, new String[]{".."});
-       Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
+    	Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
     }
     
     @Test
     void testCdToCurrent() {
     	this.cdCommand.execute(this.state, new String[]{"."});
-       Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
+    	Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
     }
     
     @Test
     void testCdNoArgs() {
     	this.cdCommand.execute(this.state, new String[0]);
-       Assertions.assertEquals(this.root, this.state.getCurrentDirectory());
+    	Assertions.assertEquals(this.root, this.state.getCurrentDirectory());
     }
     
     @Test
     void testCdNonExistent() {
         String result = this.cdCommand.execute(this.state, new String[]{"nonexistent"});
-       Assertions.assertTrue(result.contains("no such file or directory"));
-       Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
+        Assertions.assertTrue(result.contains("no such file or directory"));
+        Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
     }
     
     @Test
     void testCdAbsolutePath() {
     	this.cdCommand.execute(this.state, new String[]{"/home/documents"});
-       Assertions.assertEquals(this.documents, this.state.getCurrentDirectory());
+    	Assertions.assertEquals(this.documents, this.state.getCurrentDirectory());
     }
     
 }

@@ -23,8 +23,8 @@ public class TouchCommand implements ICommand {
         
         StringBuilder output = new StringBuilder();
         for (String fileName : args) {
-            TerminalNode existing = CommandHelper.resolveFile(state, fileName);
-            if (existing != null && existing.isDirectory()) {
+            TerminalNode nodeFile = CommandHelper.resolveFile(state, fileName);
+            if (nodeFile != null && nodeFile.isDirectory()) {
                 output.append("touch: cannot touch '").append(fileName).append("': Is a directory\n");
                 continue;
             }
@@ -36,8 +36,8 @@ public class TouchCommand implements ICommand {
             }
             
             String simpleName = CommandHelper.getSimpleName(fileName);
-            if (existing != null && existing.isFile()) 
-            	{ ((TerminalFile) existing).setContent(((TerminalFile)existing).getContent()); }
+            if (nodeFile != null && nodeFile.isFile()) 
+            	{ ((TerminalFile) nodeFile).setContent(((TerminalFile)nodeFile).getContent()); }
             else { parentDir.createFile(simpleName); }
         }
         return output.toString();

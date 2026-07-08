@@ -14,8 +14,18 @@ public class CatCommand implements ICommand {
 	
 	@Override
 	public String execute(TerminalState state, String[] args, String stdin) {
-		// TODO implement with stdin NOT NULL !
-		return (stdin == null)? this.execute(state, args) : null ;
+		if (stdin == null) { return this.execute(state, args); }
+		else {
+	        if (args.length == 0) { return stdin; }
+
+	        StringBuilder output = new StringBuilder();
+	        for (String fileName : args) {
+	    		TerminalNode targetFile = CommandHelper.resolveFile(state, fileName);
+	    		if (targetFile == null) { return "Unknown File: " + fileName; }
+	    		else { output.append(((TerminalFile)targetFile).getContent()); }
+	        }
+	        return output.toString();
+		}
 	}
 	
     @Override

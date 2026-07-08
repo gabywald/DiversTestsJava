@@ -1,7 +1,7 @@
 package gabywald.terminal3.serverside.shell.commands;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import gabywald.terminal3.serverside.filesystem.TerminalState;
@@ -29,15 +29,11 @@ public class HelpCommand implements ICommand {
         StringBuilder help = new StringBuilder();
         help.append("Available commands:\n\n");
         Map<String, ICommand> commands = CommandFactory.getAllCommands();
-//        Set<String> keys = commands.keySet().stream().sorted().collect(Collectors.toSet());
-//        keys.stream().forEach(key -> {
-//        	ICommand cmd = commands.get(keys);
-//        	help.append(String.format("  %-15s %s\n", cmd.getName(), cmd.getDescription()));
-//        });
-        for (Map.Entry<String, ICommand> entry : commands.entrySet()) {
-        	ICommand cmd = entry.getValue();
-            help.append(String.format("  %-15s %s\n", cmd.getName(), cmd.getDescription()));
-        }
+        List<String> keys = commands.keySet().stream().sorted().collect(Collectors.toList());
+        keys.stream().forEach(key -> {
+        	ICommand cmd = commands.get(key);
+        	help.append(String.format("  %-15s %s\n", cmd.getName(), cmd.getDescription()));
+        });
         help.append("\nType 'help <command>' for more information about a specific command.\n");
         return help.toString();
     }
