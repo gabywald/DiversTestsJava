@@ -13,14 +13,18 @@ public class PwdCommand implements ICommand {
 	public String execute(TerminalState state, String[] args, String stdin) 
 		{ return this.execute(state, args); }
 	
-    @Override
-    public String execute(TerminalState state, String[] args) 
-    	{ return state.getCurrentDirectory().getPath(); }
-    
-    @Override
-    public String getName() { return "pwd"; }
-    @Override
-    public String getDescription() { return "Print the current working directory"; }
-    @Override
-    public String getUsage() { return "Usage: pwd"; }
+	@Override
+	public String execute(TerminalState state, String[] args) 
+		{ return state.getCurrentDirectory().getPath(); }
+	
+	@Override
+	public String getName() { return "pwd"; }
+	@Override
+	public String getDescription() { return "Print the current working directory"; }
+	@Override
+	public String getUsage() { return "Usage: pwd"; }
+	
+	@Override
+	public boolean isVisible() { return true; }
+	
 }

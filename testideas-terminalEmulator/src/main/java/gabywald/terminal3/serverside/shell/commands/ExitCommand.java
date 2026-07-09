@@ -13,15 +13,18 @@ public class ExitCommand implements ICommand {
 	public String execute(TerminalState state, String[] args, String stdin) 
 		{ return this.execute(state, args); }
 	
-    @Override
-    public String execute(TerminalState state, String[] args) 
-    	{ return "EXIT"; }
-    
-    @Override
-    public String getName() { return "exit"; }
-    @Override
-    public String getDescription() { return "Exit the terminal"; }
-    @Override
-    public String getUsage() { return "Usage: exit"; }
-    
+	@Override
+	public String execute(TerminalState state, String[] args) 
+		{ return "EXIT"; }
+	
+	@Override
+	public String getName() { return "exit"; }
+	@Override
+	public String getDescription() { return "Exit the terminal"; }
+	@Override
+	public String getUsage() { return "Usage: exit"; }
+	
+	@Override
+	public boolean isVisible() { return true; }
+	
 }

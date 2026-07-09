@@ -23,7 +23,7 @@ class ScriptEngineTest {
     void setUp() {
     	this.state = new TerminalState();
         this.root = this.state.getRootDirectory();
-        this.home = root.createDirectory("home");
+        this.home = this.root.createDirectory("home");
         this.state.setCurrentDirectory(this.home);
         this.engine = new ScriptEngine(this.state);
     }

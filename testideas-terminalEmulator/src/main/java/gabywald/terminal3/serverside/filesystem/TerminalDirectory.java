@@ -88,7 +88,7 @@ public class TerminalDirectory extends TerminalNode {
     
     @Override
     public boolean delete() {
-        if (this.parent != null) return this.parent.removeChild(this);
+        if (this.parent != null) { return this.parent.removeChild(this); }
         return false;
     }
     

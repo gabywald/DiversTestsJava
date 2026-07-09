@@ -21,23 +21,23 @@ public class SortCommand implements ICommand {
 	public String execute(TerminalState state, String[] args) 
 		{ return this.execute(state, args, null); }
 
-    @Override
-    public String execute(TerminalState state, String[] args, String stdin) {
-        String content;
+	@Override
+	public String execute(TerminalState state, String[] args, String stdin) {
+		String content;
 
-        if (args.length > 0) {
-            String fileName = args[0];
-            TerminalNode targetFile = CommandHelper.resolveFile(state, fileName);
-            if (targetFile == null) { return "Unknown File: " + fileName; }
-            content = CommandFactory.getCommand("cat").execute(state, new String[] { fileName });
-        } 
-        else if (stdin != null) { content = stdin; } 
-        else { return "Usage: sort [file] or use pipe pipe"; }
+		if (args.length > 0) {
+			String fileName = args[0];
+			TerminalNode targetFile = CommandHelper.resolveFile(state, fileName);
+			if (targetFile == null) { return "Unknown File: " + fileName; }
+			content = CommandFactory.getCommand("cat").execute(state, new String[] { fileName });
+		} 
+		else if (stdin != null) { content = stdin; } 
+		else { return "Usage: sort [file] or use pipe pipe"; }
 
-        List<String> lines = Arrays.asList(content.split("\n"));
-        Collections.sort(lines);
-        return String.join("\n", lines);
-    }
+		List<String> lines = Arrays.asList(content.split("\n"));
+		Collections.sort(lines);
+		return String.join("\n", lines);
+	}
 
 	@Override
 	public String getName() { return "sort"; }
@@ -45,4 +45,8 @@ public class SortCommand implements ICommand {
 	public String getDescription() { return "Sort lines of a file"; }
 	@Override
 	public String getUsage() { return "Usage: sort [FILE]"; }
+	
+	@Override
+	public boolean isVisible() { return true; }
+	
 }

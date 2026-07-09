@@ -21,6 +21,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import gabywald.global.structures.Pair;
 import gabywald.terminal3.clientside.gui.TerminalFrame;
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
@@ -201,7 +202,6 @@ public class TerminalClient {
 	private String login;
 	private String psswd;
 	private Header bearerHeader;
-	private TerminalFrame tf;
 
 	private TerminalClient(	String serverName, int serverAUTHport, String serverAUTH, int serverMAINport, String serverMAIN, 
 							String serverTOKS, String serverTOKU, String clientUAUA, 
@@ -217,10 +217,9 @@ public class TerminalClient {
 		this.login = login;
 		this.psswd = psswd;
 		this.bearerHeader = bearerHeader;
-		this.tf = TerminalFrame.getInstance();
 	}
 	
-	public String callCommandServer(String cmd) {
+	public Pair<String, String> callCommandServer(String cmd) {
 		HttpResponse responseCMD = null;
 		try {
 			responseCMD = TerminalClient.callCommandServer(	this.serverName, this.serverMAINport, this.serverMAIN, 
@@ -231,17 +230,17 @@ public class TerminalClient {
 		if (responseCMD == null) {
 			Logger.printlnLog(LoggerLevel.LL_ERROR, "NO COMMAND !");
 			 // return "Error (" + responseCMD.getStatusLine().getStatusCode() + ")";
-			return "Error (" + "..." + ")";
+			return new Pair<String, String> (null, null);
 		}
 		
 		String outputOfCMD = null;
 		try {
 			outputOfCMD = EntityUtils.toString(responseCMD.getEntity(), "UTF-8");
 			Logger.printlnLog(LoggerLevel.LL_NONE, "PROMPT: " + responseCMD.getHeaders("prompt")[0].getValue());
-			this.tf.setPrompt(responseCMD.getHeaders("prompt")[0].getValue());
+			// TerminalFrame.getInstance().setPrompt(responseCMD.getHeaders("prompt")[0].getValue());
 			// TODO Check output Status Code !!
 		} catch (ParseException | IOException e) { e.printStackTrace(); }
-		return outputOfCMD;
+		return new Pair<String, String> (outputOfCMD, responseCMD.getHeaders("prompt")[0] != null ? responseCMD.getHeaders("prompt")[0].getValue() : null);
 	}
 	
 	

@@ -20,7 +20,7 @@ public class TerminalFile extends TerminalNode {
     public String getContent() { return content; }
     
     public void setContent(String content) {
-        this.content = content != null ? content : "";
+        this.content = content != null ? content : ""; // content != null ? content.replaceAll("/n", "\n") : "";
         this.modifiedAt = java.time.LocalDateTime.now();
     }
     

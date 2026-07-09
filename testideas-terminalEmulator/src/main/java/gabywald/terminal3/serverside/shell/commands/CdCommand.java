@@ -26,7 +26,7 @@ public class CdCommand implements ICommand {
 		
 		String path = args[0];
 		TerminalDirectory newDir = CommandHelper.resolveDirectory(state, path);
-		if (newDir == null) { return "cd: no such file or directory: " + path; }
+		if (newDir == null) { return "cd: no such directory: " + path; }
 		
 		state.setCurrentDirectory(newDir);
 		return "";
@@ -38,5 +38,8 @@ public class CdCommand implements ICommand {
 	public String getDescription() { return "Change the current directory"; }
 	@Override
 	public String getUsage() { return "Usage: cd [DIR]"; }
+
+	@Override
+	public boolean isVisible() { return true; }
 	
 }

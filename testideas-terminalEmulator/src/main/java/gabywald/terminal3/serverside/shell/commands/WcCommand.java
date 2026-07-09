@@ -44,4 +44,7 @@ public class WcCommand implements ICommand {
 	@Override
 	public String getUsage() { return "Usage: wc [FILE] or use a pipe"; }
 	
+	@Override
+	public boolean isVisible() { return true; }
+	
 }

@@ -74,7 +74,7 @@ class CdCommandTest {
     @Test
     void testCdNonExistent() {
         String result = this.cdCommand.execute(this.state, new String[]{"nonexistent"});
-        Assertions.assertTrue(result.contains("no such file or directory"));
+        Assertions.assertTrue(result.contains("no such directory"));
         Assertions.assertEquals(this.home, this.state.getCurrentDirectory());
     }
     

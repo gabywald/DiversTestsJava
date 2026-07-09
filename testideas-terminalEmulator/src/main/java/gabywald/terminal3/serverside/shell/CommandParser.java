@@ -119,7 +119,7 @@ public class CommandParser {
 					TerminalNode redirFile = CommandHelper.resolveFile(state, redirection.getFileName());
 					String existingContent = (redirFile == null) ? "" : 
 									CommandFactory.getCommand("cat").execute(state, new String[] { redirection.getFileName() });
-					CommandFactory.getCommand("echo").execute(state, new String[] { existingContent + output }, redirection.getFileName());
+					CommandFactory.getCommand("echo").execute(state, new String[] { existingContent + "\n" + output }, redirection.getFileName());
 				}
 				return "";
 			}

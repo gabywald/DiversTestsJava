@@ -160,9 +160,9 @@ public class TerminalEmulator {
         if (editArgs.length > 0 && (editArgs[0].equals("--nano") || editArgs[0].equals("--vim"))) {
             editorType = editArgs[0].substring(2);
             if (editArgs.length < 2) {
-                appendToOutput("Usage: edit [--nano|--vim] <filename>\n");
+            	this.appendToOutput("Usage: edit [--nano|--vim] <filename>\n");
                 this.isEditing = false;
-                printPrompt();
+                this.printPrompt();
                 return;
             }
             fileName = editArgs[1];
@@ -193,7 +193,7 @@ public class TerminalEmulator {
             }
             this.endEditMode();
         } else {
-            appendToOutput(input + "\n");
+        	this.appendToOutput(input + "\n");
         }
     }
 

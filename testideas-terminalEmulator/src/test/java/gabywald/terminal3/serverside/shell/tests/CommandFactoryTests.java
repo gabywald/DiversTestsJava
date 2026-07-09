@@ -1,4 +1,4 @@
-package gabywald.terminal3.commands.tests;
+package gabywald.terminal3.serverside.shell.tests;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

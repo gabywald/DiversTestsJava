@@ -43,10 +43,10 @@ class TerminalEmulatorIntegrationTest {
         
         this.commandParser.execute("cd test", "/");
         this.commandParser.execute("rm file.txt", "/");
-        Assertions.assertFalse(this.fileSystem.exists("file.txt")); // NOTE : not removed because not empty
+        Assertions.assertFalse(this.fileSystem.exists("file.txt"));
         this.commandParser.execute("cd ..", "/test");
         this.commandParser.execute("rm test", "/");
-        Assertions.assertFalse(this.fileSystem.exists("test")); // NOTE : not removed because not empty
+        Assertions.assertFalse(this.fileSystem.exists("test"));
     }
 
     @Test

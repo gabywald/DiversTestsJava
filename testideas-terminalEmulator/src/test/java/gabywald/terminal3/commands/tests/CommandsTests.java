@@ -12,6 +12,7 @@ import gabywald.terminal3.serverside.shell.commands.CatCommand;
 import gabywald.terminal3.serverside.shell.commands.EchoCommand;
 import gabywald.terminal3.serverside.shell.commands.GrepCommand;
 import gabywald.terminal3.serverside.shell.commands.SortCommand;
+import gabywald.terminal3.serverside.shell.commands.TouchCommand;
 import gabywald.terminal3.serverside.shell.commands.TrCommand;
 import gabywald.terminal3.serverside.shell.commands.WcCommand;
 
@@ -50,24 +51,40 @@ class CommandsTest {
         CatCommand cat = new CatCommand();
         Assertions.assertEquals("Input text", cat.execute(this.state, new String[]{}, "Input text"));
     }
+    
+    @Test
+    void testTouchCommand() {
+        TouchCommand touch = new TouchCommand();
+        Assertions.assertEquals("", touch.execute(this.state, new String[]{"test.txt"}, null));
+    }
 
     @Test
     void testEchoCommand() {
         EchoCommand echo = new EchoCommand();
         Assertions.assertEquals("Hello World", echo.execute(this.state, new String[]{"Hello", "World"}, null));
     }
+    
+    @Test
+    void testEchoRedirectionCommand() {
+        TouchCommand touch = new TouchCommand();
+        Assertions.assertEquals("", touch.execute(this.state, new String[]{"test.txt"}, null));
+    	EchoCommand echo = new EchoCommand();
+        Assertions.assertEquals("", echo.execute(this.state, new String[]{"Hello World"}, "test.txt"));
+        CatCommand cat = new CatCommand();
+        Assertions.assertEquals("Hello World", cat.execute(this.state, new String[]{ "test.txt" }));
+    }
 
     @Test
     void testGrepCommandWithFile() {
     	this.createFileAndWrite("test.txt", "line1\nline2\nline3");
         GrepCommand grep = new GrepCommand();
-        Assertions.assertEquals("line2\n", grep.execute(this.state, new String[]{"line2", "test.txt"}, null));
+        Assertions.assertEquals("line2", grep.execute(this.state, new String[]{ "line2", "test.txt" }, null));
     }
 
     @Test
     void testGrepCommandWithStdin() {
         GrepCommand grep = new GrepCommand();
-        Assertions.assertEquals("line2\n", grep.execute(this.state, new String[]{"line2"}, "line1\nline2\nline3"));
+        Assertions.assertEquals("line2", grep.execute(this.state, new String[]{ "line2" }, "line1\nline2\nline3"));
     }
 
     @Test

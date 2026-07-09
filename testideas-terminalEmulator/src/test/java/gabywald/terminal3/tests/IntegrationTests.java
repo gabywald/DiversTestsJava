@@ -122,11 +122,11 @@ class IntegrationTest {
         Assertions.assertEquals("", result);
         Assertions.assertEquals("/home", this.state.getCurrentDirectory().getPath());
         
-        ICommand rmdir = CommandFactory.getCommand("rmdir");
-        result = rmdir.execute(this.state, new String[]{"newdir"});
+        ICommand rm = CommandFactory.getCommand("rm");
+        result = rm.execute(this.state, new String[]{"newdir"});
         // Assertions.assertEquals("", result);
         // rmdir: failed to remove 'newdir': Directory not empty
-        Assertions.assertEquals("rmdir: failed to remove 'newdir': Directory not empty\n", result);
+        Assertions.assertEquals("rm: failed to remove 'newdir': Directory not empty", result);
         Assertions.assertNotNull(this.home.getChild("newdir"));
     }
     
@@ -160,14 +160,17 @@ class IntegrationTest {
     void testErrorHandling() {
         ICommand ls = CommandFactory.getCommand("ls");
         String result = ls.execute(this.state, new String[]{"nonexistent"});
+        Assertions.assertEquals("ls: cannot access 'nonexistent': No such file or directory", result);
         Assertions.assertTrue(result.contains("No such file or directory"));
         
         ICommand cd = CommandFactory.getCommand("cd");
         result = cd.execute(this.state, new String[]{"nonexistent"});
-        Assertions.assertTrue(result.contains("no such file or directory"));
+        Assertions.assertEquals("cd: no such directory: nonexistent", result);
+        Assertions.assertTrue(result.contains("no such directory"));
         
         ICommand rm = CommandFactory.getCommand("rm");
         result = rm.execute(this.state, new String[]{"nonexistent.txt"});
+        Assertions.assertEquals("rm: cannot remove 'nonexistent.txt': No such file or directory", result);
         Assertions.assertTrue(result.contains("No such file or directory"));
     }
     

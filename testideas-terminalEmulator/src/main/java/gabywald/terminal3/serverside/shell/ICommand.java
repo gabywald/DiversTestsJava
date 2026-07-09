@@ -13,5 +13,6 @@ public interface ICommand {
 	String getDescription();
     String getUsage();
     
-    // TODO boolean isHidden();
+    // boolean isHidden();
+    boolean isVisible();
 }

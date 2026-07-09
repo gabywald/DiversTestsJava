@@ -1,13 +1,14 @@
-package gabywald.terminal.script;
+package gabywald.terminal3.script;
 
-import gabywald.terminal.TerminalState;
-import gabywald.terminal.commands.Command;
-import gabywald.terminal.commands.CommandFactory;
-import gabywald.terminal.commands.CommandParser;
-import gabywald.terminal.filesystem.TerminalDirectory;
-import gabywald.terminal.filesystem.TerminalNode;
-import gabywald.terminal.filesystem.TerminalFile;
 import java.util.Map;
+
+import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
+import gabywald.terminal3.serverside.filesystem.TerminalFile;
+import gabywald.terminal3.serverside.filesystem.TerminalNode;
+import gabywald.terminal3.serverside.filesystem.TerminalState;
+import gabywald.terminal3.serverside.shell.CommandFactory;
+import gabywald.terminal3.serverside.shell.CommandParser;
+import gabywald.terminal3.serverside.shell.ICommand;
 
 /**
  * Script execution engine with minimal scripting language support
@@ -38,7 +39,7 @@ public class ScriptEngine {
             String trimmed = line.trim();
             if (trimmed.startsWith("#") || trimmed.isEmpty()) { continue; }
             
-            String result = executeLine(trimmed);
+            String result = this.executeLine(trimmed);
             if (result != null && !result.isEmpty()) 
             	{ output.append(result).append("\n"); }
         }
@@ -46,20 +47,20 @@ public class ScriptEngine {
     }
     
     private String executeLine(String line) {
-        if (line.startsWith("if "))		return executeIf(line);
-        if (line.startsWith("while "))	return executeWhile(line);
-        if (line.startsWith("for "))	return executeFor(line);
-        if (line.equals("fi") || line.equals("done") || line.equals("end"))	return null;
-        if (line.startsWith("set "))	return executeSet(line);
-        if (line.startsWith("echo ")) 	return executeScriptEcho(line);
-        if (line.startsWith("cd ")) 	return executeScriptCd(line);
-        if (line.startsWith("pwd")) 	return state.getCurrentDirectory().getPath();
-        if (line.startsWith("ls")) 		return executeLs(line);
-        if (line.startsWith("cat")) 	return executeCat(line);
+        if (line.startsWith("if "))		{ return this.executeIf(line); }
+        if (line.startsWith("while "))	{ return this.executeWhile(line); }
+        if (line.startsWith("for "))	{ return this.executeFor(line); }
+        if (line.equals("fi") || line.equals("done") || line.equals("end"))	{ return null; }
+        if (line.startsWith("set "))	{ return this.executeSet(line); }
+        if (line.startsWith("echo ")) 	{ return this.executeScriptEcho(line); }
+        if (line.startsWith("cd ")) 	{ return this.executeScriptCd(line); }
+        if (line.startsWith("pwd")) 	{ return state.getCurrentDirectory().getPath(); }
+        if (line.startsWith("ls")) 		{ return this.executeLs(line); }
+        if (line.startsWith("cat")) 	{ return this.executeCat(line); }
         
         String[] parts = CommandParser.parse(line);
         if (parts.length > 0) {
-            Command cmd = CommandFactory.getCommand(parts[0]);
+            ICommand cmd = CommandFactory.getCommand(parts[0]);
             if (cmd != null) {
                 String[] args = new String[parts.length - 1];
                 System.arraycopy(parts, 1, args, 0, args.length);
@@ -71,20 +72,20 @@ public class ScriptEngine {
     
     private String executeIf(String line) {
         String condition = line.substring(3, line.length() - 1).trim();
-        boolean result = evaluateCondition(condition);
-        context.setInIfBlock(true);
-        context.setIfConditionResult(result);
-        context.setIfBlockDepth(1);
+        boolean result = this.evaluateCondition(condition);
+        this.context.setInIfBlock(true);
+        this.context.setIfConditionResult(result);
+        this.context.setIfBlockDepth(1);
         return null;
     }
     
     private String executeWhile(String line) {
         String condition = line.substring(6, line.length() - 1).trim();
-        boolean result = evaluateCondition(condition);
-        context.setInWhileBlock(true);
-        context.setWhileCondition(condition);
-        context.setWhileConditionResult(result);
-        context.setWhileBlockDepth(1);
+        boolean result = this.evaluateCondition(condition);
+        this.context.setInWhileBlock(true);
+        this.context.setWhileCondition(condition);
+        this.context.setWhileConditionResult(result);
+        this.context.setWhileBlockDepth(1);
         return null;
     }
     
@@ -123,7 +124,7 @@ public class ScriptEngine {
     
     private String executeScriptCd(String line) {
         String path = line.substring(3).trim();
-        TerminalDirectory newDir = resolveDirectory(state, path);
+        TerminalDirectory newDir = this.resolveDirectory(state, path);
         if (newDir == null) { return "cd: no such file or directory: " + path; }
         this.state.setCurrentDirectory(newDir);
         return null;
@@ -133,7 +134,7 @@ public class ScriptEngine {
         String[] parts = CommandParser.parse(line);
         String[] args = new String[parts.length - 1];
         System.arraycopy(parts, 1, args, 0, args.length);
-        Command cmd = CommandFactory.getCommand("ls");
+        ICommand cmd = CommandFactory.getCommand("ls");
         if (cmd != null) { return cmd.execute(state, args); }
         return "ls: command not available";
     }
@@ -142,7 +143,7 @@ public class ScriptEngine {
         String[] parts = CommandParser.parse(line);
         String[] args = new String[parts.length - 1];
         System.arraycopy(parts, 1, args, 0, args.length);
-        Command cmd = CommandFactory.getCommand("cat");
+        ICommand cmd = CommandFactory.getCommand("cat");
         if (cmd != null) { return cmd.execute(state, args); } 
         return "cat: command not available";
     }
@@ -162,7 +163,7 @@ public class ScriptEngine {
             if (parts.length == 2) {
                 String test = parts[0];
                 String path = parts[1].trim().replaceAll("^$", ""); // NOTE "^\"|"$"
-                TerminalNode node = resolveFile(state, path);
+                TerminalNode node = this.resolveFile(state, path);
                 if ("-f".equals(test)) { return node != null && node.isFile(); } 
                 if ("-d".equals(test)) { return node != null && node.isDirectory(); } 
                 if ("-e".equals(test)) { return node != null; } 
@@ -180,14 +181,14 @@ public class ScriptEngine {
     
     private TerminalNode resolveFile(TerminalState state, String fileName) {
         TerminalDirectory current = state.getCurrentDirectory();
-        if (fileName.startsWith("/")) { return resolveAbsolutePath(state.getRootDirectory(), fileName); }
+        if (fileName.startsWith("/")) { return this.resolveAbsolutePath(state.getRootDirectory(), fileName); }
         return this.resolveRelativePath(current, fileName);
     }
     
     private TerminalDirectory resolveDirectory(TerminalState state, String dirName) {
         TerminalDirectory current = state.getCurrentDirectory();
         if (dirName.startsWith("/")) { return resolveAbsoluteDirectory(state.getRootDirectory(), dirName); }
-        return this.resolveRelativeDirectory(current, dirName);
+        return resolveRelativeDirectory(current, dirName);
     }
     
     private TerminalNode resolveAbsolutePath(TerminalDirectory root, String path) {

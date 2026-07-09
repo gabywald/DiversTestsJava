@@ -24,4 +24,7 @@ public class ClearCommand implements ICommand {
 	@Override
 	public String getUsage() { return "Usage: clear"; }
 	
+	@Override
+	public boolean isVisible() { return true; }
+	
 }

@@ -31,32 +31,32 @@ public class NanoEditorSwing implements TextEditorSwing {
         if (fileSystem.exists(fileName)) {
             String content = fileSystem.cat(fileName);
             for (String line : content.split("\n")) {
-                lines.add(line);
+            	this.lines.add(line);
             }
         }
     }
 
     @Override
     public void start() {
-        terminal.appendToOutput("--- Nano: Édition de '" + fileName + "' ---\n");
-        terminal.appendToOutput("Commandes: :wq (sauvegarder et quitter), :q (quitter)\n");
+    	this.terminal.appendToOutput("--- Nano: Édition de '" + this.fileName + "' ---\n");
+    	this.terminal.appendToOutput("Commandes: :wq (sauvegarder et quitter), :q (quitter)\n");
         if (!lines.isEmpty()) {
-            terminal.appendToOutput("Contenu actuel:\n");
-            for (String line : lines) {
-                terminal.appendToOutput(line + "\n");
+        	this.terminal.appendToOutput("Contenu actuel:\n");
+            for (String line : this.lines) {
+            	this.terminal.appendToOutput(line + "\n");
             }
         }
-        terminal.appendToOutput("nano> ");
+        this.terminal.appendToOutput("nano> ");
     }
 
     @Override
     public String handleInput(String input) {
         if (input.equals(":wq")) {
-            return "SAVE:" + String.join("\n", lines);
+            return "SAVE:" + String.join("\n", this.lines);
         } else if (input.equals(":q")) {
             return "CANCEL";
         } else {
-            lines.add(input);
+        	this.lines.add(input);
             return null;
         }
     }

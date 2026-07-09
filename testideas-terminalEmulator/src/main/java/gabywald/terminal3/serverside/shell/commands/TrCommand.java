@@ -53,4 +53,7 @@ public class TrCommand implements ICommand {
 	@Override
 	public String getUsage() { return "Usage: tr <set1> <set2> [FILE]"; }
 	
+	@Override
+	public boolean isVisible() { return true; }
+	
 }

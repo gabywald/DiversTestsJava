@@ -33,8 +33,8 @@ public class VimEditorSwing implements TextEditorSwing {
 
         if (fileSystem.exists(fileName)) {
             String content = fileSystem.cat(fileName);
-            for (String line : content.split("\n")) { lines.add(line); }
-        } else { lines.add(""); }
+            for (String line : content.split("\n")) { this.lines.add(line); }
+        } else { this.lines.add(""); }
     }
 
     @Override
@@ -42,7 +42,7 @@ public class VimEditorSwing implements TextEditorSwing {
         this.terminal.appendToOutput("--- Vim: Édition de '" + fileName + "' ---\n");
         this.terminal.appendToOutput("Mode: COMMANDE | Tapez 'i' pour passer en mode insertion\n");
         this.terminal.appendToOutput("Commandes: :wq (sauvegarder), :q! (quitter), :esc (mode commande)\n");
-        displayCurrentLine();
+        this.displayCurrentLine();
     }
 
     /**
@@ -58,11 +58,11 @@ public class VimEditorSwing implements TextEditorSwing {
             if (input.equals(":esc")) {
             	this.insertMode = false;
                 this.terminal.appendToOutput("Mode: COMMANDE\n");
-                displayCurrentLine();
+                this.displayCurrentLine();
                 return null;
             } else {
-                lines.set(currentLineIndex, lines.get(currentLineIndex) + input);
-                displayCurrentLine();
+            	this.lines.set(currentLineIndex, this.lines.get(currentLineIndex) + input);
+                this.displayCurrentLine();
                 return null;
             }
         } else {
@@ -72,7 +72,7 @@ public class VimEditorSwing implements TextEditorSwing {
                 this.displayCurrentLine();
                 return null;
             } else if (input.equals(":wq")) {
-                return "SAVE:" + String.join("\n", lines);
+                return "SAVE:" + String.join("\n", this.lines);
             } else if (input.equals(":q!")) {
                 return "CANCEL";
             } else if (input.equals(":esc")) {

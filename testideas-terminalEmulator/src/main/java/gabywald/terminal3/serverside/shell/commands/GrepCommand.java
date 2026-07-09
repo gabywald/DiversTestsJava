@@ -38,7 +38,7 @@ public class GrepCommand implements ICommand {
 			if (line.contains(pattern)) { output.append(line).append("\n"); }
 		}
 
-		return output.toString();	
+		return (output.length() > 0) ? output.substring(0, output.length() - 1).toString() : output.toString();	
 	}
 
 	@Override
@@ -47,4 +47,8 @@ public class GrepCommand implements ICommand {
 	public String getDescription() { return "Filter lines with pattern"; }
 	@Override
 	public String getUsage() { return "Usage: grep <pattern> [file]"; }
+	
+	@Override
+	public boolean isVisible() { return true; }
+	
 }
