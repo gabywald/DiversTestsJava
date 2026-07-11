@@ -1,4 +1,4 @@
-package gabywald.terminal3.script;
+package gabywald.terminal3.serverside.shell.scripts;
 
 import java.util.ArrayList;
 import java.util.List;

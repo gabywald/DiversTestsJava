@@ -8,7 +8,7 @@ import gabywald.terminal3.serverside.filesystem.TerminalState;
  */
 public class User {
     
-    private String username = null, login = null, pswd = null;
+    private String username = null, login = null;
     private Role role = null;
     private TerminalState state = null;
 
@@ -20,7 +20,7 @@ public class User {
         PLAYING, CREATION, ADMINISTRATION
     }
     
-    public User(String login, String ident, String pswd, Role rolez) {
+    public User(String login, String ident, Role rolez) {
         this.login = login;
         this.username = ident;
         this.role = rolez;
@@ -30,7 +30,6 @@ public class User {
 
     public String getUsername() { return this.username; }
     public String getLogin()	{ return this.login; }
-    public String getPswd()		{ return this.pswd; }
     public Role getRole()		{ return this.role; }
     public String getRoleSTR()	{ return (this.role != null)?this.role.toString():new String(""); }
     
@@ -68,7 +67,7 @@ public class User {
             for (int i = 0 ; i < UserS.values().length ; i++) { 
                 if (UserS.values()[i].login.equals(login)) { 
                     if (UserS.values()[i].psswd.equals(psswd))
-                        { return new User(UserS.values()[i].login, UserS.values()[i].ident, UserS.values()[i].psswd, UserS.values()[i].rolez); }
+                        { return new User(UserS.values()[i].login, UserS.values()[i].ident, UserS.values()[i].rolez); }
                     else { return null; }
                 } 
             }
@@ -80,7 +79,7 @@ public class User {
             for (int i = 0 ; i < UserS.values().length ; i++) { 
                 if (UserS.values()[i].login.equals(login)) { 
                     if (UserS.values()[i].ident.equals(name))
-                        { return new User(UserS.values()[i].login, UserS.values()[i].ident, UserS.values()[i].psswd, UserS.values()[i].rolez); }
+                        { return new User(UserS.values()[i].login, UserS.values()[i].ident, UserS.values()[i].rolez); }
                     else { return null; }
                 } 
             }

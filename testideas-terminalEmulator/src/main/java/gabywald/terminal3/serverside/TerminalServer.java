@@ -24,6 +24,7 @@ import gabywald.utilities.others.PropertiesLoader;
 public class TerminalServer implements Runnable {
 	
 	private static TerminalServer instance = null;
+	private static Thread thrServer = null;
 	
 	public static TerminalServer getInstance() {
 		if (TerminalServer.instance == null) 
@@ -64,7 +65,26 @@ public class TerminalServer implements Runnable {
 			this.serverAuthentication.start();
 			this.serverOfServices.start();
 		} catch (IOException e) { e.printStackTrace(); }
-		
+	}
+	
+//	public void shutdown() {
+//		this.serverAuthentication.shutdown();
+//		this.serverOfServices.shutdown();
+//	}
+	
+	public void start() {
+		if (TerminalServer.thrServer == null) {
+			TerminalServer.thrServer = new Thread(this);
+			TerminalServer.thrServer.start();
+		}
+	}
+	
+	public void shutdownNow() {
+		if (TerminalServer.thrServer != null) {
+			this.serverAuthentication.shutdownNow();
+			this.serverOfServices.shutdownNow();
+			TerminalServer.thrServer = null;
+		}
 	}
 	
 }

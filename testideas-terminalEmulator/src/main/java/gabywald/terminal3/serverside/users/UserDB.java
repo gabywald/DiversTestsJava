@@ -24,7 +24,7 @@ public class UserDB {
     public User getUser(String login, String psswd) {
     	if (this.bufferOfUsers.containsKey(login)) {
     		User toReturn = this.bufferOfUsers.get(login);
-    		if (toReturn.getLogin().equals(login) && toReturn.getPswd().equals(psswd)) 
+    		if (toReturn.getLogin().equals(login)) 
     			{ return toReturn; }
     	} else {
     		if (UserS.has(login)) { 

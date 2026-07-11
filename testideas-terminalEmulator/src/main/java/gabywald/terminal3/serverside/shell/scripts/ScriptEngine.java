@@ -1,4 +1,4 @@
-package gabywald.terminal3.script;
+package gabywald.terminal3.serverside.shell.scripts;
 
 import java.util.Map;
 
@@ -47,16 +47,16 @@ public class ScriptEngine {
     }
     
     private String executeLine(String line) {
-        if (line.startsWith("if "))		{ return this.executeIf(line); }
-        if (line.startsWith("while "))	{ return this.executeWhile(line); }
-        if (line.startsWith("for "))	{ return this.executeFor(line); }
+        if (line.startsWith("if "))		{ return executeIf(line); }
+        if (line.startsWith("while "))	{ return executeWhile(line); }
+        if (line.startsWith("for "))	{ return executeFor(line); }
         if (line.equals("fi") || line.equals("done") || line.equals("end"))	{ return null; }
-        if (line.startsWith("set "))	{ return this.executeSet(line); }
-        if (line.startsWith("echo ")) 	{ return this.executeScriptEcho(line); }
-        if (line.startsWith("cd ")) 	{ return this.executeScriptCd(line); }
+        if (line.startsWith("set "))	{ return executeSet(line); }
+        if (line.startsWith("echo ")) 	{ return executeScriptEcho(line); }
+        if (line.startsWith("cd ")) 	{ return executeScriptCd(line); }
         if (line.startsWith("pwd")) 	{ return state.getCurrentDirectory().getPath(); }
-        if (line.startsWith("ls")) 		{ return this.executeLs(line); }
-        if (line.startsWith("cat")) 	{ return this.executeCat(line); }
+        if (line.startsWith("ls")) 		{ return executeLs(line); }
+        if (line.startsWith("cat")) 	{ return executeCat(line); }
         
         String[] parts = CommandParser.parse(line);
         if (parts.length > 0) {
@@ -96,13 +96,13 @@ public class ScriptEngine {
         String varName = parts[0].trim();
         String[] values = parts[1].trim().split(" ");
         
-        context.setInForBlock(true);
-        context.setForVariable(varName);
-        context.setForValues(values);
-        context.setForIndex(0);
-        context.setForBlockDepth(1);
+        this.context.setInForBlock(true);
+        this.context.setForVariable(varName);
+        this.context.setForValues(values);
+        this.context.setForIndex(0);
+        this.context.setForBlockDepth(1);
         
-        if (values.length > 0) { context.getVariables().put(varName, values[0]); }
+        if (values.length > 0) { this.context.getVariables().put(varName, values[0]); }
         return null;
     }
     
@@ -113,7 +113,7 @@ public class ScriptEngine {
         String varName = parts[0].trim();
         String value = parts[1].trim();
         value = this.replaceVariables(value);
-        context.getVariables().put(varName, value);
+        this.context.getVariables().put(varName, value);
         return null;
     }
     
@@ -155,7 +155,7 @@ public class ScriptEngine {
             if (parts.length == 2) {
                 String varName = parts[0].trim();
                 String value = parts[1].trim().replaceAll("^$", ""); // NOTE "^\"|"$"
-                String varValue = context.getVariables().getOrDefault(varName, "");
+                String varValue = this.context.getVariables().getOrDefault(varName, "");
                 return varValue.equals(value);
             }
         } else if (condition.startsWith("-")) {
@@ -174,7 +174,7 @@ public class ScriptEngine {
     
     private String replaceVariables(String text) {
         String result = text;
-        for (Map.Entry<String, String> entry : context.getVariables().entrySet()) 
+        for (Map.Entry<String, String> entry : this.context.getVariables().entrySet()) 
         	{ result = result.replace("$" + entry.getKey(), entry.getValue()); }
         return result;
     }
@@ -187,8 +187,8 @@ public class ScriptEngine {
     
     private TerminalDirectory resolveDirectory(TerminalState state, String dirName) {
         TerminalDirectory current = state.getCurrentDirectory();
-        if (dirName.startsWith("/")) { return resolveAbsoluteDirectory(state.getRootDirectory(), dirName); }
-        return resolveRelativeDirectory(current, dirName);
+        if (dirName.startsWith("/")) { return this.resolveAbsoluteDirectory(state.getRootDirectory(), dirName); }
+        return this.resolveRelativeDirectory(current, dirName);
     }
     
     private TerminalNode resolveAbsolutePath(TerminalDirectory root, String path) {
