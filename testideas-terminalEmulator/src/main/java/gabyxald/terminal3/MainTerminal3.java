@@ -1,6 +1,7 @@
 package gabyxald.terminal3;
 
 import gabywald.terminal3.clientside.TerminalClient;
+import gabywald.terminal3.clientside.TerminalClientREST;
 import gabywald.terminal3.clientside.gui.TerminalFrame;
 import gabywald.terminal3.serverside.TerminalServer;
 import gabywald.utilities.others.PropertiesLoader;
@@ -8,6 +9,7 @@ import gabywald.utilities.others.PropertiesLoader;
 /**
  * 
  * @author Gabriel Chandesris (2026)
+ * @deprecated Use {@code gabywald.launchers.TerminalEmulatorLaunchers} 
  */
 public class MainTerminal3 {
 	private PropertiesLoader plClient = new PropertiesLoader("terminalemulatorClient.properties");
@@ -18,11 +20,11 @@ public class MainTerminal3 {
 		mt.plClient.getProperties().list(System.out);
 		mt.plServer.getProperties().list(System.out);
 		
-		TerminalServer.getInstance().start();
+		TerminalServer.builder(true).start();
 		
 		TerminalFrame.getInstance().setVisible(true);
 		
-		TerminalClient.getInstance();
+		TerminalClient.builder( true );
 	}
 
 }

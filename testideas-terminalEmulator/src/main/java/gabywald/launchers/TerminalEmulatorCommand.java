@@ -21,10 +21,7 @@ import picocli.CommandLine.Option;
 		mixinStandardHelpOptions = true)
 public class TerminalEmulatorCommand implements Runnable {
 
-	/**
-	 * Code Command. 
-	 */
-	static class Version {
+	static class VersionOption {
 		enum TheEnum { version1, version2, version3 }
 
 		TheEnum actualValue = TheEnum.version3;
@@ -46,7 +43,50 @@ public class TerminalEmulatorCommand implements Runnable {
 		boolean isVersion3()	{ return (this.actualValue == TheEnum.version3); }
 	}
 	@ArgGroup(exclusive = true, heading = "Version Options%n", multiplicity = "1")
-	Version codVersion = new Version();
+	VersionOption vOption = new VersionOption();
+	
+	static class OptionsClientServer {
+		enum TheEnum { onlyClient, onlyServer, both }
+
+		TheEnum actualValue = TheEnum.both;
+
+		@Option(names = {"-c", "--onlyclient"}, 
+				description = "(Apply on v3 only) Only Client Execution. ")
+		void setOnlyClient(boolean b) { this.actualValue = TheEnum.onlyClient; }
+		
+		@Option(names = {"-s", "--onlyserver"}, 
+				description = "(Apply on v3 only) Only Server Execution. ")
+		void setOnluServer(boolean b) { this.actualValue = TheEnum.onlyServer; }
+		
+		@Option(names = {"-b", "--both"}, 
+				description = "(Apply on v3 only) Server and Client Execution. ")
+		void setBOTH(boolean b) { this.actualValue = TheEnum.both; }
+
+		boolean isOnlyClient()	{ return (this.actualValue == TheEnum.onlyClient); }
+		boolean isOnlyServer()	{ return (this.actualValue == TheEnum.onlyServer); }
+		boolean isBoth()		{ return (this.actualValue == TheEnum.both); }
+	}
+	@ArgGroup(exclusive = true, heading = "(Apply on v3 only) Client/Server Options%n", multiplicity = "0..1") // multiplicity = "1")
+	OptionsClientServer csOptions = new OptionsClientServer();
+	
+	static class OptionRESTorWebSocket {
+		enum TheEnum { restExchange, webSocketExchange }
+
+		TheEnum actualValue = TheEnum.restExchange;
+
+		@Option(names = {"-r", "--rest"}, 
+				description = "(Apply on v3 only) Client / Server exchanges on REST mode. ")
+		void setRestExchange(boolean b) { this.actualValue = TheEnum.restExchange; }
+		
+		@Option(names = {"-w", "--websocket"}, 
+				description = "(Apply on v3 only) Client / Server exchanges on Web Socket mode. ")
+		void setWebSocketExchanges(boolean b) { this.actualValue = TheEnum.webSocketExchange; }
+		
+		boolean isRestExchange()	{	 return (this.actualValue == TheEnum.restExchange); }
+		boolean isWebSocketExchanges()	{ return (this.actualValue == TheEnum.webSocketExchange); }
+	}
+	@ArgGroup(exclusive = true, heading = "(Apply on v3 only) REST/WebSocket Options%n", multiplicity = "0..1") // multiplicity = "1")
+	OptionRESTorWebSocket rwOptions = new OptionRESTorWebSocket();
 	
 	/**
 	 * Log Level. 
@@ -91,24 +131,28 @@ public class TerminalEmulatorCommand implements Runnable {
 	
 	@Override
 	public void run() {
-		if (codVersion.isVersion1()) { 
+		if (this.vOption.isVersion1()) { 
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, "Terminal Emulator Version 1. "); 
 			gabywald.terminal.gui.TerminalFrame frame = new gabywald.terminal.gui.TerminalFrame();
 	        frame.setVisible(true);
 	    }
-		else if (codVersion.isVersion2()) { 
+		else if (this.vOption.isVersion2()) { 
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, "Terminal Emulator Version 2. ");
 			new TerminalEmulator();
 		}
-		else if (codVersion.isVersion3()) { 
+		else if (this.vOption.isVersion3()) { 
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, "Terminal Emulator Version 3. ");
-			Logger.printlnLog(LoggerLevel.LL_FORUSER, "\t Launching Server... ");
-			Thread thrServer = new Thread(TerminalServer.getInstance());
-			thrServer.start();
-			Logger.printlnLog(LoggerLevel.LL_FORUSER, "\t Launching GUI... ");
-			gabywald.terminal3.clientside.gui.TerminalFrame.getInstance().setVisible(true);
-			Logger.printlnLog(LoggerLevel.LL_FORUSER, "\t Launching Client... ");
-			TerminalClient.getInstance();
+			if ( (this.csOptions.isOnlyServer()) || (this.csOptions.isBoth()) ) {
+				Logger.printlnLog(LoggerLevel.LL_FORUSER, "\t Launching Server... ");
+				TerminalServer ts = TerminalServer.builder( this.rwOptions.isRestExchange() );
+				ts.start(); // Starting server !!
+			}
+			if ( (this.csOptions.isOnlyClient()) || (this.csOptions.isBoth()) ) {
+				Logger.printlnLog(LoggerLevel.LL_FORUSER, "\t Launching GUI... ");
+				gabywald.terminal3.clientside.gui.TerminalFrame.getInstance().setVisible(true);
+				Logger.printlnLog(LoggerLevel.LL_FORUSER, "\t Launching Client... ");
+				/* TerminalClient tc = */TerminalClient.builder( this.rwOptions.isRestExchange() );
+			}
 		}
 		else
 			{ Logger.printlnLog(LoggerLevel.LL_WARNING, "Terminal Emulator UNKNOWN VERSION. "); }

@@ -28,7 +28,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
-import gabywald.terminal3.serverside.TerminalServer;
+// import gabywald.terminal3.serverside.TerminalServer;
+import gabywald.terminal3.serverside.TerminalServerREST;
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
 import gabywald.utilities.others.PropertiesLoader;
@@ -36,8 +37,8 @@ import gabywald.utilities.others.PropertiesLoader;
 /**
  * @author Gabriel Gabriel Chandesris (2026)
  */
-class TerminalServerTests {
-	private TerminalServer tServer = null;
+class TerminalServerRESTTests {
+	private TerminalServerREST tServer = null;
 
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
@@ -49,7 +50,7 @@ class TerminalServerTests {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		this.tServer = TerminalServer.getInstance();
+		this.tServer = new TerminalServerREST(); // (TerminalServerREST) TerminalServer.builder( true );
 		Assertions.assertNotNull(this.tServer);
 		this.tServer.start();
 	}
@@ -139,12 +140,12 @@ class TerminalServerTests {
 	    String  login = plClient.getProperty( "gabywald.terminal.user.username" ), 
 	    		psswd = plClient.getProperty( "gabywald.terminal.user.password" );
 		int serverAUTHport = Integer.parseInt(plClient.getProperty( "gabywald.terminal.server.port.authentication" ));
-		int serverMAINport = Integer.parseInt(plClient.getProperty( "gabywald.terminal.server.port.mainservice" ));
+		int serverMAINport = Integer.parseInt(plClient.getProperty( "gabywald.terminal.server.port.services" ));
 		
 		// Request Authentication to Server !
 		HttpResponse httpResponseAuth = null;
 		try {
-			httpResponseAuth = TerminalServerTests.authentication(serverName, serverAUTHport, serverAUTH, serverTOKS, serverTOKU, clientUAUA, login, psswd);
+			httpResponseAuth = TerminalServerRESTTests.authentication(serverName, serverAUTHport, serverAUTH, serverTOKS, serverTOKU, clientUAUA, login, psswd);
 		} catch (IOException e) { e.printStackTrace();Assertions.fail(e); }
 		
 		Assertions.assertNotNull(httpResponseAuth);
@@ -152,7 +153,7 @@ class TerminalServerTests {
 		// Request standard service calling...
 		HttpResponse httpResponseService = null;
 		try {
-			httpResponseService = TerminalServerTests.callServiceServer(serverName, serverMAINport, serverMAIN, clientUAUA, httpResponseAuth.getHeaders("Authorization")[0]);
+			httpResponseService = TerminalServerRESTTests.callServiceServer(serverName, serverMAINport, serverMAIN, clientUAUA, httpResponseAuth.getHeaders("Authorization")[0]);
 		} catch (IOException e) { e.printStackTrace();Assertions.fail(e); }
 		
 		Assertions.assertNotNull(httpResponseService);
@@ -167,7 +168,7 @@ class TerminalServerTests {
 		// Request standard service calling...
 		HttpResponse httpResponseServiceCMD = null;
 		try {
-			httpResponseServiceCMD = TerminalServerTests.callCommandServer(	serverName, serverMAINport, serverMAIN, 
+			httpResponseServiceCMD = TerminalServerRESTTests.callCommandServer(	serverName, serverMAINport, serverMAIN, 
 																		clientUAUA, httpResponseAuth.getHeaders("Authorization")[0], 
 																		"help");
 		} catch (IOException e) { e.printStackTrace(); }

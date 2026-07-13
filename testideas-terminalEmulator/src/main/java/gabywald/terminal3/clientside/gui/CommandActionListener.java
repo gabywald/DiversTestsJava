@@ -68,7 +68,7 @@ public class CommandActionListener implements ActionListener {
 			// String result = // cmd.execute(this.localtf.getTerminalState(), cmdArgs);
 			Pair<String, String> result = TerminalClient.getInstance().callCommandServer(command); 
 			TerminalFrame.getInstance().setPrompt(result.getSecond());
-			if ("EXIT".equals(result)) // exit 
+			if ("EXIT".equals(result.getFirst())) // exit 
 				{ System.exit(0); } 
 			else if (result.getFirst().contains("\033[H\033[2J")) // clear
 				{ this.localtf.clearScreen(); } // this.localtf.printWelcomeMessage();

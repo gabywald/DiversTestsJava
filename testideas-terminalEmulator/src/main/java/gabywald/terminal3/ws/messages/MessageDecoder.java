@@ -1,4 +1,4 @@
-package gabywald.websocket.chatServerSide.messages;
+package gabywald.terminal3.ws.messages;
 
 import java.util.Arrays;
 
@@ -33,8 +33,8 @@ public class MessageDecoder implements Decoder.Text<Message> {
     	} catch (JSONException je) {
     		String toTransmit = "[JSONException]: \"" + je.getMessage() + "\" ; /" + s + "/";
     		Message mje = new Message();
-    		mje.setContent( "ERROR:" + toTransmit );
-    		// mje.setError( toTransmit );
+    		mje.setContent( toTransmit );
+    		mje.setError( toTransmit );
     		return mje;
     	}
     }

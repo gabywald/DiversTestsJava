@@ -1,6 +1,5 @@
 package gabywald.terminal3.serverside.restmodules;
 
-
 import java.io.IOException;
 
 import javax.ws.rs.container.ContainerRequestContext;

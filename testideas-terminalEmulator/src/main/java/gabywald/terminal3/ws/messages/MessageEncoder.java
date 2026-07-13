@@ -1,4 +1,4 @@
-package gabywald.websocket.chatServerSide.messages;
+package gabywald.terminal3.ws.messages;
 
 import java.util.Arrays;
 

@@ -5,7 +5,6 @@ import java.util.List;
 
 import gabywald.terminal3.clientside.TerminalClient;
 import gabywald.terminal3.clientside.gui.TerminalFrame;
-import gabywald.terminal3.serverside.shell.CommandFactory;
 
 /**
  * Éditeur nano adapté à Swing.

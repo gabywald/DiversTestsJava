@@ -1,9 +1,5 @@
 package gabywald.terminal3.serverside.restmodules;
 
-
-import java.util.Date;
-import java.util.UUID;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -14,10 +10,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONObject;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
 
 import gabywald.terminal3.serverside.TerminalServer;
 import gabywald.terminal3.serverside.users.User;
@@ -49,7 +41,7 @@ public class TokenGenerator {
                 return Response.status(Response.Status.PRECONDITION_FAILED).entity(jsonObject.toString()).build();
             }
             // String token = this.generateToken(login, Base64.decodeBase64(psswd).toString(), user.getRoleSTR()); 
-            String token = this.generateToken(login, user.getUsername(), user.getRoleSTR());
+            String token = TerminalServer.generateToken(login, user.getUsername(), user.getRoleSTR());
             jsonObject.put("token", token); 
             return Response .ok(jsonObject.toString(), MediaType.APPLICATION_JSON)
                             .header("Authorization", "Bearer " + token).build();
@@ -76,38 +68,13 @@ public class TokenGenerator {
             }
             // Generate Token !
             // String token = this.generateToken(user.getUsername(), new String(Base64.decodeBase64(psswd)), user.getRoleSTR());
-            String token = this.generateToken(login, user.getUsername(), user.getRoleSTR());
+            String token = TerminalServer.generateToken(login, user.getUsername(), user.getRoleSTR());
             jsonObject.put("token", token); 
             return Response    .ok(jsonObject.toString(), MediaType.APPLICATION_JSON)
                             .header("Authorization", "Bearer " + token).build();
         }
     }
     
-    // Secret key to sign the token
-    static final String secretKey	= TerminalServer.getProperty("gabywald.terminal.server.token.secretKey"); // "yourSecretKey";
-    static final String issuer		= TerminalServer.getProperty("gabywald.terminal.server.token.issuer"); // "gabywald";
-    static final String CLAIM_LOGIN = "login";
-    static final String CLAIM_USER  = "user";
-    static final String CLAIM_ROLE  = "role";
-    static final Algorithm algorithm = Algorithm.HMAC256( TokenGenerator.secretKey );
-    static final JWTVerifier verifier = JWT.require( TokenGenerator.algorithm ).withIssuer( TokenGenerator.issuer ).build();
 
-    // Generate a JWT
-    private String generateToken(String login, String user, String role) {
-        Date now		= new Date();
-        Date expiration	= new Date(now.getTime() + 3600000); // Token valid for 1 hour
-        
-        return JWT.create()
-                  .withIssuer( TokenGenerator.issuer )
-                  .withSubject( "'" + TokenGenerator.issuer + "' Details" )
-                  .withClaim(TokenGenerator.CLAIM_LOGIN, login)
-                  .withClaim(TokenGenerator.CLAIM_USER, user)
-                  .withClaim(TokenGenerator.CLAIM_ROLE, role)
-                  .withIssuedAt( now )
-                  .withExpiresAt( expiration )
-                  .withJWTId(UUID.randomUUID().toString())
-                  // .withNotBefore(new Date(System.currentTimeMillis() + 1000L))
-                  .sign( TokenGenerator.algorithm ) ;
-    }
 
 }
