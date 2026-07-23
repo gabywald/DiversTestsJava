@@ -1,8 +1,15 @@
 Test Ideas : Terminal Emulator
 
-A complete Unix/Linux terminal emulator implemented in Java 8 with Swing GUI. (2 versions !)
+A complete Unix/Linux terminal emulator implemented in Java 8 with Swing GUI. (3 versions !)
+ - Graphical Implementation (Java Swing) ; 
+ - Local implementation ; 
+ - REST implementation (servers + clients) ; 
+ - WebSocket implemntation (servers + clients) ; 
+ - Java 8 ; Maven 3.6.3 ; Eclipse 2025-2026 ; 
+ - Comprehensive unit and integration tests (JUnit 5) ; 
+ 
 
-## Version 1
+## Main ideas and implementations
 
 Features:
 - Virtual file system with directories and text files
@@ -10,30 +17,15 @@ Features:
 - Minimalist scripting language with variables, conditions, and loops
 - Swing-based graphical user interface
 - Command history with up/down arrow navigation
-- Basic tab completion
-- Comprehensive unit and integration tests (JUnit 5)
+- Adding redirections, pipes, better scripting... !
 
 Usage:
-1. Compile: javac -d bin src/com/terminal/emulator/**/*.java
-2. Run: java -cp bin com.terminal.emulator.Main
+1. Compile It ! 
+2. Run It ! (see optios)
 3. Type 'help' for available commands
-4. Type 'exit' to quit
+4. Enjoy !
+5. Type 'exit' to quit
 
-Project Structure:
-com.terminal/
-  - Main.java (entry point)
-  - TerminalState.java (global state)
-  - gui/ (Swing GUI classes)
-  - filesystem/ (Directory, TerminalFile, FileNode)
-  - commands/ (Command interface and implementations)
-  - script/ (ScriptEngine, ScriptParser, ScriptContext)
-
-tests/
-  - filesystem/ (FileSystemTest, DirectoryTest)
-  - commands/ (CommandParserTest, LsCommandTest, CdCommandTest, CommandFactoryTest)
-  - TerminalStateTest.java
-  - ScriptEngineTest.java
-  - IntegrationTest.java
 
 ```
 Commands Available:
@@ -83,8 +75,44 @@ done
 Note: The scripting engine is minimal and does not support all Unix shell features.
 ```
 
-## Version 2
-
-Adding rediretiuons, pipes, better scripting... !
-
 ...
+
+## CLI launch options
+
+```
+Usage: testideas-terminalemulator [-hV] (-v1 | -v2 | -v3) [-c | -s | -b] [-r |
+                                  -w] [--warn | --trace | --none | --debug |
+                                  --info | --error]
+Application CLI with picocli.
+  -h, --help            Show this help message and exit.
+  -V, --version         Print version information and exit.
+Version Options
+      -v1, --version1   First Version of Terminal Emulator.
+      -v2, --version2   Second Version of Terminal Emulator.
+      -v3, --version3   Third Version of Terminal Emulator.
+(Apply on v3 only) Client/Server Options
+  -b, --both            (Apply on v3 only) Server and Client Execution.
+  -c, --onlyclient      (Apply on v3 only) Only Client Execution.
+  -s, --onlyserver      (Apply on v3 only) Only Server Execution.
+(Apply on v3 only) REST/WebSocket Options
+  -r, --rest            (Apply on v3 only) Client / Server exchanges on REST
+                          mode.
+  -w, --websocket       (Apply on v3 only) Client / Server exchanges on Web
+                          Socket mode.
+Log Level Options
+      --debug           Sets log level to DEBUG.
+      --error           Sets log level to ERROR.
+      --info            Sets log level to INFO.
+      --none            Sets log level to NONE.
+      --trace           Sets log level to NONE.
+      --warn            Sets log level to WARN.
+
+```
+
+## Basic Launcher
+
+```
+java -jar testideas-terminalEmulator/target/testideas-terminalEmulator-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+```
+
+
