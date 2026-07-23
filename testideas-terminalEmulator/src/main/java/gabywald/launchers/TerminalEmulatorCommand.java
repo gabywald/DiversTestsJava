@@ -1,6 +1,5 @@
 package gabywald.launchers;
 
-import gabywald.terminal2.TerminalEmulator;
 import gabywald.terminal3.clientside.TerminalClient;
 import gabywald.terminal3.serverside.TerminalServer;
 import gabywald.utilities.logger.Logger;
@@ -68,6 +67,25 @@ public class TerminalEmulatorCommand implements Runnable {
 	}
 	@ArgGroup(exclusive = true, heading = "(Apply on v3 only) Client/Server Options%n", multiplicity = "0..1") // multiplicity = "1")
 	OptionsClientServer csOptions = new OptionsClientServer();
+	
+	static class OptionsGraphical {
+		enum TheEnum { onlyTerminal, bothDesktopAndConsole }
+
+		TheEnum actualValue = TheEnum.onlyTerminal;
+
+		@Option(names = {"-t", "--onlyterminal"}, 
+				description = "(Apply on v3 only) Only Terminal View. ")
+		void setOnlyTerminal(boolean b) { this.actualValue = TheEnum.onlyTerminal; }
+		
+		@Option(names = {"-d", "--bothdesktopandconsole"}, 
+				description = "(Apply on v3 only) Terminal and Desktop View. ")
+		void setBothDesktopAndConsole(boolean b) { this.actualValue = TheEnum.bothDesktopAndConsole; }
+		
+		boolean isOnlyTerminal()			{ return (this.actualValue == TheEnum.onlyTerminal); }
+		boolean isBothDesktopAndConsole()	{ return (this.actualValue == TheEnum.bothDesktopAndConsole); }
+	}
+	@ArgGroup(exclusive = true, heading = "(Apply on v3 only) Graphical Options%n", multiplicity = "0..1") // multiplicity = "1")
+	OptionsGraphical gOptions = new OptionsGraphical();
 	
 	static class OptionRESTorWebSocket {
 		enum TheEnum { restExchange, webSocketExchange }
@@ -138,7 +156,7 @@ public class TerminalEmulatorCommand implements Runnable {
 	    }
 		else if (this.vOption.isVersion2()) { 
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, "Terminal Emulator Version 2. ");
-			new TerminalEmulator();
+			new gabywald.terminal2.TerminalEmulator();
 		}
 		else if (this.vOption.isVersion3()) { 
 			Logger.printlnLog(LoggerLevel.LL_FORUSER, "Terminal Emulator Version 3. ");

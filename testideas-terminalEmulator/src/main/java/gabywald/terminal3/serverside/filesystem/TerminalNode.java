@@ -54,5 +54,7 @@ public abstract class TerminalNode implements Comparable<TerminalNode> {
         result = 31 * result + ( (parent != null) ? parent.hashCode() : 0);
         return result;
     }
-    
+
+	public TerminalNode getParentFile() { return this.getParent(); }
+
 }
