@@ -1,0 +1,78 @@
+package gabywald.terminal3.serverside;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.logging.Level;
+
+import javax.ws.rs.core.UriBuilder;
+
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.logging.LoggingFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+
+import gabywald.terminal3.serverside.restmodules.BasicAuthFilter;
+import gabywald.terminal3.serverside.restmodules.BearerAuthFilter;
+import gabywald.terminal3.serverside.restmodules.TokenGenerator;
+import gabywald.terminal3.serverside.restmodules.TokenUseCase;
+
+/**
+ * 
+ * @author Gabriel Chandesris (2026)
+ */
+public class TerminalServerREST extends TerminalServer {
+	
+	private static Thread thrServer = null;
+	
+    private HttpServer serverAuthentication = null;
+    private HttpServer serverOfServices = null;
+    
+    public static final String BASE_PATH = "http://" + TerminalServer.getProperty("gabywald.terminal.server.servername") + "/";
+    public static final URI BASE_URI_TOKENGENERATOR = UriBuilder.fromUri( TerminalServerREST.BASE_PATH )
+    		.port( Integer.parseInt(TerminalServer.getProperty("gabywald.terminal.server.port.authentication")) ).build();
+    public static final URI BASE_URI_TOKENUSERUSAGE = UriBuilder.fromUri( TerminalServerREST.BASE_PATH )
+    		.port( Integer.parseInt(TerminalServer.getProperty("gabywald.terminal.server.port.services")) ).build();
+	
+    public TerminalServerREST() {
+        ResourceConfig rcAuthentication = new ResourceConfig();
+        rcAuthentication.registerClasses(BasicAuthFilter.class);
+        rcAuthentication.registerClasses(TokenGenerator.class);
+        rcAuthentication.property(LoggingFeature.LOGGING_FEATURE_LOGGER_LEVEL_SERVER, Level.WARNING.getName());
+        this.serverAuthentication = GrizzlyHttpServerFactory.createHttpServer(TerminalServerREST.BASE_URI_TOKENGENERATOR, rcAuthentication);
+        
+        ResourceConfig rcServices = new ResourceConfig();
+        rcServices.registerClasses(BearerAuthFilter.class);
+        rcServices.registerClasses(TokenUseCase.class);
+        rcServices.property(LoggingFeature.LOGGING_FEATURE_LOGGER_LEVEL_SERVER, Level.WARNING.getName());
+        this.serverOfServices = GrizzlyHttpServerFactory.createHttpServer(TerminalServerREST.BASE_URI_TOKENUSERUSAGE, rcServices);
+	}
+
+	@Override
+	public void run() {
+		try {
+			this.serverAuthentication.start();
+			this.serverOfServices.start();
+		} catch (IOException e) { e.printStackTrace(); }
+	}
+	
+//	public void shutdown() {
+//		this.serverAuthentication.shutdown();
+//		this.serverOfServices.shutdown();
+//	}
+	
+	public void start() {
+		if (TerminalServerREST.thrServer == null) {
+			TerminalServerREST.thrServer = new Thread(this);
+			TerminalServerREST.thrServer.start();
+		}
+	}
+	
+	public void shutdownNow() {
+		if (TerminalServerREST.thrServer != null) {
+			this.serverAuthentication.shutdownNow();
+			this.serverOfServices.shutdownNow();
+			TerminalServerREST.thrServer = null;
+		}
+	}
+	
+}

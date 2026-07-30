@@ -114,5 +114,6 @@
     	<module>testideas-websockets</module>
     	<module>testideas-sgbd</module>
     	<module>testideas-jersey</module>
+    	<module>testideas-terminalEmulator</module>
     </modules>
 </project>

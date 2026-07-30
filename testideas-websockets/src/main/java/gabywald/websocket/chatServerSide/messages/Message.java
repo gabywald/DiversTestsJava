@@ -5,12 +5,13 @@ import java.util.Map;
 
 /**
  * 
- * @author Gabriel Chandesris (2024)
+ * @author Gabriel Chandesris (2024, 2026)
  */
 public class Message {
 	
 	static String[] fieldNames = { "from", "to", "content", "username", "message" };
 	private Map<String, String> mapOfFields = new HashMap<String, String>();
+	boolean hasField(String name) { return this.mapOfFields.containsKey(name); }
 	void setField(String name, String value) { this.mapOfFields.put(name, value); }
 	String getField(String name) { return this.mapOfFields.get(name); }
 	

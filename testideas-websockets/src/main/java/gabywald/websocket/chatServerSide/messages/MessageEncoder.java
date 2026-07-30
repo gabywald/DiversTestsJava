@@ -8,20 +8,23 @@ import javax.websocket.EndpointConfig;
 
 import org.json.JSONObject;
 
+import gabywald.utilities.logger.Logger;
+import gabywald.utilities.logger.Logger.LoggerLevel;
+
 /**
  * 
- * @author Gabriel Chandesris (2024)
+ * @author Gabriel Chandesris (2024, 2026)
  */
 public class MessageEncoder implements Encoder.Text<Message> {
 
     @Override
     public String encode(Message message) throws EncodeException {
     	
-    	System.out.println("EN-CODING MESSAGE !!");
+    	Logger.printlnLog(LoggerLevel.LL_DEBUG, "EN-CODING MESSAGE !!");
     	
     	JSONObject jsonobj = new JSONObject();
     	Arrays.asList( Message.fieldNames ).forEach( nameOfField -> {
-    		jsonobj.append(nameOfField, message.getField(nameOfField) );
+    		jsonobj.put(nameOfField, message.hasField(nameOfField) ? message.getField(nameOfField) : "(null)" );
     	});
         return jsonobj.toString();
     }

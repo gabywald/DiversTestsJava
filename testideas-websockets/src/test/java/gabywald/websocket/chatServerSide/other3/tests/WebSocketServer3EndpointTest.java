@@ -40,9 +40,9 @@ class WebSocketServer3EndpointTest {
 
 		// try {
 
-		server = new Server("localhost", 8080, "", null, WebSocketServer3.class);
+		this.server = new Server("localhost", 8080, "", null, WebSocketServer3.class);
 
-		server.start();
+		this.server.start();
 
 		// BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		// System.out.println("Please press a key to stop the server.");
@@ -55,7 +55,7 @@ class WebSocketServer3EndpointTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		System.out.println( "@AfterEach" );
-		if (server != null) { server.stop(); }
+		if (server != null) { this.server.stop(); }
 		System.out.println( "@AfterEach END" );
 	}
 
