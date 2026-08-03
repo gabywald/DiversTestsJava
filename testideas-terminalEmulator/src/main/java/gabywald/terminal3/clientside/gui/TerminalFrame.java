@@ -23,7 +23,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import gabywald.global.structures.Pair;
+import gabywald.global.structures.PairSimple;
 import gabywald.terminal3.clientside.TerminalClient;
 import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
 import gabywald.terminal3.serverside.filesystem.TerminalFile;
@@ -155,11 +155,11 @@ public class TerminalFrame extends JFrame {
         newExplorItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	Pair<String, String> pwdResult = TerminalClient.getInstance().callCommandServer("pwd");
-            	Pair<String, String> lslResult = TerminalClient.getInstance().callCommandServer("ls -l");
+            	PairSimple<String, String> pwdResult = TerminalClient.getInstance().callCommandServer("pwd");
+            	PairSimple<String, String> lslResult = TerminalClient.getInstance().callCommandServer("ls -l");
             	
-            	TerminalNode tn = new TerminalDirectory(pwdResult.getFirst(), null);
-            	Arrays.asList(lslResult.getFirst().split("\n")).stream().forEach( line -> {
+            	TerminalNode tn = new TerminalDirectory(pwdResult.first, null);
+            	Arrays.asList(lslResult.first.split("\n")).stream().forEach( line -> {
             		char firstChar = line.charAt(0);
             		int  lastSpace = line.lastIndexOf(" ");
             		if (firstChar == 'd') {

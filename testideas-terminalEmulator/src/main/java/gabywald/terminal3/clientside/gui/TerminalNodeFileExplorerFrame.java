@@ -12,7 +12,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
-import gabywald.global.structures.Pair;
+import gabywald.global.structures.PairSimple;
 import gabywald.terminal3.clientside.TerminalClient;
 import gabywald.terminal3.serverside.filesystem.TerminalDirectory;
 import gabywald.terminal3.serverside.filesystem.TerminalFile;
@@ -75,12 +75,12 @@ public class TerminalNodeFileExplorerFrame extends JInternalFrame {
 			TerminalNode parentFile = (this.currentDirectory != null) ? this.currentDirectory.getParentFile() : null;
 			if (parentFile != null) { this.actualize(parentFile); }
 			else {
-				/* Pair<String, String> cdResult = */TerminalClient.getInstance().callCommandServer("cd ..");
-				Pair<String, String> pwdResult = TerminalClient.getInstance().callCommandServer("pwd");
-            	Pair<String, String> lslResult = TerminalClient.getInstance().callCommandServer("ls -l");
-            	if ( ! pwdResult.getFirst().equals(this.currentDirectory.getName())) {
-	            	TerminalNode tn = new TerminalDirectory(pwdResult.getFirst(), null);
-	            	Arrays.asList(lslResult.getFirst().split("\n")).stream().forEach( line -> {
+				/* PairSimple<String, String> cdResult = */TerminalClient.getInstance().callCommandServer("cd ..");
+				PairSimple<String, String> pwdResult = TerminalClient.getInstance().callCommandServer("pwd");
+            	PairSimple<String, String> lslResult = TerminalClient.getInstance().callCommandServer("ls -l");
+            	if ( ! pwdResult.first.equals(this.currentDirectory.getName())) {
+	            	TerminalNode tn = new TerminalDirectory(pwdResult.first, null);
+	            	Arrays.asList(lslResult.first.split("\n")).stream().forEach( line -> {
 	            		char firstChar = line.charAt(0);
 	            		int  lastSpace = line.lastIndexOf(" ");
 	            		if (firstChar == 'd') {
@@ -102,11 +102,11 @@ public class TerminalNodeFileExplorerFrame extends JInternalFrame {
 		this.currentDirectory = directory;
 		
     	TerminalClient.getInstance().callCommandServer("cd " + this.currentDirectory.getName());
-    	Pair<String, String> lslResult = TerminalClient.getInstance().callCommandServer("ls -l");
+    	PairSimple<String, String> lslResult = TerminalClient.getInstance().callCommandServer("ls -l");
     	
     	((TerminalDirectory)directory).clear(); // Only done here ?!
     	
-    	Arrays.asList(lslResult.getFirst().split("\n")).stream().forEach( line -> {
+    	Arrays.asList(lslResult.first.split("\n")).stream().forEach( line -> {
     		char firstChar = line.charAt(0);
     		int  lastSpace = line.lastIndexOf(" ");
     		if (firstChar == 'd') {

@@ -21,7 +21,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
-import gabywald.global.structures.Pair;
+import gabywald.global.structures.PairSimple;
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
 
@@ -133,7 +133,7 @@ public class TerminalClientREST extends TerminalClient {
 		this.bearerHeader = bearerHeader;
 	}
 	
-	public Pair<String, String> callCommandServer(String cmd) {
+	public PairSimple<String, String> callCommandServer(String cmd) {
 		HttpResponse responseCMD = null;
 		try {
 			responseCMD = TerminalClientREST.callCommandServer(	this.serverName, this.serverMAINport, this.serverMAIN, 
@@ -144,7 +144,7 @@ public class TerminalClientREST extends TerminalClient {
 		if (responseCMD == null) {
 			Logger.printlnLog(LoggerLevel.LL_ERROR, "NO COMMAND !");
 			 // return "Error (" + responseCMD.getStatusLine().getStatusCode() + ")";
-			return new Pair<String, String> (null, null);
+			return PairSimple.of(null, null);
 		}
 		
 		String outputOfCMD = null;
@@ -154,7 +154,7 @@ public class TerminalClientREST extends TerminalClient {
 			// TerminalFrame.getInstance().setPrompt(responseCMD.getHeaders("prompt")[0].getValue());
 			// TODO Check output Status Code !!
 		} catch (ParseException | IOException e) { e.printStackTrace(); }
-		return new Pair<String, String> (outputOfCMD, responseCMD.getHeaders("prompt")[0] != null ? responseCMD.getHeaders("prompt")[0].getValue() : null);
+		return PairSimple.of(outputOfCMD, responseCMD.getHeaders("prompt")[0] != null ? responseCMD.getHeaders("prompt")[0].getValue() : null);
 	}
 	
 	

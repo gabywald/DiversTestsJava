@@ -11,7 +11,7 @@ import javax.websocket.DeploymentException;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
-import gabywald.global.structures.Pair;
+import gabywald.global.structures.PairSimple;
 import gabywald.terminal3.clientside.gui.TerminalFrame;
 import gabywald.terminal3.clientside.ws.client.TerminalClientAuthClientEndpoint;
 import gabywald.terminal3.clientside.ws.client.TerminalClientBasicClientEndpoint;
@@ -122,7 +122,7 @@ public class TerminalClientWebSocketContainer extends TerminalClient {
 	}
 
 	@Override
-	public Pair<String, String> callCommandServer(String cmd) {
+	public PairSimple<String, String> callCommandServer(String cmd) {
 		this.servicesEndpoint.emptyPrompt();
 		this.sendMessage4service( cmd );
 		CountDownLatch latch = new CountDownLatch(1);
@@ -133,10 +133,10 @@ public class TerminalClientWebSocketContainer extends TerminalClient {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			Logger.printlnLog(LoggerLevel.LL_ERROR, e.getMessage());
-			return new Pair<String, String>(null, null); 
+			return PairSimple.of(null, null); 
 		}
 		
-		return new Pair<String, String>(this.servicesEndpoint.getResponse(), this.servicesEndpoint.getPrompt()); 
+		return PairSimple.of(this.servicesEndpoint.getResponse(), this.servicesEndpoint.getPrompt()); 
 	}
 	
 }
