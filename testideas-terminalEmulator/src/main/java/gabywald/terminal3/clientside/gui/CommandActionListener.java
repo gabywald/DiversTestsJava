@@ -3,7 +3,7 @@ package gabywald.terminal3.clientside.gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import gabywald.global.structures.Pair;
+import gabywald.global.structures.PairSimple;
 import gabywald.terminal3.clientside.TerminalClient;
 import gabywald.terminal3.clientside.editors.ITextEditor;
 import gabywald.terminal3.clientside.editors.NanoTextEditor;
@@ -66,13 +66,13 @@ public class CommandActionListener implements ActionListener {
 			this.localtf.appendOutput(commandName + ": command not found\n");
 		} else {
 			// String result = // cmd.execute(this.localtf.getTerminalState(), cmdArgs);
-			Pair<String, String> result = TerminalClient.getInstance().callCommandServer(command); 
-			TerminalFrame.getInstance().setPrompt(result.getSecond());
-			if ("EXIT".equals(result.getFirst())) // exit 
+			PairSimple<String, String> result = TerminalClient.getInstance().callCommandServer(command); 
+			TerminalFrame.getInstance().setPrompt(result.second);
+			if ("EXIT".equals(result.first)) // exit 
 				{ System.exit(0); } 
-			else if (result.getFirst().contains("\033[H\033[2J")) // clear
+			else if (result.first.contains("\033[H\033[2J")) // clear
 				{ this.localtf.clearScreen(); } // this.localtf.printWelcomeMessage();
-			else { this.localtf.appendOutput(result.getFirst() + "\n"); }
+			else { this.localtf.appendOutput(result.first + "\n"); }
 		}
 		
 		this.localtf.updatePrompt();
@@ -117,11 +117,11 @@ public class CommandActionListener implements ActionListener {
 		String result = this.currentEditor.handleInput(input);
 		if (result != null) {
 			if (result.startsWith("SAVE:")) {
-				Pair<String, String> resultEcho = TerminalClient.getInstance() // .replaceAll("\n", "\\n")
+				PairSimple<String, String> resultEcho = TerminalClient.getInstance() // .replaceAll("\n", "\\n")
 						.callCommandServer("echo '" + result.substring(5) + "' >> " + this.currentEditFile);
 				// CommandFactory.getCommand("echo").execute(state, new String[] { result.substring(5) }, this.currentEditFile);
 				this.localtf.appendOutput("File '" + this.currentEditFile + "' recorded.\n");
-				this.localtf.setPrompt(resultEcho.getSecond());
+				this.localtf.setPrompt(resultEcho.second);
 				this.localtf.updatePrompt();
 				this.localtf.clearInputLine();
 			} else if (result.equals("CANCEL")) 

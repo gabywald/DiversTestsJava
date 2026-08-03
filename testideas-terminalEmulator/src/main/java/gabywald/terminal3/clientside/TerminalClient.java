@@ -8,7 +8,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
 
-import gabywald.global.structures.Pair;
+import gabywald.global.structures.PairSimple;
 import gabywald.terminal3.clientside.gui.TerminalFrame;
 import gabywald.utilities.logger.Logger;
 import gabywald.utilities.logger.Logger.LoggerLevel;
@@ -143,5 +143,5 @@ public abstract class TerminalClient {
 	 * @param cmd (String)
 	 * @return (Pair<String, String>) Result of Command and actualization of Prompt !
 	 */
-	public abstract Pair<String, String> callCommandServer(String cmd);
+	public abstract PairSimple<String, String> callCommandServer(String cmd);
 }

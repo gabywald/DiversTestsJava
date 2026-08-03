@@ -22,7 +22,7 @@ public class VimTextEditor implements ITextEditor {
 		this.lines = new ArrayList<>();
 		this.currentLineIndex = 0;
 
-		String content = TerminalClient.getInstance().callCommandServer("cat " + fileName).getFirst();
+		String content = TerminalClient.getInstance().callCommandServer("cat " + fileName).first;
 		if (content != null) {
 			for (String line : content.split("\n")) 
 				{ this.lines.add(line); }

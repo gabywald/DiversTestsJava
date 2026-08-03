@@ -19,7 +19,7 @@ public class NanoTextEditor implements ITextEditor {
 		this.fileName = fileName;
 		this.lines = new ArrayList<>();
 
-		String content = TerminalClient.getInstance().callCommandServer("cat " + fileName).getFirst();
+		String content = TerminalClient.getInstance().callCommandServer("cat " + fileName).first;
 		if (content != null) {
 			for (String line : content.split("\n")) 
 				{ this.lines.add(line); }
