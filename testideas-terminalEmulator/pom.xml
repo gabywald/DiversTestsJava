@@ -21,7 +21,7 @@
 		
 		<!-- REST Services -->
 		<org.glassfish.jersey.version>2.45</org.glassfish.jersey.version>
-		<org.json.version>20240303</org.json.version>
+		<org.json.version>20260719</org.json.version>
 		<com.auth0.version>4.4.0</com.auth0.version>
 		
 		<!-- <apache.http.client.version>4.5.13</apache.http.client.version> -->
