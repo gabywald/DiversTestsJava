@@ -13,7 +13,7 @@
 	<artifactId>testideas-websockets</artifactId>
 
 	<properties>
-		<org.json.version>20240303</org.json.version>
+		<org.json.version>20260719</org.json.version>
 
 		<jakartaee.version>9.0.0-RC3</jakartaee.version><!-- TODO 9.0.0 -->
 		<jakartaws>2.0.0</jakartaws> <!-- 2.2.0-M1 -->
